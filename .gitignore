@@ -404,3 +404,5 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+/Psybook.UI/appsettings.Development.json
+/Psybook.API/appsettings.Development.json

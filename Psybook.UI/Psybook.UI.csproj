@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\Psybook.ServiceDefaults\Psybook.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\Psybook.UI.Client\Psybook.UI.Client.csproj" />
+	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.6" NoWarn="NU1605" />
+	  <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="9.0.6" NoWarn="NU1605" />
+	  <PackageReference Include="Microsoft.Identity.Web" Version="3.9.4" />
+	  <PackageReference Include="Microsoft.Identity.Web.DownstreamApi" Version="3.9.4" />
+	  <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="3.9.4" />
+	  <PackageReference Include="Microsoft.Identity.Web.UI" Version="3.9.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.*" />
+  </ItemGroup>
+
+</Project>

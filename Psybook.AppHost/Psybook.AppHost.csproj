@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Sdk Name="Aspire.AppHost.Sdk" Version="9.0.0" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsAspireHost>true</IsAspireHost>
+    <UserSecretsId>a3bccdaf-b080-4b97-a914-3a6eb685ec88</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.AppHost" Version="9.3.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Psybook.API\Psybook.API.csproj" />
+    <ProjectReference Include="..\Psybook.UI.Client\Psybook.UI.Client.csproj" />
+    <ProjectReference Include="..\Psybook.UI\Psybook.UI.csproj" />
+  </ItemGroup>
+
+</Project>
