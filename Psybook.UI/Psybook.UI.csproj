@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Psybook.ServiceDefaults\Psybook.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\Psybook.Shared\Psybook.Shared.csproj" />
     <ProjectReference Include="..\Psybook.UI.Client\Psybook.UI.Client.csproj" />
 	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.6" NoWarn="NU1605" />
 	  <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="9.0.6" NoWarn="NU1605" />

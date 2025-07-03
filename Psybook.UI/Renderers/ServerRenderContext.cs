@@ -1,6 +1,6 @@
 ﻿using Psybook.Shared.Communication;
 
-namespace Psybook.UI.Contexts
+namespace Psybook.UI.Renderers
 {
     /// <inheritdoc/>
     public sealed class ServerRenderContext(IHttpContextAccessor contextAccessor) : IRenderContext

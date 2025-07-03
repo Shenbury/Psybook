@@ -1,9 +1,9 @@
-using Application.Common.Interfaces;
-using Application.Features.CustomTable;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
+using Psybook.Services.UIDataLoaders;
 using Psybook.Shared.Communication;
-using Psybook.UI.Client.Contexts;
+using Psybook.Shared.Extensions;
+using Psybook.UI.Client.Renderers;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -14,5 +14,7 @@ builder.Services.AddScoped(typeof(IDataLoaderService<>), typeof(CustomDataLoader
 
 // Add Render Context for the Client.
 builder.Services.AddSingleton<IRenderContext, ClientRenderContext>();
+
+builder.Services.ClientAndServerRegistrations();
 
 await builder.Build().RunAsync();

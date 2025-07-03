@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using MudBlazor.Services;
 using Psybook.Shared.Communication;
-using Psybook.UI.Client.Pages;
+using Psybook.Shared.Extensions;
 using Psybook.UI.Components;
-using Psybook.UI.Contexts;
+using Psybook.UI.Renderers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +20,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 // Add MudBlazor services
 builder.Services.AddMudServices();
+
+builder.Services.ClientAndServerRegistrations();
 
 // RenderContext communicates to components in which RenderMode the component is running.
 builder.Services.AddHttpContextAccessor();

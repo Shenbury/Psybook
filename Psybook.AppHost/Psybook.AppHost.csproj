@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsAspireHost>true</IsAspireHost>
@@ -13,10 +13,12 @@
 
   <ItemGroup>
     <PackageReference Include="Aspire.Hosting.AppHost" Version="9.3.1" />
+    <PackageReference Include="Aspire.Hosting.SqlServer" Version="9.3.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Psybook.API\Psybook.API.csproj" />
+    <ProjectReference Include="..\Psybook.Migrations\Psybook.Migrations.csproj" />
     <ProjectReference Include="..\Psybook.UI.Client\Psybook.UI.Client.csproj" />
     <ProjectReference Include="..\Psybook.UI\Psybook.UI.csproj" />
   </ItemGroup>

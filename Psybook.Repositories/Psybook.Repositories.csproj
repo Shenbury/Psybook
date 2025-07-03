@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Psybook.Objects\Psybook.Objects.csproj" />
+    <ProjectReference Include="..\Psybook.Shared\Psybook.Shared.csproj" />
+  </ItemGroup>
+
 </Project>
