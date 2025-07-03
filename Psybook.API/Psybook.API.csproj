@@ -22,7 +22,9 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Psybook.Objects\Psybook.Objects.csproj" />
+    <ProjectReference Include="..\Psybook.Repositories\Psybook.Repositories.csproj" />
     <ProjectReference Include="..\Psybook.ServiceDefaults\Psybook.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\Psybook.Services\Psybook.Services.csproj" />
     <ProjectReference Include="..\Psybook.Shared\Psybook.Shared.csproj" />
   </ItemGroup>
 

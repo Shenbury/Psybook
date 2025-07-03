@@ -1,6 +1,6 @@
 ﻿using System.Net.Http.Json;
 
-namespace Psybook.Services.UIDataLoaders;
+namespace Psybook.Services.UI.DataLoaders;
 
 public class CustomDataLoaderService<T>(HttpClient _httpClient) : IDataLoaderService<T>
 {

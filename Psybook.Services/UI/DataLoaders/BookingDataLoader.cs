@@ -1,4 +1,4 @@
-﻿namespace Psybook.Services.UIDataLoaders
+﻿namespace Psybook.Services.UI.DataLoaders
 {
     public class BookingDataLoader
     {

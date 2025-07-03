@@ -1,6 +1,6 @@
 @Psybook.API_HostAddress = http://localhost:5033
 
-GET {{Psybook.API_HostAddress}}/weatherforecast/
+GET {{Psybook.API_HostAddress}}/booking/getcalendarslots
 Accept: application/json
 
 ###

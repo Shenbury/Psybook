@@ -2,33 +2,30 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Web.Resource;
 using Microsoft.Graph;
+using Psybook.Objects.DbModels;
 
 namespace Psybook.API.Controllers;
 
 //[Authorize]
 [ApiController]
-[Route("[controller]")]
+[Route("[controller]/[action]")]
 //[RequiredScope(RequiredScopesConfigurationKey = "AzureAd:Scopes")]
-public class WeatherForecastController : ControllerBase
+public class BookingController : ControllerBase
 {
     private readonly GraphServiceClient _graphServiceClient;
-    private static readonly string[] Summaries = new[]
-    {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
 
-    private readonly ILogger<WeatherForecastController> _logger;
+    private readonly ILogger<BookingController> _logger;
 
-    public WeatherForecastController(ILogger<WeatherForecastController> logger, GraphServiceClient graphServiceClient)
+    public BookingController(ILogger<BookingController> logger, GraphServiceClient graphServiceClient)
     {
         _logger = logger;
             _graphServiceClient = graphServiceClient;
     }
 
-    [HttpGet(Name = "GetWeatherForecast")]
-    public async Task<IEnumerable<WeatherForecast>> Get()
+    [HttpGet(Name = "GetCalendarSlots")]
+    public async Task<IEnumerable<CalendarSlot>> GetCalendarSlots()
     {
-            var user = await _graphServiceClient.Me.Request().GetAsync();
+        //var user = await _graphServiceClient.Me.Request().GetAsync();
         return Enumerable.Range(1, 5).Select(index => new WeatherForecast
         {
             Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
