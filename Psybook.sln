@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
-VisualStudioVersion = 17.14.36212.18 d17.14
+VisualStudioVersion = 17.14.36212.18
 MinimumVisualStudioVersion = 16.0.0.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Psybook.UI", "Psybook.UI\Psybook.UI.csproj", "{8F4E4188-A9F2-467E-92B4-0DC91534924D}"
 EndProject
@@ -11,6 +11,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Psybook.AppHost", "Psybook.AppHost\Psybook.AppHost.csproj", "{3C2ED517-1006-415C-AB61-F4881C291053}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Psybook.ServiceDefaults", "Psybook.ServiceDefaults\Psybook.ServiceDefaults.csproj", "{1159FFDF-0EC6-DE8A-9F18-86C575A937B0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Psybook.Services", "Psybook.Services\Psybook.Services.csproj", "{99DB0845-9176-4E8E-8444-483D4778EC68}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Psybook.Shared", "Psybook.Shared\Psybook.Shared.csproj", "{A22BBA5D-7AAC-4543-B88E-06D9DB833EC7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -82,6 +86,30 @@ Global
 		{1159FFDF-0EC6-DE8A-9F18-86C575A937B0}.Release|x64.Build.0 = Release|Any CPU
 		{1159FFDF-0EC6-DE8A-9F18-86C575A937B0}.Release|x86.ActiveCfg = Release|Any CPU
 		{1159FFDF-0EC6-DE8A-9F18-86C575A937B0}.Release|x86.Build.0 = Release|Any CPU
+		{99DB0845-9176-4E8E-8444-483D4778EC68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99DB0845-9176-4E8E-8444-483D4778EC68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99DB0845-9176-4E8E-8444-483D4778EC68}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{99DB0845-9176-4E8E-8444-483D4778EC68}.Debug|x64.Build.0 = Debug|Any CPU
+		{99DB0845-9176-4E8E-8444-483D4778EC68}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{99DB0845-9176-4E8E-8444-483D4778EC68}.Debug|x86.Build.0 = Debug|Any CPU
+		{99DB0845-9176-4E8E-8444-483D4778EC68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99DB0845-9176-4E8E-8444-483D4778EC68}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99DB0845-9176-4E8E-8444-483D4778EC68}.Release|x64.ActiveCfg = Release|Any CPU
+		{99DB0845-9176-4E8E-8444-483D4778EC68}.Release|x64.Build.0 = Release|Any CPU
+		{99DB0845-9176-4E8E-8444-483D4778EC68}.Release|x86.ActiveCfg = Release|Any CPU
+		{99DB0845-9176-4E8E-8444-483D4778EC68}.Release|x86.Build.0 = Release|Any CPU
+		{A22BBA5D-7AAC-4543-B88E-06D9DB833EC7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A22BBA5D-7AAC-4543-B88E-06D9DB833EC7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A22BBA5D-7AAC-4543-B88E-06D9DB833EC7}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A22BBA5D-7AAC-4543-B88E-06D9DB833EC7}.Debug|x64.Build.0 = Debug|Any CPU
+		{A22BBA5D-7AAC-4543-B88E-06D9DB833EC7}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A22BBA5D-7AAC-4543-B88E-06D9DB833EC7}.Debug|x86.Build.0 = Debug|Any CPU
+		{A22BBA5D-7AAC-4543-B88E-06D9DB833EC7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A22BBA5D-7AAC-4543-B88E-06D9DB833EC7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A22BBA5D-7AAC-4543-B88E-06D9DB833EC7}.Release|x64.ActiveCfg = Release|Any CPU
+		{A22BBA5D-7AAC-4543-B88E-06D9DB833EC7}.Release|x64.Build.0 = Release|Any CPU
+		{A22BBA5D-7AAC-4543-B88E-06D9DB833EC7}.Release|x86.ActiveCfg = Release|Any CPU
+		{A22BBA5D-7AAC-4543-B88E-06D9DB833EC7}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
