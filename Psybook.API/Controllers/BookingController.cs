@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Identity.Web.Resource;
 using Microsoft.Graph;
 using Psybook.Objects.DbModels;
+using Psybook.Services.API.BookingService;
 
 namespace Psybook.API.Controllers;
 
@@ -13,25 +14,21 @@ namespace Psybook.API.Controllers;
 public class BookingController : ControllerBase
 {
     private readonly GraphServiceClient _graphServiceClient;
-
+    private readonly IBookingService _bookingService;
     private readonly ILogger<BookingController> _logger;
 
-    public BookingController(ILogger<BookingController> logger, GraphServiceClient graphServiceClient)
+    public BookingController(ILogger<BookingController> logger, GraphServiceClient graphServiceClient, IBookingService bookingService)
     {
         _logger = logger;
             _graphServiceClient = graphServiceClient;
+        _bookingService = bookingService;
     }
 
     [HttpGet(Name = "GetCalendarSlots")]
     public async Task<IEnumerable<CalendarSlot>> GetCalendarSlots()
     {
         //var user = await _graphServiceClient.Me.Request().GetAsync();
-        return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-        {
-            Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            TemperatureC = Random.Shared.Next(-20, 55),
-            Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-        })
-        .ToArray();
+
+        return await _bookingService.GetCalendarSlotsAsync();
     }
 }

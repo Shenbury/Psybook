@@ -1,4 +1,5 @@
-﻿using Psybook.Repositories.Booking;
+﻿using Psybook.Objects.DbModels;
+using Psybook.Repositories.Booking;
 
 namespace Psybook.Services.API.BookingService
 {
@@ -9,6 +10,11 @@ namespace Psybook.Services.API.BookingService
         public BookingService(IBookingRepository bookingRepository)
         {
             _bookingRepository = bookingRepository;
+        }
+
+        public async Task<IEnumerable<CalendarSlot>> GetCalendarSlotsAsync()
+        {
+            return await _bookingRepository.GetCalendarSlotsAsync();
         }
     }
 }

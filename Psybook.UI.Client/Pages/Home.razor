@@ -1,5 +1,9 @@
 ﻿@page "/"
 @using Heron.MudCalendar
+@using Psybook.Objects.DbModels
+@using Psybook.Services.UI.DataLoaders
+
+@inject IDataLoaderService<CalendarSlot> dataLoaderService;
 
 <PageTitle>WMSP Vip Booker</PageTitle>
 
@@ -15,7 +19,7 @@
 
 <br />
 
-<MudCalendar T="CustomItem" Items="_events" MonthCellMinHeight="120">
+<MudCalendar T="CalendarSlot" Items="_events" MonthCellMinHeight="120">
     <CellTemplate>
         <div style="width: 100%; height: 100%; border: 2px solid @GetColor(context.Color)">
             <div style="background-color: @GetColor(context.Color)"><MudText Style="color: #ffffff;" Typo="Typo.body1" Align="Align.Center">@(context.Title)</MudText></div>
@@ -25,41 +29,13 @@
 </MudCalendar>
 
 @code {
-
     private string GetColor(Color color) => $"var(--mud-palette-{color.ToDescriptionString()})";
+    private string GetColor(string color) => $"var(--mud-palette-{color})";
 
-    private List<CustomItem> _events = new()
-    {
-        new CustomItem
-        {
-            Start = DateTime.Today.AddHours(10),
-            End = DateTime.Today.AddHours(11),
-            Title = "Event today",
-            Location = "Over here",
-            Text = "This is an event today",
-            Color = Color.Secondary
-        },
-        new CustomItem
-        {
-            Start = DateTime.Today.AddDays(1).AddHours(11),
-            End = DateTime.Today.AddDays(1).AddHours(12.5),
-            Title = "Event tomorrow",
-            Location = "Over there",
-            Text = "This is an event tomorrow",
-            Color = Color.Tertiary
-        }
-    };
+    private List<CalendarSlot> _events = new();
 
     protected override async Task OnInitializedAsync()
     {
-
+        _events = await dataLoaderService.GetMultiple("https://localhost:7087/Booking/GetCalendarSlots");
     }
-
-    private class CustomItem : CalendarItem
-    {
-        public string Title { get; set; } = string.Empty;
-        public string Location { get; set; } = string.Empty;
-        public Color Color { get; set; } = Color.Primary;
-    }
-
 }

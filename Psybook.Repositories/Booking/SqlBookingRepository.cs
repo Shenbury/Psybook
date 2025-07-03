@@ -1,4 +1,6 @@
-﻿using Psybook.Shared.Contexts;
+﻿using Microsoft.EntityFrameworkCore;
+using Psybook.Objects.DbModels;
+using Psybook.Shared.Contexts;
 
 namespace Psybook.Repositories.Booking
 {
@@ -11,5 +13,9 @@ namespace Psybook.Repositories.Booking
             _bookingContext = bookingContext;
         }
 
+        public async Task<IEnumerable<CalendarSlot>> GetCalendarSlotsAsync()
+        {
+            return await _bookingContext.BookingSlots.AsNoTracking().ToArrayAsync();
+        }
     }
 }
