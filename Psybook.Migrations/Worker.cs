@@ -48,6 +48,13 @@ public class Worker(
         CalendarSlot calendarSlot = new()
         {
             Id = Guid.CreateVersion7(),
+            AllDay = false,
+            Color = "default",
+            Start = DateTime.UtcNow.AddHours(1),
+            End = DateTime.UtcNow.AddHours(3),
+            Location = "Rhinos",
+            Text = "VIP Experience: Do A, Do B",
+            Title = "VIP Experience"
         };
 
         var strategy = dbContext.Database.CreateExecutionStrategy();
