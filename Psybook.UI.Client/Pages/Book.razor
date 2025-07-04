@@ -1,5 +1,9 @@
 ﻿@page "/Book"
+@using Psybook.Objects.DbModels
 @using Psybook.Objects.Enums
+@using Psybook.Services.UI.DataLoaders
+
+@inject IBookingLoaderService bookingLoaderService;
 
 <PageTitle>Booking Form</PageTitle>
 
@@ -15,17 +19,19 @@
 
 <br />
 
-<MudTextField @bind-Value="FirstName" Label="First Name" Variant="Variant.Outlined"></MudTextField>
+<MudForm @ref="_form" @bind-IsValid="@_success" @bind-Errors="@_errors">
 
-<MudTextField @bind-Value="LastName" Label="Last Name" Variant="Variant.Outlined"></MudTextField>
+<MudTextField @bind-Value="_firstName" Label="First Name" Variant="Variant.Outlined"></MudTextField>
 
-<MudTextField @bind-Value="ContactNumber" Label="Contact Number" Variant="Variant.Outlined"></MudTextField>
+<MudTextField @bind-Value="_lastName" Label="Last Name" Variant="Variant.Outlined"></MudTextField>
 
-<MudTextField @bind-Value="FirstLineAddress" Label="First Line Address" Variant="Variant.Outlined"></MudTextField>
+<MudTextField @bind-Value="_contactNumber" Label="Contact Number" Variant="Variant.Outlined"></MudTextField>
 
-<MudTextField @bind-Value="Postcode" Label="Postcode" Variant="Variant.Outlined"></MudTextField>
+<MudTextField @bind-Value="_firstLineAddress" Label="First Line Address" Variant="Variant.Outlined"></MudTextField>
 
-<MudSelect @bind-Value="BookExperiences" Label="BookExperiences" Variant="Variant.Outlined">
+<MudTextField @bind-Value="_postcode" Label="Postcode" Variant="Variant.Outlined"></MudTextField>
+
+<MudSelect @bind-Value="_bookExperiences" Label="Experience to book" Variant="Variant.Outlined">
     @foreach (var bookExperiences in Enum.GetValues(typeof(BookExperiences)).Cast<BookExperiences>())
     {
         if (bookExperiences != BookExperiences.None)
@@ -39,26 +45,46 @@
 
 <MudButton OnClick="Save" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Info" Size="Size.Medium">Save</MudButton>
 
+</MudForm>
+
     @code {
-    public string FirstName { get; set; }
+    private bool _success;
+    private string[] _errors = { };
+    private MudForm _form;
 
-    public string LastName { get; set; }
+    private string _firstName { get; set; }
 
-    public string ContactNumber { get; set; }
+    private string _lastName { get; set; }
 
-    public string FirstLineAddress { get; set; }
+    private string _contactNumber { get; set; }
 
-    public string Postcode { get; set; }
+    private string _firstLineAddress { get; set; }
 
-    public BookExperiences BookExperiences { get; set; }
+    private string _postcode { get; set; }
+
+    private BookExperiences _bookExperiences { get; set; }
+
+    private DateTime _start { get; set; }
+
+    private DateTime _end { get; set; }
+
 
     private async Task<IEnumerable<BookExperiences>> Search(string value, CancellationToken token)
     {
         return Enum.GetValues(typeof(BookExperiences)).Cast<BookExperiences>();
     }
 
-    private void Save()
+    private async Task Save()
     {
-        
+        await bookingLoaderService.SaveCalendarSlot(new CalendarSlot
+            {
+                Title = "Giraffe Experience",
+                Color = "primary",
+                Location = "Enclosure",
+                Start = _start,
+                End = _end,
+                AllDay = false,
+                Text = "Some information"
+            });
     }
 }

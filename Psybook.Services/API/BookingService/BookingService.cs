@@ -16,5 +16,10 @@ namespace Psybook.Services.API.BookingService
         {
             return await _bookingRepository.GetCalendarSlotsAsync();
         }
+
+        public async Task SaveCalendarSlotsAsync(CalendarSlot calendarSlot)
+        {
+            await _bookingRepository.SaveCalendarSlotsAsync(calendarSlot);
+        }
     }
 }

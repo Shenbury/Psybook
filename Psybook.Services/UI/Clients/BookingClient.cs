@@ -27,5 +27,12 @@ namespace Psybook.Services.UI.Clients
 
             return calendarSlots ?? [];
         }
+
+        public async Task SaveCalendarSlotsAsync(CalendarSlot calendarSlot, CancellationToken cancellationToken = default)
+        {
+            var httpClient = _httpClientFactory.CreateClient("psybook-api");
+
+            await httpClient.PostAsJsonAsync("/Booking/SaveCalendarSlot", calendarSlot, cancellationToken);
+        }
     }
 }

@@ -31,4 +31,12 @@ public class BookingController : ControllerBase
 
         return await _bookingService.GetCalendarSlotsAsync();
     }
+
+    [HttpPost(Name = "SaveCalendarSlot")]
+    public async Task SaveCalendarSlots(CalendarSlot calendarSlot)
+    {
+        //var user = await _graphServiceClient.Me.Request().GetAsync();
+
+        await _bookingService.SaveCalendarSlotsAsync(calendarSlot);
+    }
 }

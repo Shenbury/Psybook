@@ -17,5 +17,11 @@ namespace Psybook.Repositories.Booking
         {
             return await _bookingContext.BookingSlots.AsNoTracking().ToArrayAsync();
         }
+
+        public async Task SaveCalendarSlotsAsync(CalendarSlot calendarSlot)
+        {
+            await _bookingContext.AddAsync(calendarSlot);
+            await _bookingContext.SaveChangesAsync();
+        }
     }
 }

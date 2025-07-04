@@ -5,5 +5,7 @@ namespace Psybook.Services.API.BookingService
     public interface IBookingService
     {
         Task<IEnumerable<CalendarSlot>> GetCalendarSlotsAsync();
+
+        Task SaveCalendarSlotsAsync(CalendarSlot calendarSlot);
     }
 }

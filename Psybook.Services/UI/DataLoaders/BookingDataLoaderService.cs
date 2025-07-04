@@ -11,4 +11,9 @@ public class BookingDataLoaderService(BookingClient _bookingClient) : IBookingLo
         var items = await _bookingClient.GetCalendarSlotsAsync();
         return items ?? [];
     }
+
+    public async Task SaveCalendarSlot(CalendarSlot calendarSlot)
+    {
+        await _bookingClient.SaveCalendarSlotsAsync(calendarSlot);
+    }
 }
