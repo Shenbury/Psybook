@@ -49,7 +49,7 @@ public class Worker(
         {
             Id = Guid.CreateVersion7(),
             AllDay = false,
-            Color = "default",
+            Color = "primary",
             Start = DateTime.UtcNow.AddHours(1),
             End = DateTime.UtcNow.AddHours(3),
             Location = "Rhinos",
@@ -62,8 +62,14 @@ public class Worker(
         {
             // Seed the database
             await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
-            await dbContext.BookingSlots.AddAsync(calendarSlot, cancellationToken);
-            await dbContext.SaveChangesAsync(cancellationToken);
+            var seedRecord = await dbContext.BookingSlots.SingleOrDefaultAsync(x => x.Title == calendarSlot.Title);
+
+            if(seedRecord is null)
+            {
+                await dbContext.BookingSlots.AddAsync(calendarSlot, cancellationToken);
+                await dbContext.SaveChangesAsync(cancellationToken);
+            }
+
             await transaction.CommitAsync(cancellationToken);
         });
     }
