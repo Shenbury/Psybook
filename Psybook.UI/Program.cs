@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using MudBlazor.Services;
+using Psybook.Services.UI.Clients;
 using Psybook.Services.UI.DataLoaders;
 using Psybook.Shared.Communication;
 using Psybook.Shared.Extensions;
@@ -27,7 +28,19 @@ builder.Services.ClientAndServerRegistrations();
 // RenderContext communicates to components in which RenderMode the component is running.
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<IRenderContext, ServerRenderContext>();
-builder.Services.AddScoped(typeof(IDataLoaderService<>), typeof(CustomDataLoaderService<>));
+
+builder.Services.AddHttpClient("psybook-api", https => https.BaseAddress = new Uri("https://psybook-api")).AddServiceDiscovery();
+
+// Data Loader Service
+builder.Services.AddScoped<IBookingLoaderService, BookingDataLoaderService>();
+builder.Services.AddScoped<BookingClient>();
+
+builder.Services.ConfigureHttpClientDefaults(static http =>
+{
+    // Turn on service discovery by default
+    http.AddServiceDiscovery();
+});
+
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

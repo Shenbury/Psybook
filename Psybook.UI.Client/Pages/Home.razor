@@ -3,7 +3,7 @@
 @using Psybook.Objects.DbModels
 @using Psybook.Services.UI.DataLoaders
 
-@inject IDataLoaderService<CalendarSlot> dataLoaderService;
+@inject IBookingLoaderService bookingLoaderService;
 
 <PageTitle>WMSP Vip Booker</PageTitle>
 
@@ -36,6 +36,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _events = await dataLoaderService.GetMultiple("https://localhost:7087/Booking/GetCalendarSlots");
+        _events = await bookingLoaderService.GetMultipleCalendarSlots();
     }
 }
