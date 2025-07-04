@@ -1,0 +1,64 @@
+﻿@page "/Book"
+@using Psybook.Objects.Enums
+
+<PageTitle>Booking Form</PageTitle>
+
+<MudText Typo="Typo.h2" GutterBottom="true">Book In Experience</MudText>
+<MudText Typo="Typo.h5" GutterBottom="true">Our empowering booking system</MudText>
+
+<MudAlert Severity="Severity.Normal" ContentAlignment="HorizontalAlignment.Start">
+    You can see the WMSP VIP details here:
+    <MudLink Href="https://www.wmsp.co.uk/vip-experiences" Target="_blank" Typo="Typo.body2" Color="Color.Primary">
+        <b>www.wmsp.co.uk/vip-experiences</b>
+    </MudLink>
+</MudAlert>
+
+<br />
+
+<MudTextField @bind-Value="FirstName" Label="First Name" Variant="Variant.Outlined"></MudTextField>
+
+<MudTextField @bind-Value="LastName" Label="Last Name" Variant="Variant.Outlined"></MudTextField>
+
+<MudTextField @bind-Value="ContactNumber" Label="Contact Number" Variant="Variant.Outlined"></MudTextField>
+
+<MudTextField @bind-Value="FirstLineAddress" Label="First Line Address" Variant="Variant.Outlined"></MudTextField>
+
+<MudTextField @bind-Value="Postcode" Label="Postcode" Variant="Variant.Outlined"></MudTextField>
+
+<MudSelect @bind-Value="BookExperiences" Label="BookExperiences" Variant="Variant.Outlined">
+    @foreach (var bookExperiences in Enum.GetValues(typeof(BookExperiences)).Cast<BookExperiences>())
+    {
+        if (bookExperiences != BookExperiences.None)
+        {
+            <MudSelectItem Value="bookExperiences">@bookExperiences</MudSelectItem>
+        }
+    }
+</MudSelect>
+
+<br />
+
+<MudButton OnClick="Save" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Info" Size="Size.Medium">Save</MudButton>
+
+    @code {
+    public string FirstName { get; set; }
+
+    public string LastName { get; set; }
+
+    public string ContactNumber { get; set; }
+
+    public string FirstLineAddress { get; set; }
+
+    public string Postcode { get; set; }
+
+    public BookExperiences BookExperiences { get; set; }
+
+    private async Task<IEnumerable<BookExperiences>> Search(string value, CancellationToken token)
+    {
+        return Enum.GetValues(typeof(BookExperiences)).Cast<BookExperiences>();
+    }
+
+    private void Save()
+    {
+        
+    }
+}
