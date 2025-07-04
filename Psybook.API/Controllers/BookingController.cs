@@ -1,8 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Identity.Web.Resource;
 using Microsoft.Graph;
+using Microsoft.Identity.Web.Resource;
 using Psybook.Objects.DbModels;
+using Psybook.Objects.Enums;
 using Psybook.Services.API.BookingService;
 
 namespace Psybook.API.Controllers;
@@ -35,8 +36,12 @@ public class BookingController : ControllerBase
     [HttpPost(Name = "SaveCalendarSlot")]
     public async Task SaveCalendarSlots(CalendarSlot calendarSlot)
     {
-        //var user = await _graphServiceClient.Me.Request().GetAsync();
-
         await _bookingService.SaveCalendarSlotsAsync(calendarSlot);
+    }
+
+    [HttpGet(Name = "GetExperienceInfo")]
+    public async Task<Dictionary<BookingExperience, ExperienceRecord>> GetExperienceInfo()
+    {
+        return await _bookingService.GetExperienceInfo();
     }
 }

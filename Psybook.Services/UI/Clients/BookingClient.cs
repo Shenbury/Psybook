@@ -1,4 +1,5 @@
 ﻿using Psybook.Objects.DbModels;
+using Psybook.Objects.Enums;
 using System.Net.Http.Json;
 
 namespace Psybook.Services.UI.Clients
@@ -33,6 +34,15 @@ namespace Psybook.Services.UI.Clients
             var httpClient = _httpClientFactory.CreateClient("psybook-api");
 
             await httpClient.PostAsJsonAsync("/Booking/SaveCalendarSlot", calendarSlot, cancellationToken);
+        }
+
+        public async Task<Dictionary<BookingExperience, ExperienceRecord>> GetExperienceInfoAsync(CancellationToken cancellationToken = default)
+        {
+            var httpClient = _httpClientFactory.CreateClient("psybook-api");
+
+            var experienceInfo = await httpClient.GetFromJsonAsync<Dictionary<BookingExperience, ExperienceRecord>>("/Booking/GetExperienceInfo", cancellationToken);
+
+            return experienceInfo ?? [];
         }
     }
 }

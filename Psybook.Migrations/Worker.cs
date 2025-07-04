@@ -49,12 +49,18 @@ public class Worker(
         {
             Id = Guid.CreateVersion7(),
             AllDay = false,
-            Color = "primary",
+            Color = MudBlazor.Color.Primary,
             Start = DateTime.UtcNow.AddHours(1),
             End = DateTime.UtcNow.AddHours(3),
             Location = "Rhinos",
             Text = "VIP Experience: Do A, Do B",
-            Title = "VIP Experience"
+            Title = "VIP Experience",
+            BookingExperience = Objects.Enums.BookingExperience.RhinoKeeper,
+            ContactNumber = "07572663029",
+            FirstLineAddress = "15 Bromsgrove Road",
+            FirstName = "Simon",
+            LastName = "Henbury",
+            Postcode = "B63 3JQ"
         };
 
         var strategy = dbContext.Database.CreateExecutionStrategy();

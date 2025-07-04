@@ -1,4 +1,5 @@
 ﻿using Psybook.Objects.DbModels;
+using Psybook.Objects.Enums;
 
 namespace Psybook.Services.API.BookingService
 {
@@ -7,5 +8,7 @@ namespace Psybook.Services.API.BookingService
         Task<IEnumerable<CalendarSlot>> GetCalendarSlotsAsync();
 
         Task SaveCalendarSlotsAsync(CalendarSlot calendarSlot);
+
+        Task<Dictionary<BookingExperience, ExperienceRecord>> GetExperienceInfo();
     }
 }

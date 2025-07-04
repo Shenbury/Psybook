@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using MudBlazor.Services;
+using Psybook.ServiceDefaults;
 using Psybook.Services.UI.Clients;
 using Psybook.Services.UI.DataLoaders;
 using Psybook.Shared.Communication;

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
 using Psybook.Repositories.Booking;
+using Psybook.ServiceDefaults;
 using Psybook.Services.API.BookingService;
 using Psybook.Shared.Contexts;
 

@@ -1,4 +1,5 @@
 using Psybook.Migrations;
+using Psybook.ServiceDefaults;
 using Psybook.Shared.Contexts;
 
 var builder = Host.CreateApplicationBuilder(args);

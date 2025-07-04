@@ -3,13 +3,13 @@ using Psybook.Objects.DbModels;
 using Psybook.Objects.Enums;
 using Psybook.Shared.Contexts;
 
-namespace Psybook.Objects.Dictionary
+namespace Psybook.Shared.Dictionary
 {
     public class ExperienceDictionary(BookingContext bookingContext)
     {
         private static readonly Dictionary<BookingExperience, ExperienceRecord> _bookingExperienceRecords = [];
 
-        public async Task<IDictionary<BookingExperience, ExperienceRecord>> GetExperienceDictionary()
+        public async Task<Dictionary<BookingExperience, ExperienceRecord>> GetExperienceDictionary()
         {
             if (_bookingExperienceRecords.Any())
             {
