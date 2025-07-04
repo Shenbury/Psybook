@@ -5,6 +5,7 @@ namespace Psybook.Shared.Contexts
 {
     public class BookingContext(DbContextOptions options) : DbContext(options)
     {
-        public DbSet<CalendarSlot> BookingSlots => Set<CalendarSlot>();
+        public DbSet<CalendarSlot> CalendarSlots => Set<CalendarSlot>();
+        public DbSet<ExperienceRecord> ExperienceRecords => Set<ExperienceRecord>();
     }
 }

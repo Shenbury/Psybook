@@ -62,11 +62,11 @@ public class Worker(
         {
             // Seed the database
             await using var transaction = await dbContext.Database.BeginTransactionAsync(cancellationToken);
-            var seedRecord = await dbContext.BookingSlots.SingleOrDefaultAsync(x => x.Title == calendarSlot.Title);
+            var seedRecord = await dbContext.CalendarSlots.SingleOrDefaultAsync(x => x.Title == calendarSlot.Title);
 
             if(seedRecord is null)
             {
-                await dbContext.BookingSlots.AddAsync(calendarSlot, cancellationToken);
+                await dbContext.CalendarSlots.AddAsync(calendarSlot, cancellationToken);
                 await dbContext.SaveChangesAsync(cancellationToken);
             }
 

@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
-using Psybook.Services.UI.Clients;
 using Psybook.Services.UI.DataLoaders;
 using Psybook.Shared.Communication;
 using Psybook.Shared.Extensions;

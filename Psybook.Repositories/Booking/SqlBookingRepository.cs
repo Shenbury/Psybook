@@ -15,7 +15,7 @@ namespace Psybook.Repositories.Booking
 
         public async Task<IEnumerable<CalendarSlot>> GetCalendarSlotsAsync()
         {
-            return await _bookingContext.BookingSlots.AsNoTracking().ToArrayAsync();
+            return await _bookingContext.CalendarSlots.AsNoTracking().ToArrayAsync();
         }
 
         public async Task SaveCalendarSlotsAsync(CalendarSlot calendarSlot)

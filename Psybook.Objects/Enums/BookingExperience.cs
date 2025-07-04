@@ -1,6 +1,6 @@
 ﻿namespace Psybook.Objects.Enums
 {
-    public enum BookExperiences
+    public enum BookingExperience
     {
         None = 0,
         RhinoKeeper = 1,
