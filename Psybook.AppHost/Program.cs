@@ -4,7 +4,6 @@ var databaseName = "wmsp-db";
 
 var sql = builder.AddSqlServer("sql", port: 14329)
                  .WithDataVolume()
-                 .WithEndpoint(name: "sqlEndpoint", targetPort: 14330)
                  .WithLifetime(ContainerLifetime.Persistent);
 
 var db = sql.AddDatabase(databaseName);

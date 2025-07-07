@@ -12,8 +12,8 @@ using Psybook.Shared.Contexts;
 namespace Psybook.Shared.Migrations
 {
     [DbContext(typeof(BookingContext))]
-    [Migration("20250704215715_ImprovedDictionaryModel")]
-    partial class ImprovedDictionaryModel
+    [Migration("20250707134143_BaseModels")]
+    partial class BaseModels
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

@@ -47,7 +47,7 @@ public class Worker(
     {
         CalendarSlot calendarSlot = new()
         {
-            Id = Guid.CreateVersion7(),
+            Id = Guid.Parse("0197e4b8-aa07-7c70-b3bc-9c6ba3b3973c"),
             AllDay = false,
             Color = MudBlazor.Color.Primary,
             Start = DateTime.UtcNow.AddHours(1),

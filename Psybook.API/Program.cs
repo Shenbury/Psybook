@@ -5,6 +5,7 @@ using Psybook.Repositories.Booking;
 using Psybook.ServiceDefaults;
 using Psybook.Services.API.BookingService;
 using Psybook.Shared.Contexts;
+using Psybook.Shared.Dictionary;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,6 +26,7 @@ builder.Services.AddSwaggerGen();
 builder.AddSqlServerDbContext<BookingContext>(connectionName: "wmsp-db");
 builder.Services.AddScoped<IBookingRepository, SqlBookingRepository>();
 builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<ExperienceDictionary>();
 
 var app = builder.Build();
 
