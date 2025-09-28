@@ -1,0 +1,245 @@
+@using Psybook.Objects.DbModels
+@using Psybook.Objects.Enums
+@using Psybook.Services.UI.DataLoaders
+@using Psybook.Services.ExternalCalendar
+@using Microsoft.Extensions.Logging
+@inject ILogger<BookingDetailsDialog> Logger
+
+<MudDialog @bind-Visible="IsVisible" Options="DialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Event" Class="mr-3" />
+            Booking Details
+            @if (Booking != null)
+            {
+                <MudText Typo="Typo.caption" Color="Color.Secondary" Class="ml-2">
+                    (ID: @Booking.Id.ToString()[..8])
+                </MudText>
+            }
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        @if (Booking != null)
+        {
+            <MudStack Spacing="4">
+                <!-- Booking Information -->
+                <MudPaper Elevation="1" Class="pa-4">
+                    <MudText Typo="Typo.h6" Color="Color.Primary" Class="mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.Info" Class="mr-2" />
+                        Booking Information
+                    </MudText>
+                    
+                    <MudGrid Spacing="2">
+                        <MudItem xs="12" sm="6">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Experience</MudText>
+                            <MudText Typo="Typo.body1" Class="font-weight-bold">@Booking.Title</MudText>
+                        </MudItem>
+                        
+                        <MudItem xs="12" sm="6">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Date & Time</MudText>
+                            <MudText Typo="Typo.body1" Class="font-weight-bold">
+                                @Booking.Start.ToString("dddd, MMMM dd, yyyy")
+                            </MudText>
+                            <MudText Typo="Typo.body2">
+                                @if (Booking.AllDay)
+                                {
+                                    <text>All Day</text>
+                                }
+                                else
+                                {
+                                    <text>@Booking.Start.ToString("hh:mm tt")@(Booking.End.HasValue ? $" - {Booking.End.Value:hh:mm tt}" : "")</text>
+                                }
+                            </MudText>
+                        </MudItem>
+                        
+                        <MudItem xs="12" sm="6">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Location</MudText>
+                            <MudText Typo="Typo.body1" Class="font-weight-bold">@Booking.Location</MudText>
+                        </MudItem>
+                        
+                        <MudItem xs="12" sm="6">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Experience Type</MudText>
+                            <MudText Typo="Typo.body1" Class="font-weight-bold">@Booking.BookingExperience.ToString()</MudText>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+
+                <!-- Customer Information -->
+                <MudPaper Elevation="1" Class="pa-4">
+                    <MudText Typo="Typo.h6" Color="Color.Primary" Class="mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-2" />
+                        Customer Information
+                    </MudText>
+                    
+                    <MudGrid Spacing="2">
+                        <MudItem xs="12" sm="6">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Name</MudText>
+                            <MudText Typo="Typo.body1" Class="font-weight-bold">@($"{Booking.FirstName} {Booking.LastName}")</MudText>
+                        </MudItem>
+                        
+                        <MudItem xs="12" sm="6">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Contact Number</MudText>
+                            <MudText Typo="Typo.body1" Class="font-weight-bold">
+                                @if (!string.IsNullOrEmpty(Booking.ContactNumber))
+                                {
+                                    <MudLink Href="@($"tel:{Booking.ContactNumber}")" Color="Color.Primary">
+                                        @Booking.ContactNumber
+                                    </MudLink>
+                                }
+                                else
+                                {
+                                    <text>Not provided</text>
+                                }
+                            </MudText>
+                        </MudItem>
+                        
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.body2" Color="Color.Secondary">Address</MudText>
+                            <MudText Typo="Typo.body1" Class="font-weight-bold">
+                                @if (!string.IsNullOrEmpty(Booking.FirstLineAddress))
+                                {
+                                    <text>@Booking.FirstLineAddress</text>
+                                    @if (!string.IsNullOrEmpty(Booking.Postcode))
+                                    {
+                                        <text>, @Booking.Postcode</text>
+                                    }
+                                }
+                                else
+                                {
+                                    <text>Not provided</text>
+                                }
+                            </MudText>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+
+                <!-- Calendar Integration -->
+                <MudPaper Elevation="1" Class="pa-4">
+                    <MudText Typo="Typo.h6" Color="Color.Primary" Class="mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Class="mr-2" />
+                        Calendar Integration
+                    </MudText>
+                    
+                    <CalendarIntegrationComponent Booking="Booking" 
+                                                ShowAutoSyncOption="true"
+                                                OnAutoSyncConfigured="HandleAutoSyncConfigured" />
+                </MudPaper>
+
+                <!-- Booking Status Management -->
+                <MudPaper Elevation="1" Class="pa-4">
+                    <MudText Typo="Typo.h6" Color="Color.Primary" Class="mb-3">
+                        <MudIcon Icon="@Icons.Material.Filled.ManageAccounts" Class="mr-2" />
+                        Status Management
+                    </MudText>
+                    
+                    <BookingStatusManager Booking="Booking" 
+                                        OnBookingUpdated="HandleBookingUpdated"
+                                        ModifiedBy="@ModifiedBy" />
+                </MudPaper>
+
+                <!-- Additional Information -->
+                @if (!string.IsNullOrEmpty(Booking.Text) && Booking.Text != Booking.Title)
+                {
+                    <MudPaper Elevation="1" Class="pa-4">
+                        <MudText Typo="Typo.h6" Color="Color.Primary" Class="mb-3">
+                            <MudIcon Icon="@Icons.Material.Filled.Description" Class="mr-2" />
+                            Description
+                        </MudText>
+                        <MudText Typo="Typo.body1">@Booking.Text</MudText>
+                    </MudPaper>
+                }
+            </MudStack>
+        }
+        else
+        {
+            <MudStack Spacing="2" AlignItems="AlignItems.Center" Class="pa-8">
+                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+                <MudText Typo="Typo.body1">Loading booking details...</MudText>
+                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                    Dialog is visible: @IsVisible
+                </MudText>
+            </MudStack>
+        }
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="CloseDialog" 
+                   Color="Color.Primary"
+                   Variant="Variant.Text">
+            Close
+        </MudButton>
+        
+        @if (Booking != null && OnEditRequested.HasDelegate)
+        {
+            <MudButton OnClick="EditBooking" 
+                       Color="Color.Primary"
+                       Variant="Variant.Filled"
+                       StartIcon="@Icons.Material.Filled.Edit">
+                Edit Booking
+            </MudButton>
+        }
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public CalendarSlot? Booking { get; set; }
+    [Parameter] public EventCallback<CalendarSlot> OnBookingUpdated { get; set; }
+    [Parameter] public EventCallback<CalendarSlot> OnEditRequested { get; set; }
+    [Parameter] public string? ModifiedBy { get; set; } = "System";
+
+    private DialogOptions DialogOptions => new()
+    {
+        MaxWidth = MaxWidth.Medium,
+        FullWidth = true,
+        CloseButton = true,
+        CloseOnEscapeKey = true
+    };
+
+    protected override void OnParametersSet()
+    {
+        Logger.LogInformation("BookingDetailsDialog parameters set - IsVisible: {IsVisible}, BookingId: {BookingId}", 
+            IsVisible, Booking?.Id);
+        base.OnParametersSet();
+    }
+
+    private async Task CloseDialog()
+    {
+        Logger.LogInformation("Closing booking details dialog");
+        IsVisible = false;
+        await IsVisibleChanged.InvokeAsync(false);
+    }
+
+    private async Task HandleBookingUpdated(CalendarSlot updatedBooking)
+    {
+        Logger.LogInformation("Booking updated in dialog: {BookingId}", updatedBooking.Id);
+        Booking = updatedBooking;
+        await OnBookingUpdated.InvokeAsync(updatedBooking);
+        StateHasChanged();
+    }
+
+    private async Task EditBooking()
+    {
+        if (Booking != null)
+        {
+            Logger.LogInformation("Edit booking requested: {BookingId}", Booking.Id);
+            await OnEditRequested.InvokeAsync(Booking);
+            await CloseDialog();
+        }
+    }
+
+    private void HandleAutoSyncConfigured(bool isConfigured)
+    {
+        Logger.LogInformation("Auto-sync configuration changed: {IsConfigured}", isConfigured);
+        // Additional logic for handling auto-sync configuration changes can be added here
+    }
+
+    private async Task HandleAutoSyncConfigured(CalendarIntegrationOptions options)
+    {
+        Logger.LogInformation("Auto-sync configured for booking {BookingId}: AutoSync={AutoSync}, Providers={Providers}", 
+            Booking?.Id, options.AutoSync, string.Join(", ", options.EnabledProviders));
+        
+        // Here you could save the user's calendar preferences to a user settings service
+        // For now, we'll just log the configuration
+    }
+}

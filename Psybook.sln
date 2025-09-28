@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.36212.18
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11018.127 d18.0
 MinimumVisualStudioVersion = 16.0.0.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Psybook.UI", "Psybook.UI\Psybook.UI.csproj", "{8F4E4188-A9F2-467E-92B4-0DC91534924D}"
 EndProject
@@ -21,6 +21,11 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Psybook.Migrations", "Psybook.Migrations\Psybook.Migrations.csproj", "{7D501C96-FF27-AF33-17F2-C07A70623ACA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Psybook.Objects", "Psybook.Objects\Psybook.Objects.csproj", "{2E756E83-5836-4F86-A4F8-18D11FF402F8}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{945CC0E9-9201-45DA-8BFA-A9837B2A732E}"
+	ProjectSection(SolutionItems) = preProject
+		README.md = README.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

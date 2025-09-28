@@ -65,23 +65,143 @@
 
     <!-- Status Filter Tabs -->
     <MudPaper Elevation="1" Class="pa-4 mb-4">
-        <MudTabs Elevation="0" Rounded="true" PanelClass="pa-6" @bind-ActivePanelIndex="ActiveTabIndex">
+        <MudTabs Elevation="0" Rounded="true" @bind-ActivePanelIndex="ActiveTabIndex">
             <MudTabPanel Text="All Bookings" Badge="@_calendarSlots.Count" BadgeColor="Color.Info">
-                <CalendarDisplay CalendarSlots="_calendarSlots" />
+                <!-- Tab content is now just for display purposes -->
             </MudTabPanel>
             <MudTabPanel Text="Confirmed" Badge="@GetBookingsByStatus(BookingStatus.Confirmed).Count()" BadgeColor="Color.Success">
-                <CalendarDisplay CalendarSlots="GetBookingsByStatus(BookingStatus.Confirmed)" />
+                <!-- Tab content is now just for display purposes -->
             </MudTabPanel>
             <MudTabPanel Text="Pending" Badge="@GetBookingsByStatus(BookingStatus.Pending).Count()" BadgeColor="Color.Warning">
-                <CalendarDisplay CalendarSlots="GetBookingsByStatus(BookingStatus.Pending)" />
+                <!-- Tab content is now just for display purposes -->
             </MudTabPanel>
             <MudTabPanel Text="Cancelled" Badge="@GetBookingsByStatus(BookingStatus.Cancelled).Count()" BadgeColor="Color.Error">
-                <CalendarDisplay CalendarSlots="GetBookingsByStatus(BookingStatus.Cancelled)" />
+                <!-- Tab content is now just for display purposes -->
             </MudTabPanel>
         </MudTabs>
     </MudPaper>
 
-    <!-- Statistics Section -->
+    <!-- Calendar Section -->
+    <MudPaper Elevation="1" Class="pa-4 mb-4">
+        <MudText Typo="Typo.h6" Color="Color.Primary" Class="mb-3">
+            <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Class="mr-2" />
+            @GetCurrentFilterTitle()
+        </MudText>
+        
+        @{
+            var filteredSlots = GetFilteredSlots();
+        }
+        
+        <MudStack Spacing="3">
+            @if (IsLoading)
+            {
+                <MudStack Spacing="2">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="60px" />
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="400px" />
+                </MudStack>
+            }
+            else if (HasErrors)
+            {
+                <MudAlert Severity="Severity.Error" 
+                          Icon="@Icons.Material.Filled.Error">
+                    <MudText Typo="Typo.body1">
+                        Unable to load calendar data. Please try refreshing the page.
+                    </MudText>
+                    <MudButton Variant="Variant.Text" 
+                               Color="Color.Error" 
+                               StartIcon="@Icons.Material.Filled.Refresh"
+                               OnClick="RefreshCalendar"
+                               Class="mt-2">
+                        Try Again
+                    </MudButton>
+                </MudAlert>
+            }
+            else if (!filteredSlots.Any())
+            {
+                <MudPaper Elevation="0" Class="pa-8 text-center">
+                    <MudIcon Icon="@Icons.Material.Filled.EventBusy" 
+                             Size="Size.Large" 
+                             Color="Color.Secondary" 
+                             Class="mb-4" />
+                    <MudText Typo="Typo.h6" Color="Color.Secondary" Class="mb-2">
+                        @GetEmptyStateTitle()
+                    </MudText>
+                    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
+                        @GetEmptyStateMessage()
+                    </MudText>
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               StartIcon="@Icons.Material.Filled.Add"
+                               OnClick="NavigateToBooking">
+                        Book Your First Experience
+                    </MudButton>
+                </MudPaper>
+            }
+            else
+            {
+                <div class="calendar-wrapper">
+                    <MudCalendar T="CalendarSlot" 
+                                 Items="filteredSlots" 
+                                 MonthCellMinHeight="140">
+                        <CellTemplate>
+                            <MudButton Variant="Variant.Text"
+                                       Class="pa-0"
+                                       Style="width: 100%; height: 100%; min-height: unset; border-radius: 6px; text-transform: none; justify-content: flex-start;"
+                                       OnClick="async () => await OpenBookingDetails(context)">
+                                
+                                <div class="calendar-event" 
+                                     style="width: 100%; height: 100%; border: 2px solid @GetColor(context.Color); border-radius: 6px; overflow: hidden; transition: all 0.2s ease;">
+                                    <!-- Event Header -->
+                                    <div class="event-header" 
+                                         style="background-color: @GetColor(context.StatusColor); padding: 4px 8px;">
+                                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                            <MudText Typo="Typo.caption" 
+                                                     Style="color: white; font-weight: 600; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
+                                                @context.Title
+                                            </MudText>
+                                            <MudChip T="string" Size="Size.Small" Color="@context.StatusColor" Style="height: 18px; font-size: 10px;">
+                                                @GetStatusShortName(context.Status)
+                                            </MudChip>
+                                        </MudStack>
+                                    </div>
+                                    
+                                    <!-- Event Content -->
+                                    <div class="event-content pa-2" style="height: calc(100% - 28px); overflow: hidden;">
+                                        <MudStack Spacing="1">
+                                            <MudText Typo="Typo.caption" Color="Color.Primary">
+                                                <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Class="mr-1" />
+                                                @GetTimeRange(context)
+                                            </MudText>
+                                            
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Class="mr-1" />
+                                                @($"{context.FirstName} {context.LastName}".Trim())
+                                            </MudText>
+                                            
+                                            @if (!string.IsNullOrEmpty(context.Location))
+                                            {
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                    <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Class="mr-1" />
+                                                    @context.Location
+                                                </MudText>
+                                            }
+                                            
+                                            <!-- Click indicator -->
+                                            <MudText Typo="Typo.caption" Color="Color.Info" Style="font-style: italic; font-size: 0.7rem; font-weight: 600;">
+                                                <MudIcon Icon="@Icons.Material.Filled.Visibility" Size="Size.Small" Class="mr-1" />
+                                                View Details
+                                            </MudText>
+                                        </MudStack>
+                                    </div>
+                                </div>
+                            </MudButton>
+                        </CellTemplate>
+                    </MudCalendar>
+                </div>
+            }
+        </MudStack>
+    </MudPaper>
+
     @if (_calendarSlots.Count > 0 && !IsLoading)
     {
         <MudPaper Elevation="1" Class="pa-4 mt-4">
@@ -123,116 +243,20 @@
     }
 </MudContainer>
 
-<!-- Calendar Display Component -->
-@code {
-    private RenderFragment<IEnumerable<CalendarSlot>> CalendarDisplay => (calendarSlots) => __builder =>
-    {
-        <MudStack Spacing="3">
-            <!-- Loading State -->
-            @if (IsLoading)
-            {
-                <MudStack Spacing="2">
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="60px" />
-                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="400px" />
-                </MudStack>
-            }
-            <!-- Error State -->
-            else if (HasErrors)
-            {
-                <MudAlert Severity="Severity.Error" 
-                          Icon="@Icons.Material.Filled.Error">
-                    <MudText Typo="Typo.body1">
-                        Unable to load calendar data. Please try refreshing the page.
-                    </MudText>
-                    <MudButton Variant="Variant.Text" 
-                               Color="Color.Error" 
-                               StartIcon="@Icons.Material.Filled.Refresh"
-                               OnClick="RefreshCalendar"
-                               Class="mt-2">
-                        Try Again
-                    </MudButton>
-                </MudAlert>
-            }
-            <!-- Calendar Display -->
-            else if (!calendarSlots.Any())
-            {
-                <MudPaper Elevation="0" Class="pa-8 text-center">
-                    <MudIcon Icon="@Icons.Material.Filled.EventBusy" 
-                             Size="Size.Large" 
-                             Color="Color.Secondary" 
-                             Class="mb-4" />
-                    <MudText Typo="Typo.h6" Color="Color.Secondary" Class="mb-2">
-                        No bookings found
-                    </MudText>
-                    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
-                        Get started by booking your first VIP experience!
-                    </MudText>
-                    <MudButton Variant="Variant.Filled" 
-                               Color="Color.Primary" 
-                               StartIcon="@Icons.Material.Filled.Add"
-                               OnClick="NavigateToBooking">
-                        Book Your First Experience
-                    </MudButton>
-                </MudPaper>
-            }
-            else
-            {
-                <div class="calendar-wrapper">
-                    <MudCalendar T="CalendarSlot" 
-                                 Items="calendarSlots" 
-                                 MonthCellMinHeight="140">
-                        <CellTemplate>
-                            <div class="calendar-event" 
-                                 style="width: 100%; height: 100%; border: 2px solid @GetColor(context.Color); border-radius: 6px; overflow: hidden;">
-                                <!-- Event Header -->
-                                <div class="event-header" 
-                                     style="background-color: @GetColor(context.StatusColor); padding: 4px 8px;">
-                                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                                        <MudText Typo="Typo.caption" 
-                                                 Style="color: white; font-weight: 600; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
-                                            @context.Title
-                                        </MudText>
-                                        <MudChip T="string" Size="Size.Small" Color="@context.StatusColor" Style="height: 18px; font-size: 10px;">
-                                            @GetStatusShortName(context.Status)
-                                        </MudChip>
-                                    </MudStack>
-                                </div>
-                                
-                                <!-- Event Content -->
-                                <div class="event-content pa-2" style="height: calc(100% - 28px); overflow: hidden;">
-                                    <MudStack Spacing="1">
-                                        <MudText Typo="Typo.caption" Color="Color.Primary">
-                                            <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Class="mr-1" />
-                                            @GetTimeRange(context)
-                                        </MudText>
-                                        
-                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                            <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Class="mr-1" />
-                                            @($"{context.FirstName} {context.LastName}".Trim())
-                                        </MudText>
-                                        
-                                        @if (!string.IsNullOrEmpty(context.Location))
-                                        {
-                                            <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                                <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Class="mr-1" />
-                                                @context.Location
-                                            </MudText>
-                                        }
-                                    </MudStack>
-                                </div>
-                            </div>
-                        </CellTemplate>
-                    </MudCalendar>
-                </div>
-            }
-        </MudStack>
-    };
-}
+<!-- Booking Details Dialog -->
+<BookingDetailsDialog IsVisible="@_showBookingDetails"
+                     IsVisibleChanged="@((bool value) => _showBookingDetails = value)"
+                     Booking="@_selectedBooking"
+                     OnBookingUpdated="@HandleBookingUpdated"
+                     OnEditRequested="@HandleEditRequested"
+                     ModifiedBy="System" />
 
 @code {
     #region Fields and Properties
     private List<CalendarSlot> _calendarSlots = new();
     private int ActiveTabIndex = 0;
+    private bool _showBookingDetails = false;
+    private CalendarSlot? _selectedBooking = null;
     #endregion
 
     #region Lifecycle Methods
@@ -256,6 +280,49 @@
             ShowSuccess("Calendar refreshed successfully");
         }, "Refresh calendar");
     }
+
+    private async Task OpenBookingDetails(CalendarSlot booking)
+    {
+        try
+        {
+            Logger.LogInformation("Opening booking details for {BookingId} - {Title}", booking.Id, booking.Title);
+            
+            // Load the latest booking details
+            var latestBooking = await BookingLoaderService.GetCalendarSlotByIdAsync(booking.Id);
+            _selectedBooking = latestBooking ?? booking;
+            _showBookingDetails = true;
+            
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load booking details for {BookingId}", booking.Id);
+            HandleError("Failed to load booking details", ex);
+        }
+    }
+
+    private async Task HandleBookingUpdated(CalendarSlot updatedBooking)
+    {
+        // Update the booking in the calendar slots list
+        var index = _calendarSlots.FindIndex(slot => slot.Id == updatedBooking.Id);
+        if (index >= 0)
+        {
+            _calendarSlots[index] = updatedBooking;
+        }
+        
+        // Update the selected booking
+        _selectedBooking = updatedBooking;
+        
+        StateHasChanged();
+        Logger.LogInformation("Booking {BookingId} updated in calendar view", updatedBooking.Id);
+    }
+
+    private void HandleEditRequested(CalendarSlot booking)
+    {
+        // Navigate to edit page or show edit dialog
+        NavigationService.NavigateToBooking(); // You might want to add edit functionality
+        Logger.LogInformation("Edit requested for booking {BookingId}", booking.Id);
+    }
     #endregion
 
     #region Private Methods
@@ -277,6 +344,54 @@
     private IEnumerable<CalendarSlot> GetBookingsByStatus(BookingStatus status)
     {
         return _calendarSlots.Where(slot => slot.Status == status);
+    }
+
+    private IEnumerable<CalendarSlot> GetFilteredSlots()
+    {
+        return ActiveTabIndex switch
+        {
+            0 => _calendarSlots, // All Bookings
+            1 => GetBookingsByStatus(BookingStatus.Confirmed), // Confirmed
+            2 => GetBookingsByStatus(BookingStatus.Pending), // Pending
+            3 => GetBookingsByStatus(BookingStatus.Cancelled), // Cancelled
+            _ => _calendarSlots
+        };
+    }
+
+    private string GetCurrentFilterTitle()
+    {
+        return ActiveTabIndex switch
+        {
+            0 => "All Bookings Calendar",
+            1 => "Confirmed Bookings Calendar",
+            2 => "Pending Bookings Calendar",
+            3 => "Cancelled Bookings Calendar",
+            _ => "Bookings Calendar"
+        };
+    }
+
+    private string GetEmptyStateTitle()
+    {
+        return ActiveTabIndex switch
+        {
+            0 => "No bookings found",
+            1 => "No confirmed bookings",
+            2 => "No pending bookings",
+            3 => "No cancelled bookings",
+            _ => "No bookings found"
+        };
+    }
+
+    private string GetEmptyStateMessage()
+    {
+        return ActiveTabIndex switch
+        {
+            0 => "Get started by booking your first VIP experience!",
+            1 => "No confirmed bookings to display.",
+            2 => "No pending bookings to display.",
+            3 => "No cancelled bookings to display.",
+            _ => "Get started by booking your first VIP experience!"
+        };
     }
 
     private string GetColor(MudBlazor.Color color) => $"var(--mud-palette-{color.ToDescriptionString()})";

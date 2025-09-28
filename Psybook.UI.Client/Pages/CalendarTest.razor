@@ -1,0 +1,296 @@
+@page "/calendar-test"
+@using Psybook.Objects.DbModels
+@using Psybook.Objects.Enums
+@using Psybook.Services.ExternalCalendar
+@using Psybook.UI.Client.Components
+@using Microsoft.Extensions.Logging
+@using System.Text
+@inject IExternalCalendarService CalendarService
+@inject ILogger<CalendarTest> Logger
+
+<PageTitle>Calendar Integration Test</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="pa-4">
+    <MudText Typo="Typo.h4" Color="Color.Primary" Class="mb-4">
+        <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Class="mr-2" />
+        Calendar Integration Test
+    </MudText>
+    
+    <MudPaper Class="pa-4 mb-4">
+        <MudText Typo="Typo.h6" Class="mb-3">Create Test Booking</MudText>
+        
+        <MudGrid Spacing="2">
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="TestBooking.Title" Label="Experience Title" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="TestBooking.Location" Label="Location" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="TestBooking.FirstName" Label="First Name" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTextField @bind-Value="TestBooking.LastName" Label="Last Name" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudDatePicker @bind-Date="StartDate" Label="Start Date" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTimePicker @bind-Time="StartTime" Label="Start Time" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudTimePicker @bind-Time="EndTime" Label="End Time" Variant="Variant.Outlined" />
+            </MudItem>
+            <MudItem xs="12" md="6">
+                <MudSelect @bind-Value="TestBooking.BookingExperience" Label="Experience Type" Variant="Variant.Outlined">
+                    @foreach (BookingExperience experience in Enum.GetValues<BookingExperience>())
+                    {
+                        <MudSelectItem Value="experience">@experience.ToString()</MudSelectItem>
+                    }
+                </MudSelect>
+            </MudItem>
+            <MudItem xs="12">
+                <MudButton Variant="Variant.Filled" 
+                           Color="Color.Primary" 
+                           OnClick="CreateTestBooking"
+                           StartIcon="@Icons.Material.Filled.Add">
+                    Create Test Booking
+                </MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudPaper>
+    
+    @if (TestBooking.Id != Guid.Empty)
+    {
+        <MudPaper Class="pa-4 mb-4">
+            <MudText Typo="Typo.h6" Class="mb-3">Test Calendar Integration</MudText>
+            
+            <CalendarIntegrationComponent Booking="TestBooking" 
+                                        ShowAutoSyncOption="true"
+                                        OnAutoSyncConfigured="HandleAutoSyncConfigured" />
+        </MudPaper>
+        
+        <MudPaper Class="pa-4 mb-4">
+            <MudText Typo="Typo.h6" Class="mb-3">Integration Results</MudText>
+            
+            @if (IntegrationResults.Any())
+            {
+                <MudStack Spacing="2">
+                    @foreach (var result in IntegrationResults)
+                    {
+                        <MudAlert Severity="@(result.Success ? Severity.Success : Severity.Error)"
+                                  Dense="true">
+                            <MudText Typo="Typo.body2">
+                                <strong>@result.Provider:</strong> 
+                                @(result.Success ? "Integration successful" : result.ErrorMessage)
+                            </MudText>
+                            @if (!string.IsNullOrEmpty(result.EventUrl))
+                            {
+                                <MudLink Href="@result.EventUrl" Target="_blank" Color="Color.Inherit" Class="ml-2">
+                                    View in Calendar
+                                </MudLink>
+                            }
+                        </MudAlert>
+                    }
+                </MudStack>
+            }
+            else
+            {
+                <MudText Color="Color.Secondary">No integration results yet. Use the calendar integration component above to test.</MudText>
+            }
+        </MudPaper>
+        
+        <MudPaper Class="pa-4">
+            <MudText Typo="Typo.h6" Class="mb-3">Test Advanced Features</MudText>
+            
+            <MudStack Row="true" Spacing="2" Class="mb-3">
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Info"
+                           OnClick="TestUrlGeneration"
+                           StartIcon="@Icons.Material.Filled.Link">
+                    Test URL Generation
+                </MudButton>
+                
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Success"
+                           OnClick="TestICalGeneration"
+                           StartIcon="@Icons.Material.Filled.Download">
+                    Test iCal Generation
+                </MudButton>
+                
+                <MudButton Variant="Variant.Outlined"
+                           Color="Color.Warning"
+                           OnClick="TestBulkSync"
+                           StartIcon="@Icons.Material.Filled.Sync">
+                    Test Bulk Sync
+                </MudButton>
+            </MudStack>
+            
+            @if (!string.IsNullOrEmpty(TestOutput))
+            {
+                <MudTextField Value="@TestOutput"
+                              Label="Test Output"
+                              Lines="10"
+                              Variant="Variant.Outlined"
+                              ReadOnly="true" />
+            }
+        </MudPaper>
+    }
+</MudContainer>
+
+@code {
+    private CalendarSlot TestBooking = new()
+    {
+        Id = Guid.Empty,
+        Title = "VIP Rhino Experience",
+        Location = "Rhino Enclosure, West Midlands Safari Park",
+        FirstName = "John",
+        LastName = "Doe",
+        ContactNumber = "01234567890",
+        FirstLineAddress = "123 Test Street",
+        Postcode = "B1 1AA",
+        BookingExperience = BookingExperience.RhinoKeeper,
+        Status = BookingStatus.Confirmed,
+        Color = MudBlazor.Color.Primary,
+        CreatedAt = DateTime.UtcNow,
+        AllDay = false
+    };
+    
+    private DateTime? StartDate = DateTime.Today.AddDays(7);
+    private TimeSpan? StartTime = new TimeSpan(10, 0, 0);
+    private TimeSpan? EndTime = new TimeSpan(12, 0, 0);
+    
+    private List<CalendarIntegrationResult> IntegrationResults = new();
+    private string TestOutput = string.Empty;
+
+    private void CreateTestBooking()
+    {
+        if (StartDate.HasValue && StartTime.HasValue)
+        {
+            TestBooking.Id = Guid.NewGuid();
+            TestBooking.Start = StartDate.Value.Add(StartTime.Value);
+            
+            if (EndTime.HasValue)
+            {
+                TestBooking.End = StartDate.Value.Add(EndTime.Value);
+            }
+            
+            Logger.LogInformation("Created test booking: {BookingId} - {Title}", TestBooking.Id, TestBooking.Title);
+            StateHasChanged();
+        }
+    }
+
+    private async Task HandleAutoSyncConfigured(CalendarIntegrationOptions options)
+    {
+        try
+        {
+            Logger.LogInformation("Auto-sync configured with {ProviderCount} providers", options.EnabledProviders.Count);
+            
+            var results = await CalendarService.SyncBookingAsync(TestBooking, options);
+            IntegrationResults.AddRange(results);
+            
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to handle auto-sync configuration");
+        }
+    }
+
+    private async Task TestUrlGeneration()
+    {
+        try
+        {
+            var calendarEvent = ExternalCalendarEvent.FromCalendarSlot(TestBooking);
+            var urls = CalendarService.GenerateCalendarUrls(calendarEvent);
+            
+            var output = new StringBuilder();
+            output.AppendLine("Generated Calendar URLs:");
+            output.AppendLine();
+            
+            foreach (var url in urls)
+            {
+                output.AppendLine($"{url.Key}:");
+                output.AppendLine(url.Value);
+                output.AppendLine();
+            }
+            
+            TestOutput = output.ToString();
+            Logger.LogInformation("Generated {UrlCount} calendar URLs", urls.Count);
+        }
+        catch (Exception ex)
+        {
+            TestOutput = $"Error generating URLs: {ex.Message}";
+            Logger.LogError(ex, "Failed to generate calendar URLs");
+        }
+    }
+
+    private async Task TestICalGeneration()
+    {
+        try
+        {
+            var calendarEvent = ExternalCalendarEvent.FromCalendarSlot(TestBooking);
+            var icalData = await CalendarService.GenerateICalendarFileAsync(calendarEvent);
+            
+            var icalContent = System.Text.Encoding.UTF8.GetString(icalData);
+            TestOutput = $"Generated iCalendar File ({icalData.Length} bytes):\n\n{icalContent}";
+            
+            Logger.LogInformation("Generated iCalendar file with {ByteCount} bytes", icalData.Length);
+        }
+        catch (Exception ex)
+        {
+            TestOutput = $"Error generating iCal: {ex.Message}";
+            Logger.LogError(ex, "Failed to generate iCalendar file");
+        }
+    }
+
+    private async Task TestBulkSync()
+    {
+        try
+        {
+            var options = new CalendarIntegrationOptions
+            {
+                AutoSync = true,
+                EnabledProviders = new List<CalendarProvider>
+                {
+                    CalendarProvider.GoogleCalendar,
+                    CalendarProvider.OutlookCalendar,
+                    CalendarProvider.AppleCalendar,
+                    CalendarProvider.ICalendar
+                },
+                IncludeCustomerDetails = true
+            };
+            
+            var results = await CalendarService.SyncBookingAsync(TestBooking, options);
+            
+            var output = new StringBuilder();
+            output.AppendLine("Bulk Sync Results:");
+            output.AppendLine();
+            
+            foreach (var result in results)
+            {
+                output.AppendLine($"{result.Provider}: {(result.Success ? "Success" : "Failed")}");
+                if (!result.Success)
+                {
+                    output.AppendLine($"  Error: {result.ErrorMessage}");
+                }
+                if (!string.IsNullOrEmpty(result.EventUrl))
+                {
+                    output.AppendLine($"  URL: {result.EventUrl}");
+                }
+                output.AppendLine();
+            }
+            
+            TestOutput = output.ToString();
+            IntegrationResults.AddRange(results);
+            
+            Logger.LogInformation("Completed bulk sync with {ResultCount} results", results.Count);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            TestOutput = $"Error in bulk sync: {ex.Message}";
+            Logger.LogError(ex, "Failed to perform bulk sync");
+        }
+    }
+}

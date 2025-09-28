@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using Psybook.Services.UI.Clients;
 using Psybook.Services.UI.DataLoaders;
+using Psybook.Services.ExternalCalendar;
 using Psybook.Shared.Communication;
 using Psybook.Shared.Extensions;
 using Psybook.UI.Client.Renderers;
@@ -20,9 +21,15 @@ builder.Services.Configure<BookingClientOptions>(options =>
     options.ValidateResponses = true;
 });
 
+// HTTP Client Services - Required for ExternalCalendarService
+builder.Services.AddHttpClient();
+
 // Data Loader Service
 builder.Services.AddScoped<IBookingLoaderService, BookingDataLoaderService>();
 builder.Services.AddScoped<IBookingClient, BookingClient>();
+
+// External Calendar Integration - Register after HttpClient
+builder.Services.AddScoped<IExternalCalendarService, ExternalCalendarService>();
 
 // UI Services following Single Responsibility Principle
 builder.Services.AddSingleton<IThemeService, ThemeService>();

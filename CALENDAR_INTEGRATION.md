@@ -1,5 +1,3 @@
-﻿# Psybook
-
 # External Calendar Integration
 
 This documentation describes the comprehensive external calendar integration system implemented for the WMSP VIP Booking System.
@@ -10,19 +8,19 @@ The external calendar integration allows users to sync their VIP experience book
 
 ## Features
 
-### 🗓️ **Supported Calendar Providers**
+### ??? **Supported Calendar Providers**
 - **Google Calendar** - URL-based quick add with future API integration support
 - **Outlook Calendar** - Direct integration with Outlook Web and desktop
 - **Apple Calendar** - iCalendar file support for seamless iOS/macOS integration
 - **iCalendar (.ics)** - Universal calendar file format for any compatible application
 
-### 🔄 **Integration Methods**
+### ?? **Integration Methods**
 1. **Quick Add URLs** - One-click calendar addition via provider-specific URLs
 2. **iCalendar Downloads** - Downloadable .ics files for manual import
 3. **Auto-Sync** - Automated synchronization based on user preferences
 4. **Bulk Operations** - Sync multiple bookings simultaneously
 
-### 🎛️ **User Preferences**
+### ??? **User Preferences**
 - Enable/disable automatic synchronization
 - Select preferred calendar providers
 - Include/exclude customer details in calendar events

@@ -5,14 +5,39 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
+/* Calendar event button styling */
+.calendar-wrapper .mud-button-root {
+    padding: 0 !important;
+    min-height: unset !important;
+    border-radius: 6px !important;
+    text-transform: none !important;
+    justify-content: flex-start !important;
+    height: 100% !important;
+    width: 100% !important;
+}
+
+.calendar-wrapper .mud-button-root:hover {
+    background-color: transparent !important;
+    transform: translateY(-2px) scale(1.02);
+    z-index: 10;
+}
+
+.calendar-wrapper .mud-button-root:hover .calendar-event {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    border-width: 3px;
+}
+
+.calendar-wrapper .mud-button-root:active {
+    transform: translateY(-1px) scale(1.01);
+}
+
 /* Calendar event styling */
 .calendar-event {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
 }
 
 .calendar-event:hover {
-    transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
@@ -33,7 +58,7 @@
     transition: left 0.5s ease;
 }
 
-.calendar-event:hover .event-header::after {
+.calendar-wrapper .mud-button-root:hover .event-header::after {
     left: 100%;
 }
 
@@ -41,6 +66,11 @@
 .event-content {
     background: rgba(255, 255, 255, 0.95);
     backdrop-filter: blur(10px);
+    transition: background-color 0.2s ease;
+}
+
+.calendar-wrapper .mud-button-root:hover .event-content {
+    background: rgba(255, 255, 255, 1);
 }
 
 /* Statistics cards */
@@ -69,6 +99,10 @@
     
     .stats-card {
         margin-bottom: 8px;
+    }
+    
+    .calendar-wrapper .mud-button-root:hover {
+        transform: translateY(-1px) scale(1.01);
     }
 }
 
@@ -122,4 +156,10 @@
 
 .stats-gradient-4 {
     background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%) !important;
+}
+
+/* Focus styles for accessibility */
+.calendar-wrapper .mud-button-root:focus-visible {
+    outline: 2px solid var(--mud-palette-primary);
+    outline-offset: 2px;
 }

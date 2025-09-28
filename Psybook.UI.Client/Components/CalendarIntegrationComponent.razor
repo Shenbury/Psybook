@@ -1,0 +1,345 @@
+@using Psybook.Objects.DbModels
+@using Psybook.Objects.Enums
+@using Psybook.Services.ExternalCalendar
+@using Microsoft.Extensions.Logging
+@inject IExternalCalendarService CalendarService
+@inject ILogger<CalendarIntegrationComponent> Logger
+@inject IJSRuntime JSRuntime
+
+<MudCard>
+    <MudCardContent>
+        <MudStack Spacing="3">
+            <MudText Typo="Typo.h6" Color="Color.Primary">
+                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Class="mr-2" />
+                Add to Calendar
+            </MudText>
+            
+            <MudText Typo="Typo.body2" Color="Color.Secondary">
+                Add this booking to your personal calendar to stay organized and never miss your VIP experience!
+            </MudText>
+
+            @if (IsLoading)
+            {
+                <MudProgressLinear Color="Color.Primary" Indeterminate="true" />
+                <MudText Typo="Typo.body2" Align="Align.Center">Preparing calendar integration...</MudText>
+            }
+            else
+            {
+                <MudGrid Spacing="2">
+                    <!-- Google Calendar -->
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Primary"
+                                   FullWidth="true"
+                                   StartIcon="@Icons.Custom.Brands.Google"
+                                   OnClick="() => AddToGoogleCalendar()"
+                                   Disabled="IsOperationInProgress"
+                                   Class="pa-3">
+                            <MudStack Spacing="1" AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.body2" Class="font-weight-bold">
+                                    Google Calendar
+                                </MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    Add to Google
+                                </MudText>
+                            </MudStack>
+                        </MudButton>
+                    </MudItem>
+
+                    <!-- Outlook Calendar -->
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Info"
+                                   FullWidth="true"
+                                   StartIcon="@Icons.Custom.Brands.Microsoft"
+                                   OnClick="() => AddToOutlookCalendar()"
+                                   Disabled="IsOperationInProgress"
+                                   Class="pa-3">
+                            <MudStack Spacing="1" AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.body2" Class="font-weight-bold">
+                                    Outlook
+                                </MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    Add to Outlook
+                                </MudText>
+                            </MudStack>
+                        </MudButton>
+                    </MudItem>
+
+                    <!-- Apple Calendar -->
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Dark"
+                                   FullWidth="true"
+                                   StartIcon="@Icons.Custom.Brands.Apple"
+                                   OnClick="() => AddToAppleCalendar()"
+                                   Disabled="IsOperationInProgress"
+                                   Class="pa-3">
+                            <MudStack Spacing="1" AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.body2" Class="font-weight-bold">
+                                    Apple Calendar
+                                </MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    Add to iCal
+                                </MudText>
+                            </MudStack>
+                        </MudButton>
+                    </MudItem>
+
+                    <!-- Download iCal -->
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudButton Variant="Variant.Outlined"
+                                   Color="Color.Success"
+                                   FullWidth="true"
+                                   StartIcon="@Icons.Material.Filled.Download"
+                                   OnClick="() => DownloadICalFile()"
+                                   Disabled="IsOperationInProgress"
+                                   Class="pa-3">
+                            <MudStack Spacing="1" AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.body2" Class="font-weight-bold">
+                                    Download
+                                </MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    .ics file
+                                </MudText>
+                            </MudStack>
+                        </MudButton>
+                    </MudItem>
+                </MudGrid>
+
+                @if (LastResults.Any())
+                {
+                    <MudDivider />
+                    
+                    <MudText Typo="Typo.subtitle2" Color="Color.Primary">
+                        Integration Results
+                    </MudText>
+                    
+                    @foreach (var result in LastResults)
+                    {
+                        <MudAlert Severity="@(result.Success ? Severity.Success : Severity.Error)" 
+                                  Icon="@(result.Success ? Icons.Material.Filled.CheckCircle : Icons.Material.Filled.Error)"
+                                  Dense="true">
+                            <MudText Typo="Typo.body2">
+                                <strong>@result.Provider:</strong> 
+                                @(result.Success ? "Successfully added to calendar" : result.ErrorMessage)
+                            </MudText>
+                            @if (result.Success && !string.IsNullOrEmpty(result.EventUrl))
+                            {
+                                <MudLink Href="@result.EventUrl" Target="_blank" Color="Color.Inherit" Class="ml-2">
+                                    Open Calendar
+                                    <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" Class="ml-1" />
+                                </MudLink>
+                            }
+                        </MudAlert>
+                    }
+                }
+            }
+        </MudStack>
+    </MudCardContent>
+</MudCard>
+
+<!-- Auto Sync Options Dialog -->
+<MudDialog @bind-Visible="ShowAutoSyncDialog" Options="DialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Sync" Class="mr-3" />
+            Calendar Auto-Sync Settings
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <MudText Typo="Typo.body1">
+                Configure automatic calendar synchronization for future bookings.
+            </MudText>
+            
+            <MudSwitch @bind-Value="AutoSyncEnabled" 
+                       Label="Enable automatic calendar sync" 
+                       Color="Color.Primary" />
+            
+            @if (AutoSyncEnabled)
+            {
+                <MudText Typo="Typo.subtitle2" Color="Color.Primary">
+                    Select preferred calendar providers:
+                </MudText>
+                
+                <MudCheckBox @bind-Value="SyncToGoogle" 
+                             Label="Google Calendar" 
+                             Color="Color.Primary" />
+                             
+                <MudCheckBox @bind-Value="SyncToOutlook" 
+                             Label="Outlook Calendar" 
+                             Color="Color.Info" />
+                             
+                <MudCheckBox @bind-Value="SyncToApple" 
+                             Label="Apple Calendar" 
+                             Color="Color.Dark" />
+                
+                <MudSwitch @bind-Value="IncludeCustomerDetails" 
+                           Label="Include customer details in calendar events" 
+                           Color="Color.Secondary" />
+            }
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => ShowAutoSyncDialog = false">Cancel</MudButton>
+        <MudButton Color="Color.Primary" 
+                   Variant="Variant.Filled" 
+                   OnClick="SaveAutoSyncSettings">
+            Save Settings
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public CalendarSlot Booking { get; set; } = null!;
+    [Parameter] public bool ShowAutoSyncOption { get; set; } = false;
+    [Parameter] public EventCallback<CalendarIntegrationOptions> OnAutoSyncConfigured { get; set; }
+
+    private bool IsLoading = false;
+    private bool IsOperationInProgress = false;
+    private bool ShowAutoSyncDialog = false;
+    
+    // Auto-sync settings
+    private bool AutoSyncEnabled = false;
+    private bool SyncToGoogle = false;
+    private bool SyncToOutlook = false;
+    private bool SyncToApple = false;
+    private bool IncludeCustomerDetails = true;
+    
+    private List<CalendarIntegrationResult> LastResults = new();
+    private ExternalCalendarEvent? CalendarEvent;
+    private Dictionary<CalendarProvider, string> CalendarUrls = new();
+
+    private DialogOptions DialogOptions => new()
+    {
+        MaxWidth = MaxWidth.Small,
+        FullWidth = true,
+        CloseButton = true,
+        CloseOnEscapeKey = true
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await InitializeCalendarIntegration();
+    }
+
+    private async Task InitializeCalendarIntegration()
+    {
+        try
+        {
+            IsLoading = true;
+            StateHasChanged();
+
+            // Create calendar event from booking
+            CalendarEvent = ExternalCalendarEvent.FromCalendarSlot(Booking);
+            
+            // Generate calendar URLs
+            CalendarUrls = CalendarService.GenerateCalendarUrls(CalendarEvent);
+            
+            Logger.LogInformation("Initialized calendar integration for booking {BookingId}", Booking.Id);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to initialize calendar integration for booking {BookingId}", Booking.Id);
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task AddToGoogleCalendar()
+    {
+        await ExecuteCalendarOperation(CalendarProvider.GoogleCalendar);
+    }
+
+    private async Task AddToOutlookCalendar()
+    {
+        await ExecuteCalendarOperation(CalendarProvider.OutlookCalendar);
+    }
+
+    private async Task AddToAppleCalendar()
+    {
+        await ExecuteCalendarOperation(CalendarProvider.AppleCalendar);
+    }
+
+    private async Task DownloadICalFile()
+    {
+        try
+        {
+            IsOperationInProgress = true;
+            StateHasChanged();
+
+            if (CalendarEvent == null) return;
+
+            var icalData = await CalendarService.GenerateICalendarFileAsync(CalendarEvent);
+            var fileName = $"VIP_Experience_{Booking.Start:yyyyMMdd}_{Booking.FirstName}_{Booking.LastName}.ics";
+            
+            await JSRuntime.InvokeVoidAsync("downloadFile", fileName, "text/calendar", icalData);
+            
+            var result = CalendarIntegrationResult.CreateSuccess(CalendarProvider.ICalendar, null, "File downloaded");
+            LastResults = new List<CalendarIntegrationResult> { result };
+            
+            Logger.LogInformation("Downloaded iCal file for booking {BookingId}", Booking.Id);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to download iCal file for booking {BookingId}", Booking.Id);
+            var result = CalendarIntegrationResult.CreateError(CalendarProvider.ICalendar, "Failed to download file");
+            LastResults = new List<CalendarIntegrationResult> { result };
+        }
+        finally
+        {
+            IsOperationInProgress = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ExecuteCalendarOperation(CalendarProvider provider)
+    {
+        try
+        {
+            IsOperationInProgress = true;
+            StateHasChanged();
+
+            if (CalendarEvent == null || !CalendarUrls.ContainsKey(provider))
+            {
+                var errorResult = CalendarIntegrationResult.CreateError(provider, "Calendar event not initialized");
+                LastResults = new List<CalendarIntegrationResult> { errorResult };
+                return;
+            }
+
+            // Open calendar URL in new tab
+            var url = CalendarUrls[provider];
+            await JSRuntime.InvokeVoidAsync("open", url, "_blank");
+
+            var result = CalendarIntegrationResult.CreateSuccess(provider, null, url);
+            LastResults = new List<CalendarIntegrationResult> { result };
+            
+            Logger.LogInformation("Opened {Provider} calendar for booking {BookingId}", provider, Booking.Id);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to open {Provider} calendar for booking {BookingId}", provider, Booking.Id);
+            var result = CalendarIntegrationResult.CreateError(provider, ex.Message);
+            LastResults = new List<CalendarIntegrationResult> { result };
+        }
+        finally
+        {
+            IsOperationInProgress = false;
+            StateHasChanged();
+        }
+    }
+
+    private void SaveAutoSyncSettings()
+    {
+        // Logic to save auto-sync settings
+        // This may involve updating user preferences in the database
+        // and configuring background tasks for synchronization
+
+        // For now, just log the settings
+        Logger.LogInformation("Auto-sync settings saved: Enable={AutoSyncEnabled}, Google={SyncToGoogle}, Outlook={SyncToOutlook}, Apple={SyncToApple}, IncludeDetails={IncludeCustomerDetails}", AutoSyncEnabled, SyncToGoogle, SyncToOutlook, SyncToApple, IncludeCustomerDetails);
+    }
+}

@@ -4,6 +4,7 @@
 @using Microsoft.Extensions.Logging
 @inject IBookingLoaderService BookingLoaderService
 @inject ILogger<BookingStatusManager> Logger
+@inject ISnackbar Snackbar
 
 <MudCard>
     <MudCardContent>
@@ -24,7 +25,14 @@
                                StartIcon="@Icons.Material.Filled.Check"
                                OnClick="ConfirmBooking"
                                Disabled="IsOperationInProgress">
-                        Confirm Booking
+                        @if (IsOperationInProgress && _currentOperation == "confirm")
+                        {
+                            <MudProgressCircular Color="Color.Success" Size="Size.Small" Indeterminate="true" />
+                        }
+                        else
+                        {
+                            <text>Confirm Booking</text>
+                        }
                     </MudButton>
                     
                     <MudButton Variant="Variant.Outlined" 
@@ -54,7 +62,14 @@
                                    StartIcon="@Icons.Material.Filled.CheckCircle"
                                    OnClick="MarkAsCompleted"
                                    Disabled="IsOperationInProgress">
-                            Mark as Completed
+                            @if (IsOperationInProgress && _currentOperation == "complete")
+                            {
+                                <MudProgressCircular Color="Color.Info" Size="Size.Small" Indeterminate="true" />
+                            }
+                            else
+                            {
+                                <text>Mark as Completed</text>
+                            }
                         </MudButton>
                     }
                 </MudStack>
@@ -91,12 +106,21 @@
                     </MudText>
                 }
             </MudStack>
+            
+            @if (!string.IsNullOrEmpty(Booking.Notes))
+            {
+                <MudAlert Severity="Severity.Info" Icon="@Icons.Material.Filled.Notes">
+                    <MudText Typo="Typo.body2">
+                        <strong>Notes:</strong> @Booking.Notes
+                    </MudText>
+                </MudAlert>
+            }
         </MudStack>
     </MudCardContent>
 </MudCard>
 
 <!-- Cancel Booking Dialog -->
-<MudDialog @bind-IsVisible="ShowCancelDialog" Options="DialogOptions">
+<MudDialog @bind-Visible="ShowCancelDialog" Options="DialogOptions">
     <TitleContent>
         <MudText Typo="Typo.h6">
             <MudIcon Icon="@Icons.Material.Filled.Cancel" Class="mr-3" />
@@ -105,7 +129,10 @@
     </TitleContent>
     <DialogContent>
         <MudStack Spacing="3">
-            <MudText>Are you sure you want to cancel this booking?</MudText>
+            <MudAlert Severity="Severity.Warning" Icon="@Icons.Material.Filled.Warning">
+                Are you sure you want to cancel this booking? This action cannot be undone.
+            </MudAlert>
+            
             <MudText Typo="Typo.body2" Color="Color.Secondary">
                 <strong>Experience:</strong> @Booking.Title<br/>
                 <strong>Date:</strong> @Booking.Start.ToString("dddd, MMMM dd, yyyy 'at' hh:mm tt")<br/>
@@ -118,16 +145,33 @@
                           Lines="3"
                           Variant="Variant.Outlined"
                           Required="true"
-                          MaxLength="500" />
+                          MaxLength="500"
+                          Counter="500"
+                          Error="@(!string.IsNullOrWhiteSpace(CancellationReason) && CancellationReason.Length > 500)"
+                          ErrorText="Cancellation reason cannot exceed 500 characters"
+                          HelperText="A clear reason helps with record keeping and customer communication" />
         </MudStack>
     </DialogContent>
     <DialogActions>
-        <MudButton OnClick="() => ShowCancelDialog = false">Close</MudButton>
+        <MudButton OnClick="() => { ShowCancelDialog = false; CancellationReason = string.Empty; }"
+                   Disabled="IsOperationInProgress">
+            Close
+        </MudButton>
         <MudButton Color="Color.Error" 
                    Variant="Variant.Filled" 
                    OnClick="CancelBooking"
-                   Disabled="string.IsNullOrWhiteSpace(CancellationReason) || IsOperationInProgress">
-            Cancel Booking
+                   Disabled="string.IsNullOrWhiteSpace(CancellationReason) || IsOperationInProgress || CancellationReason.Length > 500">
+            @if (IsOperationInProgress && _currentOperation == "cancel")
+            {
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+                    <MudProgressCircular Color="Color.Error" Size="Size.Small" Indeterminate="true" />
+                    <MudText>Cancelling...</MudText>
+                </MudStack>
+            }
+            else
+            {
+                <text>Cancel Booking</text>
+            }
         </MudButton>
     </DialogActions>
 </MudDialog>
@@ -135,15 +179,19 @@
 @code {
     [Parameter] public CalendarSlot Booking { get; set; } = null!;
     [Parameter] public EventCallback<CalendarSlot> OnBookingUpdated { get; set; }
+    [Parameter] public string? ModifiedBy { get; set; } = "System"; // You can inject user info here
     
     private bool ShowCancelDialog;
     private string CancellationReason = string.Empty;
     private bool IsOperationInProgress;
+    private string _currentOperation = string.Empty;
     
     private DialogOptions DialogOptions => new()
     {
         MaxWidth = MaxWidth.Small,
-        FullWidth = true
+        FullWidth = true,
+        CloseButton = true,
+        CloseOnEscapeKey = true
     };
 
     private async Task ConfirmBooking()
@@ -151,22 +199,38 @@
         try
         {
             IsOperationInProgress = true;
-            // Note: You'll need to implement these methods in your BookingLoaderService
-            // await BookingLoaderService.ConfirmBookingAsync(Booking.Id);
+            _currentOperation = "confirm";
+            StateHasChanged();
+
+            var success = await BookingLoaderService.ConfirmBookingAsync(Booking.Id, ModifiedBy);
             
-            Booking.Status = BookingStatus.Confirmed;
-            Booking.ModifiedAt = DateTime.UtcNow;
-            
-            await OnBookingUpdated.InvokeAsync(Booking);
-            Logger.LogInformation("Booking {BookingId} confirmed successfully", Booking.Id);
+            if (success)
+            {
+                // Update the local booking object
+                Booking.Status = BookingStatus.Confirmed;
+                Booking.ModifiedAt = DateTime.UtcNow;
+                Booking.ModifiedBy = ModifiedBy;
+                
+                await OnBookingUpdated.InvokeAsync(Booking);
+                Snackbar.Add($"Booking for {Booking.FirstName} {Booking.LastName} has been confirmed", Severity.Success);
+                Logger.LogInformation("Booking {BookingId} confirmed successfully", Booking.Id);
+            }
+            else
+            {
+                Snackbar.Add("Failed to confirm booking. The booking may not be in a valid state for confirmation.", Severity.Error);
+                Logger.LogWarning("Failed to confirm booking {BookingId} - service returned false", Booking.Id);
+            }
         }
         catch (Exception ex)
         {
+            Snackbar.Add("An error occurred while confirming the booking. Please try again.", Severity.Error);
             Logger.LogError(ex, "Failed to confirm booking {BookingId}", Booking.Id);
         }
         finally
         {
             IsOperationInProgress = false;
+            _currentOperation = string.Empty;
+            StateHasChanged();
         }
     }
 
@@ -175,27 +239,43 @@
         try
         {
             IsOperationInProgress = true;
-            // Note: You'll need to implement these methods in your BookingLoaderService
-            // await BookingLoaderService.CancelBookingAsync(Booking.Id, CancellationReason);
+            _currentOperation = "cancel";
+            StateHasChanged();
+
+            var success = await BookingLoaderService.CancelBookingAsync(Booking.Id, CancellationReason, ModifiedBy);
             
-            Booking.Status = BookingStatus.Cancelled;
-            Booking.CancellationReason = CancellationReason;
-            Booking.CancelledAt = DateTime.UtcNow;
-            Booking.ModifiedAt = DateTime.UtcNow;
-            
-            ShowCancelDialog = false;
-            CancellationReason = string.Empty;
-            
-            await OnBookingUpdated.InvokeAsync(Booking);
-            Logger.LogInformation("Booking {BookingId} cancelled successfully", Booking.Id);
+            if (success)
+            {
+                // Update the local booking object
+                Booking.Status = BookingStatus.Cancelled;
+                Booking.CancellationReason = CancellationReason;
+                Booking.CancelledAt = DateTime.UtcNow;
+                Booking.ModifiedAt = DateTime.UtcNow;
+                Booking.ModifiedBy = ModifiedBy;
+                
+                ShowCancelDialog = false;
+                CancellationReason = string.Empty;
+                
+                await OnBookingUpdated.InvokeAsync(Booking);
+                Snackbar.Add($"Booking for {Booking.FirstName} {Booking.LastName} has been cancelled", Severity.Warning);
+                Logger.LogInformation("Booking {BookingId} cancelled successfully", Booking.Id);
+            }
+            else
+            {
+                Snackbar.Add("Failed to cancel booking. The booking may not be in a valid state for cancellation.", Severity.Error);
+                Logger.LogWarning("Failed to cancel booking {BookingId} - service returned false", Booking.Id);
+            }
         }
         catch (Exception ex)
         {
+            Snackbar.Add("An error occurred while cancelling the booking. Please try again.", Severity.Error);
             Logger.LogError(ex, "Failed to cancel booking {BookingId}", Booking.Id);
         }
         finally
         {
             IsOperationInProgress = false;
+            _currentOperation = string.Empty;
+            StateHasChanged();
         }
     }
 
@@ -204,22 +284,30 @@
         try
         {
             IsOperationInProgress = true;
-            // Note: You'll need to implement these methods in your BookingLoaderService
-            // await BookingLoaderService.UpdateBookingStatusAsync(Booking.Id, BookingStatus.Completed);
+            _currentOperation = "complete";
+            StateHasChanged();
+
+            await BookingLoaderService.UpdateBookingStatusAsync(Booking.Id, BookingStatus.Completed, "Marked as completed", ModifiedBy);
             
+            // Update the local booking object
             Booking.Status = BookingStatus.Completed;
             Booking.ModifiedAt = DateTime.UtcNow;
+            Booking.ModifiedBy = ModifiedBy;
             
             await OnBookingUpdated.InvokeAsync(Booking);
+            Snackbar.Add($"Booking for {Booking.FirstName} {Booking.LastName} has been marked as completed", Severity.Success);
             Logger.LogInformation("Booking {BookingId} marked as completed", Booking.Id);
         }
         catch (Exception ex)
         {
+            Snackbar.Add("An error occurred while updating the booking status. Please try again.", Severity.Error);
             Logger.LogError(ex, "Failed to mark booking {BookingId} as completed", Booking.Id);
         }
         finally
         {
             IsOperationInProgress = false;
+            _currentOperation = string.Empty;
+            StateHasChanged();
         }
     }
 }

@@ -11,12 +11,12 @@
     <ProjectReference Include="..\Psybook.ServiceDefaults\Psybook.ServiceDefaults.csproj" />
     <ProjectReference Include="..\Psybook.Shared\Psybook.Shared.csproj" />
     <ProjectReference Include="..\Psybook.UI.Client\Psybook.UI.Client.csproj" />
-	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.6" NoWarn="NU1605" />
-	  <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="9.0.6" NoWarn="NU1605" />
-	  <PackageReference Include="Microsoft.Identity.Web" Version="3.10.0" />
-	  <PackageReference Include="Microsoft.Identity.Web.DownstreamApi" Version="3.10.0" />
-	  <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="3.10.0" />
-	  <PackageReference Include="Microsoft.Identity.Web.UI" Version="3.10.0" />
+	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.9" NoWarn="NU1605" />
+	  <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="9.0.9" NoWarn="NU1605" />
+	  <PackageReference Include="Microsoft.Identity.Web" Version="3.14.1" />
+	  <PackageReference Include="Microsoft.Identity.Web.DownstreamApi" Version="3.14.1" />
+	  <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="3.14.1" />
+	  <PackageReference Include="Microsoft.Identity.Web.UI" Version="3.14.1" />
 	  <PackageReference Include="FluentValidation" Version="12.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.*" />
   </ItemGroup>

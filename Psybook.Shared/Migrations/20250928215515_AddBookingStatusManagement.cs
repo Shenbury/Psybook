@@ -11,6 +11,11 @@ namespace Psybook.Shared.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // Drop the primary key constraint on ExperienceRecords before altering the column
+            migrationBuilder.DropPrimaryKey(
+                name: "PK_ExperienceRecords",
+                table: "ExperienceRecords");
+
             migrationBuilder.AlterColumn<string>(
                 name: "BookingExperience",
                 table: "ExperienceRecords",
@@ -18,6 +23,12 @@ namespace Psybook.Shared.Migrations
                 nullable: false,
                 oldClrType: typeof(int),
                 oldType: "int");
+
+            // Recreate the primary key constraint
+            migrationBuilder.AddPrimaryKey(
+                name: "PK_ExperienceRecords",
+                table: "ExperienceRecords",
+                column: "BookingExperience");
 
             migrationBuilder.AlterColumn<string>(
                 name: "BookingExperience",
@@ -151,6 +162,11 @@ namespace Psybook.Shared.Migrations
                 name: "Status",
                 table: "CalendarSlots");
 
+            // Drop the primary key constraint on ExperienceRecords before altering the column back
+            migrationBuilder.DropPrimaryKey(
+                name: "PK_ExperienceRecords",
+                table: "ExperienceRecords");
+
             migrationBuilder.AlterColumn<int>(
                 name: "BookingExperience",
                 table: "ExperienceRecords",
@@ -158,6 +174,12 @@ namespace Psybook.Shared.Migrations
                 nullable: false,
                 oldClrType: typeof(string),
                 oldType: "nvarchar(450)");
+
+            // Recreate the primary key constraint
+            migrationBuilder.AddPrimaryKey(
+                name: "PK_ExperienceRecords",
+                table: "ExperienceRecords",
+                column: "BookingExperience");
 
             migrationBuilder.AlterColumn<int>(
                 name: "BookingExperience",

@@ -3,6 +3,8 @@ using Microsoft.Identity.Web;
 using Psybook.Repositories.Booking;
 using Psybook.ServiceDefaults;
 using Psybook.Services.API.BookingService;
+using Psybook.Services.ExternalCalendar;
+using Psybook.Services.ExternalCalendar.GoogleCalendar;
 using Psybook.Shared.Contexts;
 using Psybook.Shared.Dictionary;
 
@@ -37,6 +39,11 @@ builder.AddSqlServerDbContext<BookingContext>(connectionName: "wmsp-db");
 builder.Services.AddScoped<IBookingRepository, SqlBookingRepository>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddScoped<ExperienceDictionary>();
+
+// External Calendar Integration Services
+builder.Services.AddScoped<IExternalCalendarService, ExternalCalendarService>();
+builder.Services.AddScoped<GoogleCalendarApiService>();
+builder.Services.AddHttpClient(); // Required for HTTP operations in calendar services
 
 var app = builder.Build();
 
