@@ -8,6 +8,7 @@ using Psybook.Shared.Communication;
 using Psybook.Shared.Extensions;
 using Psybook.UI.Components;
 using Psybook.UI.Renderers;
+using Psybook.UI.Client.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,6 +40,10 @@ builder.Services.AddHttpClient("psybook-api", https => https.BaseAddress = new U
 // Data Loader Service
 builder.Services.AddScoped<IBookingLoaderService, BookingDataLoaderService>();
 builder.Services.AddScoped<IBookingClient, BookingClient>();
+
+// UI Services following Single Responsibility Principle
+builder.Services.AddSingleton<IThemeService, ThemeService>();
+builder.Services.AddScoped<INavigationService, NavigationService>();
 
 builder.Services.ConfigureHttpClientDefaults(static http =>
 {

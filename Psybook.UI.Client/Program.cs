@@ -5,6 +5,7 @@ using Psybook.Services.UI.DataLoaders;
 using Psybook.Shared.Communication;
 using Psybook.Shared.Extensions;
 using Psybook.UI.Client.Renderers;
+using Psybook.UI.Client.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
@@ -22,6 +23,10 @@ builder.Services.Configure<BookingClientOptions>(options =>
 // Data Loader Service
 builder.Services.AddScoped<IBookingLoaderService, BookingDataLoaderService>();
 builder.Services.AddScoped<IBookingClient, BookingClient>();
+
+// UI Services following Single Responsibility Principle
+builder.Services.AddSingleton<IThemeService, ThemeService>();
+builder.Services.AddScoped<INavigationService, NavigationService>();
 
 // Add Render Context for the Client.
 builder.Services.AddSingleton<IRenderContext, ClientRenderContext>();

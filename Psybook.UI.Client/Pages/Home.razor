@@ -1,40 +1,304 @@
 ﻿@page "/"
 @using Heron.MudCalendar
+@using Microsoft.Extensions.Logging
+@using Psybook.UI.Client.Components
 @using Psybook.Objects.DbModels
 @using Psybook.Services.UI.DataLoaders
+@inherits BasePageComponent
+@inject IBookingLoaderService BookingLoaderService
+@inject ILogger<Home> Logger
 
-@inject IBookingLoaderService bookingLoaderService;
+<PageTitle>WMSP VIP Booker - Home</PageTitle>
 
-<PageTitle>WMSP Vip Booker</PageTitle>
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-4">
+    <!-- Header Section -->
+    <MudPaper Elevation="0" Class="pa-6 mb-6">
+        <MudStack Spacing="4">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="flex-wrap">
+                <div>
+                    <MudText Typo="Typo.h3" Color="Color.Primary" GutterBottom="true">
+                        <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Class="mr-3" />
+                        West Midlands Safari Park
+                    </MudText>
+                    <MudText Typo="Typo.h5" Color="Color.Secondary" Class="ml-6">
+                        VIP Experience Booking System
+                    </MudText>
+                </div>
+                
+                <MudStack Row="true" Spacing="2">
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               StartIcon="@Icons.Material.Filled.Add"
+                               OnClick="NavigateToBooking"
+                               Size="Size.Large">
+                        Book Experience
+                    </MudButton>
+                    
+                    <MudButton Variant="Variant.Outlined" 
+                               Color="Color.Secondary" 
+                               StartIcon="@Icons.Material.Filled.Refresh"
+                               OnClick="RefreshCalendar"
+                               Disabled="IsOperationInProgress">
+                        Refresh
+                    </MudButton>
+                </MudStack>
+            </MudStack>
 
-<MudText Typo="Typo.h2" GutterBottom="true">West Midlands Safari Park VIP Booker</MudText>
-<MudText Typo="Typo.h5" GutterBottom="true">Our empowering booking system</MudText>
+            <MudAlert Severity="Severity.Info" 
+                      Icon="@Icons.Material.Filled.Info" 
+                      Class="mt-4">
+                <MudText Typo="Typo.body1">
+                    Explore our amazing VIP experiences and book your perfect wildlife adventure! 
+                    <MudLink Href="https://www.wmsp.co.uk/vip-experiences" 
+                             Target="_blank" 
+                             Color="Color.Primary" 
+                             Underline="Underline.Always"
+                             Class="font-weight-bold">
+                        Learn more about VIP experiences
+                        <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" Class="ml-1" />
+                    </MudLink>
+                </MudText>
+            </MudAlert>
+        </MudStack>
+    </MudPaper>
 
-<MudAlert Severity="Severity.Normal" ContentAlignment="HorizontalAlignment.Start">
-    You can see the WMSP VIP details here:
-    <MudLink Href="https://www.wmsp.co.uk/vip-experiences" Target="_blank" Typo="Typo.body2" Color="Color.Primary">
-        <b>www.wmsp.co.uk/vip-experiences</b>
-    </MudLink>
-</MudAlert>
+    <!-- Calendar Section -->
+    <MudPaper Elevation="2" Class="pa-4">
+        <MudStack Spacing="3">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                <MudText Typo="Typo.h5" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.Event" Class="mr-2" />
+                    Booking Calendar
+                </MudText>
+                
+                @if (_calendarSlots.Count > 0)
+                {
+                    <MudChip T="string" 
+                             Color="Color.Success" 
+                             Icon="@Icons.Material.Filled.EventAvailable">
+                        @_calendarSlots.Count Booking@(_calendarSlots.Count != 1 ? "s" : "")
+                    </MudChip>
+                }
+            </MudStack>
 
-<br />
+            <!-- Loading State -->
+            @if (IsLoading)
+            {
+                <MudStack Spacing="2">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="60px" />
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="400px" />
+                </MudStack>
+            }
+            <!-- Error State -->
+            else if (HasErrors)
+            {
+                <MudAlert Severity="Severity.Error" 
+                          Icon="@Icons.Material.Filled.Error">
+                    <MudText Typo="Typo.body1">
+                        Unable to load calendar data. Please try refreshing the page.
+                    </MudText>
+                    <MudButton Variant="Variant.Text" 
+                               Color="Color.Error" 
+                               StartIcon="@Icons.Material.Filled.Refresh"
+                               OnClick="RefreshCalendar"
+                               Class="mt-2">
+                        Try Again
+                    </MudButton>
+                </MudAlert>
+            }
+            <!-- Calendar Display -->
+            else if (_calendarSlots.Count == 0)
+            {
+                <MudPaper Elevation="0" Class="pa-8 text-center">
+                    <MudIcon Icon="@Icons.Material.Filled.EventBusy" 
+                             Size="Size.Large" 
+                             Color="Color.Secondary" 
+                             Class="mb-4" />
+                    <MudText Typo="Typo.h6" Color="Color.Secondary" Class="mb-2">
+                        No bookings scheduled
+                    </MudText>
+                    <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
+                        Get started by booking your first VIP experience!
+                    </MudText>
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               StartIcon="@Icons.Material.Filled.Add"
+                               OnClick="NavigateToBooking">
+                        Book Your First Experience
+                    </MudButton>
+                </MudPaper>
+            }
+            else
+            {
+                <div class="calendar-wrapper">
+                    <MudCalendar T="CalendarSlot" 
+                                 Items="_calendarSlots" 
+                                 MonthCellMinHeight="140">
+                        <CellTemplate>
+                            <div class="calendar-event" 
+                                 style="width: 100%; height: 100%; border: 2px solid @GetColor(context.Color); border-radius: 6px; overflow: hidden;">
+                                <!-- Event Header -->
+                                <div class="event-header" 
+                                     style="background-color: @GetColor(context.Color); padding: 4px 8px;">
+                                    <MudText Typo="Typo.caption" 
+                                             Style="color: white; font-weight: 600; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
+                                        @context.Title
+                                    </MudText>
+                                </div>
+                                
+                                <!-- Event Content -->
+                                <div class="event-content pa-2" style="height: calc(100% - 28px); overflow: hidden;">
+                                    <MudStack Spacing="1">
+                                        <MudText Typo="Typo.caption" Color="Color.Primary">
+                                            <MudIcon Icon="@Icons.Material.Filled.AccessTime" Size="Size.Small" Class="mr-1" />
+                                            @GetTimeRange(context)
+                                        </MudText>
+                                        
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                            <MudIcon Icon="@Icons.Material.Filled.Person" Size="Size.Small" Class="mr-1" />
+                                            @($"{context.FirstName} {context.LastName}".Trim())
+                                        </MudText>
+                                        
+                                        @if (!string.IsNullOrEmpty(context.Location))
+                                        {
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Class="mr-1" />
+                                                @context.Location
+                                            </MudText>
+                                        }
+                                    </MudStack>
+                                </div>
+                            </div>
+                        </CellTemplate>
+                    </MudCalendar>
+                </div>
+            }
+        </MudStack>
+    </MudPaper>
 
-<MudCalendar T="CalendarSlot" Items="_calendarSlots" MonthCellMinHeight="120">
-    <CellTemplate>
-        <div style="width: 100%; height: 100%; border: 2px solid @GetColor(context.Color)">
-            <div style="background-color: @GetColor(context.Color)"><MudText Style="color: #ffffff;" Typo="Typo.body1" Align="Align.Center">@(context.Title)</MudText></div>
-            <div class="pa-2"><MudText Typo="Typo.body2">@context.Title: @context.Text</MudText></div>
-        </div>
-    </CellTemplate>
-</MudCalendar>
+    <!-- Statistics Section -->
+    @if (_calendarSlots.Count > 0 && !IsLoading)
+    {
+        <MudPaper Elevation="1" Class="pa-4 mt-4">
+            <MudText Typo="Typo.h6" Color="Color.Primary" Class="mb-3">
+                <MudIcon Icon="@Icons.Material.Filled.BarChart" Class="mr-2" />
+                Booking Statistics
+            </MudText>
+            
+            <MudGrid Spacing="2">
+                <MudItem xs="12" sm="6" md="3">
+                    <MudPaper Elevation="0" Class="pa-3 text-center" Style="background: linear-gradient(45deg, #7e6fff 30%, #a855f7 90%);">
+                        <MudText Typo="Typo.h4" Style="color: white;">@_calendarSlots.Count</MudText>
+                        <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.8);">Total Bookings</MudText>
+                    </MudPaper>
+                </MudItem>
+                
+                <MudItem xs="12" sm="6" md="3">
+                    <MudPaper Elevation="0" Class="pa-3 text-center" Style="background: linear-gradient(45deg, #51cf66 30%, #40c057 90%);">
+                        <MudText Typo="Typo.h4" Style="color: white;">@GetUpcomingBookingsCount()</MudText>
+                        <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.8);">Upcoming</MudText>
+                    </MudPaper>
+                </MudItem>
+                
+                <MudItem xs="12" sm="6" md="3">
+                    <MudPaper Elevation="0" Class="pa-3 text-center" Style="background: linear-gradient(45deg, #74c0fc 30%, #339af0 90%);">
+                        <MudText Typo="Typo.h4" Style="color: white;">@GetThisMonthBookingsCount()</MudText>
+                        <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.8);">This Month</MudText>
+                    </MudPaper>
+                </MudItem>
+                
+                <MudItem xs="12" sm="6" md="3">
+                    <MudPaper Elevation="0" Class="pa-3 text-center" Style="background: linear-gradient(45deg, #ffd43b 30%, #fab005 90%);">
+                        <MudText Typo="Typo.h4" Style="color: white;">@GetMostPopularExperience()</MudText>
+                        <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.8);">Most Popular</MudText>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    }
+</MudContainer>
 
 @code {
-    private string GetColor(Color color) => $"var(--mud-palette-{color.ToDescriptionString()})";
-
+    #region Fields and Properties
     private List<CalendarSlot> _calendarSlots = new();
+    #endregion
 
-    protected override async Task OnInitializedAsync()
+    #region Lifecycle Methods
+    protected override async Task InitializePageAsync()
     {
-        _calendarSlots = await bookingLoaderService.GetMultipleCalendarSlots();
+        await LoadCalendarData();
     }
+    #endregion
+
+    #region Event Handlers
+    private void NavigateToBooking()
+    {
+        NavigationService.NavigateToBooking();
+    }
+
+    private async Task RefreshCalendar()
+    {
+        await ExecuteOperationAsync(async () =>
+        {
+            await LoadCalendarData();
+            ShowSuccess("Calendar refreshed successfully");
+        }, "Refresh calendar");
+    }
+    #endregion
+
+    #region Private Methods
+    private async Task LoadCalendarData()
+    {
+        try
+        {
+            ClearErrors();
+            _calendarSlots = await BookingLoaderService.GetMultipleCalendarSlots();
+            Logger.LogInformation("Loaded {EventCount} calendar slots for display", _calendarSlots.Count);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load calendar data");
+            HandleError("Failed to load calendar data", ex);
+        }
+    }
+
+    private string GetColor(MudBlazor.Color color) => $"var(--mud-palette-{color.ToDescriptionString()})";
+
+    private string GetTimeRange(CalendarSlot slot)
+    {
+        return slot.AllDay 
+            ? "All Day" 
+            : slot.End.HasValue 
+                ? $"{slot.Start:HH:mm} - {slot.End:HH:mm}"
+                : slot.Start.ToString("HH:mm");
+    }
+
+    private int GetUpcomingBookingsCount()
+    {
+        return _calendarSlots.Count(e => e.Start > DateTime.Now);
+    }
+
+    private int GetThisMonthBookingsCount()
+    {
+        var thisMonth = DateTime.Now;
+        return _calendarSlots.Count(e => e.Start.Month == thisMonth.Month && e.Start.Year == thisMonth.Year);
+    }
+
+    private string GetMostPopularExperience()
+    {
+        if (_calendarSlots.Count == 0) return "N/A";
+        
+        var popular = _calendarSlots
+            .GroupBy(e => e.Title)
+            .OrderByDescending(g => g.Count())
+            .FirstOrDefault();
+            
+        return popular?.Key?.Split(' ').FirstOrDefault() ?? "N/A";
+    }
+
+    protected override void LogError(string message, Exception? exception)
+    {
+        Logger.LogError(exception, message);
+    }
+    #endregion
 }

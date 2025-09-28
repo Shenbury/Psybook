@@ -1,72 +1,268 @@
 ﻿@page "/Book"
+@using Microsoft.Extensions.Logging
 @using Psybook.Objects.DbModels
 @using Psybook.Objects.Enums
 @using Psybook.Services.UI.DataLoaders
 @using Psybook.Shared.Dictionary
 @using Psybook.Shared.PageModels
 @using FluentValidation
-@inject NavigationManager Navigation
+@using MudBlazor
+@using Psybook.UI.Client.Components
+@inherits BasePageComponent
+@inject IBookingLoaderService bookingLoaderService
+@inject ILogger<Book> Logger
 
-@inject IBookingLoaderService bookingLoaderService;
+<PageTitle>Book Experience - WMSP</PageTitle>
 
-<PageTitle>Booking Form</PageTitle>
+<MudContainer MaxWidth="MaxWidth.Large" Class="pa-4">
+    <MudPaper Elevation="0" Class="pa-6">
+        <!-- Header Section -->
+        <MudStack Spacing="4" Class="mb-6">
+            <MudBreadcrumbs Items="_breadcrumbItems" Separator="/" Class="mb-2" />
+            
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="flex-wrap">
+                <div>
+                    <MudText Typo="Typo.h3" Color="Color.Primary" GutterBottom="true">
+                        <MudIcon Icon="@Icons.Material.Filled.EventAvailable" Class="mr-2" />
+                        Book Your Experience
+                    </MudText>
+                    <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
+                        Reserve your spot for an unforgettable wildlife experience at WMSP
+                    </MudText>
+                </div>
+                
+                <MudButton Variant="Variant.Outlined" 
+                           Color="Color.Secondary" 
+                           StartIcon="@Icons.Material.Filled.ArrowBack"
+                           OnClick="() => NavigationService.NavigateToHome()">
+                    Back to Dashboard
+                </MudButton>
+            </MudStack>
+            
+            <MudAlert Severity="MudBlazor.Severity.Info" Class="mb-4" Icon="@Icons.Material.Filled.Info">
+                <MudText Typo="Typo.body2">
+                    Learn more about our VIP experiences: 
+                    <MudLink Href="https://www.wmsp.co.uk/vip-experiences" Target="_blank" Color="Color.Primary" Underline="Underline.Always">
+                        <strong>www.wmsp.co.uk/vip-experiences</strong>
+                    </MudLink>
+                </MudText>
+            </MudAlert>
+        </MudStack>
 
-<MudText Typo="Typo.h2" GutterBottom="true">Book In Experience</MudText>
-<MudText Typo="Typo.h5" GutterBottom="true">Our empowering booking system</MudText>
+        <!-- Loading State -->
+        @if (IsLoading)
+        {
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="400px" />
+        }
+        else
+        {
+            <MudPaper Elevation="2" Class="pa-6">
+                <MudForm @ref="_form" @bind-IsValid="@_isFormValid" @bind-Errors="@_errors" ValidationDelay="300">
+                    <MudGrid Spacing="4">
+                        
+                        <!-- Experience Selection -->
+                        <MudItem xs="12">
+                            <MudText Typo="Typo.h6" Color="Color.Primary" Class="mb-3">
+                                <MudIcon Icon="@Icons.Material.Filled.LocalActivity" Class="mr-2" />
+                                Experience Details
+                            </MudText>
+                        </MudItem>
 
-<MudAlert Severity="MudBlazor.Severity.Normal" ContentAlignment="HorizontalAlignment.Start">
-    You can see the WMSP VIP details here:
-    <MudLink Href="https://www.wmsp.co.uk/vip-experiences" Target="_blank" Typo="Typo.body2" Color="Color.Primary">
-        <b>www.wmsp.co.uk/vip-experiences</b>
-    </MudLink>
-</MudAlert>
+                        <MudItem xs="12" md="6">
+                            <MudSelect @bind-Value="_experienceForm.BookingExperience" 
+                                       Label="Select Experience" 
+                                       Variant="Variant.Outlined" 
+                                       AnchorOrigin="Origin.BottomCenter"
+                                       Required="true"
+                                       RequiredError="Please select an experience"
+                                       HelperText="Choose from our available wildlife experiences">
+                                @foreach (var experience in GetAvailableExperiences())
+                                {
+                                    <MudSelectItem Value="experience.Key">
+                                        <div class="d-flex align-center">
+                                            <MudChip T="string" Color="@experience.Value.Color" Size="Size.Small" Class="mr-2">
+                                                @experience.Key.ToString().Replace("Keeper", " Keeper")
+                                            </MudChip>
+                                            <div>
+                                                <MudText Typo="Typo.body2">@experience.Value.Title</MudText>
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">@experience.Value.Location</MudText>
+                                            </div>
+                                        </div>
+                                    </MudSelectItem>
+                                }
+                            </MudSelect>
+                        </MudItem>
 
-<br />
+                        <!-- Date and Time Section -->
+                        <MudItem xs="12">
+                            <MudDivider Class="my-4" />
+                            <MudText Typo="Typo.h6" Color="Color.Primary" Class="mb-3">
+                                <MudIcon Icon="@Icons.Material.Filled.Schedule" Class="mr-2" />
+                                Date & Time
+                            </MudText>
+                        </MudItem>
 
-<MudPaper Class="pa-4">
-    <MudForm @ref="_form" @bind-IsValid="@_success" @bind-Errors="@_errors">
+                        <MudItem xs="12" md="4">
+                            <MudDatePicker @bind-Date="_experienceDate" 
+                                           Label="Experience Date" 
+                                           Variant="Variant.Outlined"
+                                           Required="true"
+                                           RequiredError="Please select a date"
+                                           MinDate="DateTime.Today"
+                                           MaxDate="DateTime.Today.AddMonths(6)"
+                                           DateFormat="dd/MM/yyyy"
+                                           HelperText="Select your preferred date"
+                                           ShowToolbar="true"
+                                           ToolBarClass="justify-center" />
+                        </MudItem>
 
-        <MudSelect @bind-Value="_experienceForm.BookingExperience" Label="Experience to book" Variant="Variant.Outlined" Validation="() => _experienceForm.BookingExperience != BookingExperience.None">
-            @foreach (var bookExperiences in Enum.GetValues(typeof(BookingExperience)).Cast<BookingExperience>())
-            {
-                if (bookExperiences != BookingExperience.None)
-                {
-                    <MudSelectItem Value="bookExperiences">@bookExperiences</MudSelectItem>
-                }
-            }
-        </MudSelect>
+                        <MudItem xs="12" md="4">
+                            <MudTimePicker @bind-Time="_experienceStartTime" 
+                                           Label="Start Time" 
+                                           Variant="Variant.Outlined"
+                                           AmPm="true"
+                                           Required="true"
+                                           RequiredError="Please select a start time"
+                                           HelperText="Experience start time"
+                                           TimeFormat="hh:mm tt" />
+                        </MudItem>
 
-        <MudDatePicker Label="Date of Experience" @bind-Date="_experienceDate" DateFormat="dd.MM.yyyy" Validation="@EndTimeAfterStartValidator" ShowToolbar="false" Class="thin-timepicker" />
+                        <MudItem xs="12" md="4">
+                            <MudTimePicker @bind-Time="_experienceEndTime" 
+                                           Label="End Time" 
+                                           Variant="Variant.Outlined"
+                                           AmPm="true"
+                                           Required="true"
+                                           RequiredError="Please select an end time"
+                                           Validation="@(new Func<TimeSpan?, IEnumerable<string>>(ValidateEndTime))"
+                                           HelperText="Experience end time"
+                                           TimeFormat="hh:mm tt" />
+                        </MudItem>
 
-        <MudTimePicker Label="Start Time"
-                       AmPm="true"
-                       @bind-Time="_experienceStartTime"
-                       Validation="@EndTimeAfterStartValidator",
-                       Class="thin-timepicker" />
+                        <!-- Personal Information Section -->
+                        <MudItem xs="12">
+                            <MudDivider Class="my-4" />
+                            <MudText Typo="Typo.h6" Color="Color.Primary" Class="mb-3">
+                                <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-2" />
+                                Personal Information
+                            </MudText>
+                        </MudItem>
 
-        <MudTimePicker Label="End Time" AmPm="true" @bind-Time="_experienceEndTime" Validation="@notEmptyValidator.Validation" Class="thin-timepicker" />
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="_experienceForm.FirstName" 
+                                          Label="First Name" 
+                                          Variant="Variant.Outlined" 
+                                          Required="true"
+                                          RequiredError="First name is required"
+                                          MaxLength="50"
+                                          Counter="50"
+                                          HelperText="Enter your first name" />
+                        </MudItem>
 
-        <MudTextField @bind-Value="_experienceForm.FirstName" Label="First Name" Variant="Variant.Outlined" Validation="@notEmptyValidator.Validation"></MudTextField>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="_experienceForm.LastName" 
+                                          Label="Last Name" 
+                                          Variant="Variant.Outlined" 
+                                          Required="true"
+                                          RequiredError="Last name is required"
+                                          MaxLength="50"
+                                          Counter="50"
+                                          HelperText="Enter your last name" />
+                        </MudItem>
 
-        <MudTextField @bind-Value="_experienceForm.LastName" Label="Last Name" Variant="Variant.Outlined" Validation="@notEmptyValidator.Validation"></MudTextField>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="_experienceForm.ContactNumber" 
+                                          Label="Contact Number" 
+                                          Variant="Variant.Outlined" 
+                                          Required="true"
+                                          RequiredError="Contact number is required"
+                                          Validation="@(new Func<string, IEnumerable<string>>(ValidatePhoneNumber))"
+                                          MaxLength="15"
+                                          HelperText="Enter your phone number" />
+                        </MudItem>
 
-        <MudTextField @bind-Value="_experienceForm.ContactNumber" Label="Contact Number" Variant="Variant.Outlined" Validation="@notEmptyValidator.Validation"></MudTextField>
+                        <MudItem xs="12" md="6">
+                            <MudTextField @bind-Value="_experienceForm.Postcode" 
+                                          Label="Postcode" 
+                                          Variant="Variant.Outlined" 
+                                          Required="true"
+                                          RequiredError="Postcode is required"
+                                          Validation="@(new Func<string, IEnumerable<string>>(ValidatePostcode))"
+                                          MaxLength="10"
+                                          HelperText="Enter your postcode" />
+                        </MudItem>
 
-        <MudTextField @bind-Value="_experienceForm.FirstLineAddress" Label="First Line Address" Variant="Variant.Outlined" Validation="@notEmptyValidator.Validation"></MudTextField>
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="_experienceForm.FirstLineAddress" 
+                                          Label="Address" 
+                                          Variant="Variant.Outlined" 
+                                          Required="true"
+                                          RequiredError="Address is required"
+                                          MaxLength="100"
+                                          Counter="100"
+                                          HelperText="Enter your full address" />
+                        </MudItem>
 
-        <MudTextField @bind-Value="_experienceForm.Postcode" Label="Postcode" Variant="Variant.Outlined" Validation="@notEmptyValidator.Validation"></MudTextField>
+                        <!-- Additional Notes Section -->
+                        <MudItem xs="12">
+                            <MudDivider Class="my-4" />
+                            <MudText Typo="Typo.h6" Color="Color.Primary" Class="mb-3">
+                                <MudIcon Icon="@Icons.Material.Filled.Notes" Class="mr-2" />
+                                Additional Information
+                            </MudText>
+                        </MudItem>
 
-        <MudTextField T="string" Label="Any experience notes" Variant="Variant.Text" Text="@_experienceForm.Notes" AutoGrow Lines="3" HelperText="Add any notes for the experience" />
+                        <MudItem xs="12">
+                            <MudTextField @bind-Value="_experienceForm.Notes" 
+                                          Label="Special Requirements or Notes" 
+                                          Variant="Variant.Outlined" 
+                                          Lines="4"
+                                          MaxLength="500"
+                                          Counter="500"
+                                          AutoGrow="true"
+                                          HelperText="Any special requirements, dietary needs, or additional information" />
+                        </MudItem>
 
-        <br />
+                        <!-- Action Buttons -->
+                        <MudItem xs="12">
+                            <MudDivider Class="my-4" />
+                            <MudStack Row="true" Spacing="3" Justify="Justify.FlexEnd" Class="mt-4">
+                                <MudButton Variant="Variant.Outlined" 
+                                           Color="Color.Secondary" 
+                                           StartIcon="@Icons.Material.Filled.Cancel"
+                                           OnClick="CancelBooking"
+                                           Disabled="IsOperationInProgress">
+                                    Cancel
+                                </MudButton>
+                                
+                                <MudButton Variant="Variant.Filled" 
+                                           Color="Color.Primary" 
+                                           StartIcon="@Icons.Material.Filled.Save"
+                                           OnClick="SaveBooking"
+                                           Disabled="!_isFormValid || IsOperationInProgress">
+                                    @if (IsOperationInProgress)
+                                    {
+                                        <MudProgressCircular Color="Color.Secondary" Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                        <MudText>Saving...</MudText>
+                                    }
+                                    else
+                                    {
+                                        <MudText>Book Experience</MudText>
+                                    }
+                                </MudButton>
+                            </MudStack>
+                        </MudItem>
 
-        <MudButton OnClick="Save" Variant="Variant.Filled" StartIcon="@Icons.Material.Filled.Save" Color="Color.Info" Size="Size.Medium">Save</MudButton>
-
-    </MudForm>   
-</MudPaper>
+                    </MudGrid>
+                </MudForm>
+            </MudPaper>
+        }
+    </MudPaper>
+</MudContainer>
 
 @code {
-    private bool _success;
+    #region Fields and Properties
+    private bool _isFormValid;
     private string[] _errors = { };
     private MudForm? _form;
     private DateTime? _experienceDate;
@@ -74,78 +270,154 @@
     private TimeSpan? _experienceEndTime;
 
     private ExperienceForm _experienceForm = new();
+    private Dictionary<BookingExperience, ExperienceRecord> _allExperienceInformation = new();
+    
+    private List<BreadcrumbItem> _breadcrumbItems = new()
+    {
+        new BreadcrumbItem("Dashboard", href: "/", icon: Icons.Material.Filled.Home),
+        new BreadcrumbItem("Book Experience", href: null, disabled: true, icon: Icons.Material.Filled.EventAvailable)
+    };
+    #endregion
 
-    private Dictionary<BookingExperience, ExperienceRecord> _allExperienceInformation { get; set; } = [];
+    #region Lifecycle Methods
+    protected override async Task InitializePageAsync()
+    {
+        await LoadExperienceData();
+        SetDefaultValues();
+    }
+    #endregion
 
-    private IEnumerable<string> EndTimeAfterStartValidator(TimeSpan? endTime)
+    #region Validation Methods
+    private IEnumerable<string> ValidateEndTime(TimeSpan? endTime)
     {
         if (!_experienceStartTime.HasValue || !endTime.HasValue)
-            yield break; // Let required/empty validators handle this
+            yield break;
 
         if (endTime <= _experienceStartTime)
-            yield return "End Time must be after Start Time";
+            yield return "End time must be after start time";
+
+        var duration = endTime.Value - _experienceStartTime.Value;
+        if (duration.TotalMinutes < 30)
+            yield return "Experience must be at least 30 minutes long";
+
+        if (duration.TotalHours > 8)
+            yield return "Experience cannot exceed 8 hours";
     }
 
-    protected async Task Save()
+    private IEnumerable<string> ValidatePhoneNumber(string phoneNumber)
     {
-        ExperienceRecord experienceInformation = _allExperienceInformation.Single(x => x.Key == _experienceForm.BookingExperience).Value;
+        if (string.IsNullOrWhiteSpace(phoneNumber))
+            yield break;
 
-        var dateStart = _experienceDate + _experienceStartTime;
-        var dateEnd = _experienceDate + _experienceEndTime;
+        var digitsOnly = new string(phoneNumber.Where(char.IsDigit).ToArray());
+        if (digitsOnly.Length < 10 || digitsOnly.Length > 15)
+            yield return "Please enter a valid phone number";
+    }
 
-        await bookingLoaderService.SaveCalendarSlot(new CalendarSlot
+    private IEnumerable<string> ValidatePostcode(string postcode)
+    {
+        if (string.IsNullOrWhiteSpace(postcode))
+            yield break;
+
+        // UK postcode pattern (basic validation)
+        var ukPostcodePattern = @"^[A-Z]{1,2}[0-9R][0-9A-Z]? [0-9][A-Z]{2}$";
+        if (!System.Text.RegularExpressions.Regex.IsMatch(postcode.ToUpper(), ukPostcodePattern))
+            yield return "Please enter a valid UK postcode (e.g., SW1A 1AA)";
+    }
+    #endregion
+
+    #region Helper Methods
+    private Dictionary<BookingExperience, ExperienceRecord> GetAvailableExperiences()
+    {
+        return _allExperienceInformation.Where(x => x.Key != BookingExperience.None).ToDictionary(x => x.Key, x => x.Value);
+    }
+
+    private void SetDefaultValues()
+    {
+        _experienceDate = DateTime.Today.AddDays(1);
+        _experienceStartTime = new TimeSpan(10, 0, 0); // 10:00 AM
+        _experienceEndTime = new TimeSpan(12, 0, 0);   // 12:00 PM
+    }
+    #endregion
+
+    #region Event Handlers
+    private async Task SaveBooking()
+    {
+        if (_form == null || !_isFormValid)
+        {
+            ShowWarning("Please fix the form errors before saving");
+            return;
+        }
+
+        await ExecuteOperationAsync(async () =>
+        {
+            if (!_allExperienceInformation.TryGetValue(_experienceForm.BookingExperience, out var experienceInformation))
             {
-            // Experience
+                HandleError("Selected experience is not available");
+                return;
+            }
+
+            var dateStart = _experienceDate!.Value.Date + _experienceStartTime!.Value;
+            var dateEnd = _experienceDate!.Value.Date + _experienceEndTime!.Value;
+
+            var calendarSlot = new CalendarSlot
+            {
+                // Experience details
                 Title = experienceInformation.Title,
                 Color = experienceInformation.Color,
                 Location = experienceInformation.Location,
-                Start = dateStart!.Value,
+                Start = dateStart,
                 End = dateEnd,
                 AllDay = experienceInformation.AllDay,
                 BookingExperience = experienceInformation.BookingExperience,
 
-            // Personals
-                ContactNumber = _experienceForm.ContactNumber,
-                FirstLineAddress = _experienceForm.FirstLineAddress,
-                FirstName = _experienceForm.FirstName,
-                LastName = _experienceForm.LastName,
-                Postcode = _experienceForm.Postcode,
+                // Personal information
+                ContactNumber = _experienceForm.ContactNumber!,
+                FirstLineAddress = _experienceForm.FirstLineAddress!,
+                FirstName = _experienceForm.FirstName!,
+                LastName = _experienceForm.LastName!,
+                Postcode = _experienceForm.Postcode!,
 
-            // Anything else
-                Text = _experienceForm.Notes,
-            });
+                // Additional information
+                Text = _experienceForm.Notes ?? string.Empty,
+            };
 
-        Navigation.NavigateTo("/");
+            await bookingLoaderService.SaveCalendarSlot(calendarSlot);
+
+            ShowSuccess($"Successfully booked {experienceInformation.Title} for {dateStart:dddd, MMMM dd, yyyy} at {dateStart:hh:mm tt}");
+            
+            // Navigate back to home after successful booking
+            await Task.Delay(1500); // Brief delay to show success message
+            NavigationService.NavigateToHome();
+            
+        }, "Save booking");
     }
 
-    FluentValueValidator<string> notEmptyValidator = new FluentValueValidator<string>(x => x
-    .NotEmpty());
-
-    FluentValueValidator<DateTime?> notMinimumValueOrNull = new FluentValueValidator<DateTime?>(x => x
-    .NotEmpty()
-    .NotEqual(DateTime.MinValue)
-    .NotNull());
-
-    public class FluentValueValidator<T> : AbstractValidator<T>
+    private void CancelBooking()
     {
-        public FluentValueValidator(Action<IRuleBuilderInitial<T, T>> rule)
-        {
-            rule(RuleFor(x => x));
-        }
-
-        private IEnumerable<string> ValidateValue(T arg)
-        {
-            var result = Validate(arg);
-            if (result.IsValid)
-                return new string[0];
-            return result.Errors.Select(e => e.ErrorMessage);
-        }
-
-        public Func<T, IEnumerable<string>> Validation => ValidateValue;
+        NavigationService.NavigateToHome();
     }
+    #endregion
 
-    protected override async Task OnInitializedAsync()
+    #region Private Methods
+    private async Task LoadExperienceData()
     {
-        _allExperienceInformation = await bookingLoaderService.GetExperienceInfo();
+        try
+        {
+            ClearErrors();
+            _allExperienceInformation = await bookingLoaderService.GetExperienceInfo();
+            Logger.LogInformation("Loaded {ExperienceCount} experience types", _allExperienceInformation.Count);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load experience information");
+            HandleError("Failed to load experience information", ex);
+        }
     }
+
+    protected override void LogError(string message, Exception? exception)
+    {
+        Logger.LogError(exception, message);
+    }
+    #endregion
 }

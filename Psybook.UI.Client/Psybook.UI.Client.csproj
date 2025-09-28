@@ -21,4 +21,8 @@
     <ProjectReference Include="..\Psybook.Shared\Psybook.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Models\" />
+  </ItemGroup>
+
 </Project>

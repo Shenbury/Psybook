@@ -1,7 +1,122 @@
-﻿
-<MudNavMenu>
-    <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>    
-    <MudNavLink Href="/Book" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.AddCircle">Book Experience</MudNavLink>    
+﻿<MudNavMenu Rounded="true" Dense="false" Class="pa-2">
+    <!-- Home Link -->
+    <MudNavLink Href="/" 
+                Match="NavLinkMatch.All" 
+                Icon="@Icons.Material.Filled.Dashboard"
+                IconColor="Color.Primary">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudText Typo="Typo.body1">Dashboard</MudText>
+            <MudSpacer />
+        </MudStack>
+    </MudNavLink>
+    
+    <!-- Book Experience Link -->
+    <MudNavLink Href="/Book" 
+                Match="NavLinkMatch.Prefix" 
+                Icon="@Icons.Material.Filled.EventAvailable"
+                IconColor="Color.Secondary">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudText Typo="Typo.body1">Book Experience</MudText>
+            <MudSpacer />
+            <MudChip T="string" Size="Size.Small" Color="Color.Success" Class="nav-chip">
+                New
+            </MudChip>
+        </MudStack>
+    </MudNavLink>
+
+    <!-- Divider -->
+    <MudDivider Class="my-2" />
+    
+    <!-- Quick Actions Section -->
+    <MudText Typo="Typo.overline" 
+             Color="Color.Secondary" 
+             Class="px-3 py-2 nav-section-header">
+        Quick Actions
+    </MudText>
+    
+    <!-- Calendar View (Future) -->
+    <MudNavLink Disabled="true"
+                Icon="@Icons.Material.Filled.CalendarViewMonth"
+                IconColor="Color.Info">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Calendar View</MudText>
+            <MudSpacer />
+            <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined" Class="nav-chip">
+                Soon
+            </MudChip>
+        </MudStack>
+    </MudNavLink>
+    
+    <!-- Reports (Future) -->
+    <MudNavLink Disabled="true"
+                Icon="@Icons.Material.Filled.Assessment"
+                IconColor="Color.Warning">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudText Typo="Typo.body2" Color="Color.Secondary">Reports</MudText>
+            <MudSpacer />
+            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined" Class="nav-chip">
+                Soon
+            </MudChip>
+        </MudStack>
+    </MudNavLink>
+
+    <!-- Divider -->
+    <MudDivider Class="my-2" />
+    
+    <!-- External Links Section -->
+    <MudText Typo="Typo.overline" 
+             Color="Color.Secondary" 
+             Class="px-3 py-2 nav-section-header">
+        Resources
+    </MudText>
+    
+    <!-- WMSP Website -->
+    <MudNavLink Href="https://www.wmsp.co.uk" 
+                Target="_blank"
+                Icon="@Icons.Material.Filled.Language"
+                IconColor="Color.Tertiary">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudText Typo="Typo.body2">WMSP Website</MudText>
+            <MudSpacer />
+            <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" Color="Color.Secondary" />
+        </MudStack>
+    </MudNavLink>
+    
+    <!-- VIP Experiences -->
+    <MudNavLink Href="https://www.wmsp.co.uk/vip-experiences" 
+                Target="_blank"
+                Icon="@Icons.Material.Filled.StarRate"
+                IconColor="Color.Warning">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudText Typo="Typo.body2">VIP Experiences</MudText>
+            <MudSpacer />
+            <MudIcon Icon="@Icons.Material.Filled.OpenInNew" Size="Size.Small" Color="Color.Secondary" />
+        </MudStack>
+    </MudNavLink>
+
+    <!-- Spacer to push content to bottom if needed -->
+    <div style="flex-grow: 1;"></div>
+    
+    <!-- Footer Section -->
+    <MudDivider Class="my-2" />
+    
+    <!-- Support/Help Link -->
+    <MudNavLink Icon="@Icons.Material.Filled.Help"
+                IconColor="Color.Info"
+                OnClick="ShowHelp">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudText Typo="Typo.body2">Help & Support</MudText>
+            <MudSpacer />
+        </MudStack>
+    </MudNavLink>
 </MudNavMenu>
+
+@code {
+    private void ShowHelp()
+    {
+        // Could open a help dialog or navigate to help page
+        // For now, we'll just show a placeholder
+    }
+}
 
 

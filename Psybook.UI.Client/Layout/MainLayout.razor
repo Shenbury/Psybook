@@ -1,103 +1,226 @@
-﻿@inherits LayoutComponentBase
+﻿@using Psybook.UI.Client.Services
+@inherits LayoutComponentBase
+@inject IThemeService ThemeService
+@implements IDisposable
 
-<MudThemeProvider Theme="@_theme" IsDarkMode="_isDarkMode" />
+<MudThemeProvider Theme="@ThemeService.CurrentTheme" IsDarkMode="@ThemeService.IsDarkMode" />
 <MudPopoverProvider />
 <MudDialogProvider />
 <MudSnackbarProvider />
+
 <MudLayout>
-    <MudAppBar Elevation="1">
-        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
-        <MudText Typo="Typo.h5" Class="ml-3">WSMP Booking System</MudText>
+    <MudAppBar Elevation="2" Dense="false">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" 
+                       Color="Color.Inherit" 
+                       Edge="Edge.Start" 
+                       OnClick="ToggleDrawer" 
+                       aria-label="Toggle navigation menu" />
+        
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2" Class="ml-2">
+            <MudIcon Icon="@Icons.Material.Filled.Pets" Color="Color.Inherit" />
+            <MudText Typo="Typo.h6" Class="d-none d-sm-flex">
+                WMSP Booking System
+            </MudText>
+            <MudText Typo="Typo.body1" Class="d-flex d-sm-none">
+                WMSP
+            </MudText>
+        </MudStack>
+        
         <MudSpacer />
-        <MudIconButton Icon="@(DarkLightModeButtonIcon)" Color="Color.Inherit" OnClick="@DarkModeToggle" />
-        <MudIconButton Icon="@Icons.Material.Filled.MoreVert" Color="Color.Inherit" Edge="Edge.End" />
+        
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+            <MudTooltip Text="@GetThemeTooltip()" Placement="Placement.Bottom">
+                <MudIconButton Icon="@GetThemeIcon()" 
+                               Color="Color.Inherit" 
+                               OnClick="ToggleTheme" />
+            </MudTooltip>
+            
+            <MudMenu Icon="@Icons.Material.Filled.MoreVert" 
+                     Color="Color.Inherit" 
+                     Dense="true"
+                     AnchorOrigin="Origin.BottomRight">
+                <MudMenuItem Icon="@Icons.Material.Filled.Home" 
+                             OnClick="NavigateHome">
+                    Home
+                </MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.Add" 
+                             OnClick="NavigateToBooking">
+                    Book Experience
+                </MudMenuItem>
+                <MudDivider />
+                <MudMenuItem Icon="@Icons.Material.Filled.Info" 
+                             OnClick="ShowAbout">
+                    About
+                </MudMenuItem>
+            </MudMenu>
+        </MudStack>
     </MudAppBar>
-    <MudDrawer id="nav-drawer" @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="2">
+    
+    <MudDrawer @bind-Open="_drawerOpen" 
+               ClipMode="DrawerClipMode.Always" 
+               Elevation="3"
+               Variant="@DrawerVariant.Mini">
+        <div class="drawer-header pa-4">
+            <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                <MudAvatar Color="Color.Primary" Size="Size.Large">
+                    <MudIcon Icon="@Icons.Material.Filled.Pets" />
+                </MudAvatar>
+                @if (_drawerOpen)
+                {
+                    <div class="text-center">
+                        <MudText Typo="Typo.h6" Color="Color.Primary">WMSP</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">Booking System</MudText>
+                    </div>
+                }
+            </MudStack>
+        </div>
+        
+        <MudDivider Class="mb-2" />
+        
         <NavMenu />
+        
+        <MudSpacer />
+        
+        <!-- Footer in drawer -->
+        <div class="drawer-footer pa-2">
+            @if (_drawerOpen)
+            {
+                <MudStack AlignItems="AlignItems.Center" Spacing="1">
+                    <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center">
+                        West Midlands Safari Park
+                    </MudText>
+                    <MudText Typo="Typo.overline" Color="Color.Secondary" Align="Align.Center">
+                        v1.0.0
+                    </MudText>
+                </MudStack>
+            }
+            else
+            {
+                <MudTooltip Text="West Midlands Safari Park v1.0.0" Placement="Placement.Right">
+                    <MudIcon Icon="@Icons.Material.Filled.Copyright" 
+                             Color="Color.Secondary" 
+                             Size="Size.Small" 
+                             Class="mx-auto d-block" />
+                </MudTooltip>
+            }
+        </div>
     </MudDrawer>
-    <MudMainContent Class="pt-16 pa-4">
-        @Body
+    
+    <MudMainContent>
+        <div class="main-content pa-4">
+            <MudContainer MaxWidth="MaxWidth.False" Class="pa-0">
+                @Body
+            </MudContainer>
+        </div>
     </MudMainContent>
 </MudLayout>
 
-
+<!-- Error UI -->
 <div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
-    <span class="dismiss">🗙</span>
+    <MudPaper Class="pa-4 ma-4" Elevation="8">
+        <MudStack AlignItems="AlignItems.Center" Spacing="2">
+            <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Large" />
+            <MudText Typo="Typo.h6" Color="Color.Error">An unhandled error has occurred</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary" Align="Align.Center">
+                Something went wrong. Please reload the page or contact support if the problem persists.
+            </MudText>
+            <MudStack Row="true" Spacing="2">
+                <MudButton Variant="Variant.Filled" 
+                           Color="Color.Primary" 
+                           StartIcon="@Icons.Material.Filled.Refresh"
+                           OnClick="ReloadPage">
+                    Reload
+                </MudButton>
+                <MudButton Variant="Variant.Outlined" 
+                           Color="Color.Secondary" 
+                           StartIcon="@Icons.Material.Filled.Close"
+                           OnClick="DismissError">
+                    Dismiss
+                </MudButton>
+            </MudStack>
+        </MudStack>
+    </MudPaper>
 </div>
 
 @code {
+    #region Fields and Properties
     private bool _drawerOpen = true;
-    private bool _isDarkMode = true;
-    private MudTheme? _theme = null;
+    #endregion
 
+    #region Lifecycle Methods
     protected override void OnInitialized()
     {
         base.OnInitialized();
-
-        _theme = new()
-        {
-            PaletteLight = _lightPalette,
-            PaletteDark = _darkPalette,
-            LayoutProperties = new LayoutProperties()
-        };
+        ThemeService.ThemeChanged += StateHasChanged;
+        
+        // Adjust drawer state based on screen size
+        _drawerOpen = !IsMobileDevice();
     }
+    #endregion
 
-    private void DrawerToggle()
+    #region Event Handlers
+    private void ToggleDrawer()
     {
         _drawerOpen = !_drawerOpen;
     }
 
-    private void DarkModeToggle()
+    private void ToggleTheme()
     {
-        _isDarkMode = !_isDarkMode;
+        ThemeService.ToggleDarkMode();
     }
 
-    private readonly PaletteLight _lightPalette = new()
+    private void NavigateHome()
     {
-        Black = "#110e2d",
-        AppbarText = "#424242",
-        AppbarBackground = "rgba(255,255,255,0.8)",
-        DrawerBackground = "#ffffff",
-        GrayLight = "#e8e8e8",
-        GrayLighter = "#f9f9f9",
-    };
+        // Navigation logic would be injected via service
+    }
 
-    private readonly PaletteDark _darkPalette = new()
+    private void NavigateToBooking()
     {
-        Primary = "#7e6fff",
-        Surface = "#1e1e2d",
-        Background = "#1a1a27",
-        BackgroundGray = "#151521",
-        AppbarText = "#92929f",
-        AppbarBackground = "rgba(26,26,39,0.8)",
-        DrawerBackground = "#1a1a27",
-        ActionDefault = "#74718e",
-        ActionDisabled = "#9999994d",
-        ActionDisabledBackground = "#605f6d4d",
-        TextPrimary = "#b2b0bf",
-        TextSecondary = "#92929f",
-        TextDisabled = "#ffffff33",
-        DrawerIcon = "#92929f",
-        DrawerText = "#92929f",
-        GrayLight = "#2a2833",
-        GrayLighter = "#1e1e2d",
-        Info = "#4a86ff",
-        Success = "#3dcb6c",
-        Warning = "#ffb545",
-        Error = "#ff3f5f",
-        LinesDefault = "#33323e",
-        TableLines = "#33323e",
-        Divider = "#292838",
-        OverlayLight = "#1e1e2d80",
-    };
+        // Navigation logic would be injected via service
+    }
 
-    public string DarkLightModeButtonIcon => _isDarkMode switch
+    private void ShowAbout()
     {
-        true => Icons.Material.Rounded.AutoMode,
-        false => Icons.Material.Outlined.DarkMode,
-    };
+        // Could show a dialog with app information
+    }
+
+    private void ReloadPage()
+    {
+        // This would need IJSRuntime injection in a real implementation
+        // For now, just log the intent
+    }
+
+    private void DismissError()
+    {
+        // This would need IJSRuntime injection in a real implementation  
+        // For now, just log the intent
+    }
+    #endregion
+
+    #region Helper Methods
+    private string GetThemeIcon()
+    {
+        return ThemeService.IsDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode;
+    }
+
+    private string GetThemeTooltip()
+    {
+        return ThemeService.IsDarkMode ? "Switch to light mode" : "Switch to dark mode";
+    }
+
+    private static bool IsMobileDevice()
+    {
+        // Simple heuristic - in a real app, you might use JS interop to detect screen size
+        return false; // Default to desktop for now
+    }
+    #endregion
+
+    #region IDisposable Implementation
+    public void Dispose()
+    {
+        ThemeService.ThemeChanged -= StateHasChanged;
+    }
+    #endregion
 }
 
 

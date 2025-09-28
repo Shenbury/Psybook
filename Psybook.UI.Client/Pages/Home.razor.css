@@ -1,0 +1,125 @@
+/* Calendar wrapper styling */
+.calendar-wrapper {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Calendar event styling */
+.calendar-event {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.calendar-event:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Event header styling */
+.event-header {
+    position: relative;
+    overflow: hidden;
+}
+
+.event-header::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: left 0.5s ease;
+}
+
+.calendar-event:hover .event-header::after {
+    left: 100%;
+}
+
+/* Event content styling */
+.event-content {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+}
+
+/* Statistics cards */
+.stats-card {
+    border-radius: 12px !important;
+    transition: transform 0.2s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-4px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .calendar-wrapper {
+        margin: 0 -8px;
+    }
+    
+    .event-content {
+        padding: 4px !important;
+    }
+    
+    .event-content .mud-stack {
+        gap: 2px !important;
+    }
+    
+    .stats-card {
+        margin-bottom: 8px;
+    }
+}
+
+/* Loading animations */
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+}
+
+.loading-pulse {
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+/* Custom scrollbar for calendar */
+.calendar-wrapper ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+.calendar-wrapper ::-webkit-scrollbar-track {
+    background: #f1f3f4;
+    border-radius: 4px;
+}
+
+.calendar-wrapper ::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.calendar-wrapper ::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Enhanced alert styling */
+.mud-alert {
+    border-radius: 8px !important;
+}
+
+/* Statistics gradient backgrounds */
+.stats-gradient-1 {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+.stats-gradient-2 {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%) !important;
+}
+
+.stats-gradient-3 {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+}
+
+.stats-gradient-4 {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%) !important;
+}
