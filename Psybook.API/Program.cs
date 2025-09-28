@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Web;
 using Psybook.Repositories.Booking;
 using Psybook.ServiceDefaults;
@@ -23,6 +22,17 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: "_myAllowSpecificOrigins",
+                      policy =>
+                      {
+                          policy.AllowAnyOrigin()
+                                .AllowAnyMethod()
+                                .AllowAnyHeader();
+                      });
+});
+
 builder.AddSqlServerDbContext<BookingContext>(connectionName: "wmsp-db");
 builder.Services.AddScoped<IBookingRepository, SqlBookingRepository>();
 builder.Services.AddScoped<IBookingService, BookingService>();
@@ -40,6 +50,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseCors("_myAllowSpecificOrigins");
 
 app.UseAuthentication();
 

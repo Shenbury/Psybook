@@ -34,7 +34,7 @@ public class BookingController : ControllerBase
     }
 
     [HttpPost(Name = "SaveCalendarSlot")]
-    public async Task SaveCalendarSlots(CalendarSlot calendarSlot)
+    public async Task SaveCalendarSlot(CalendarSlot calendarSlot)
     {
         await _bookingService.SaveCalendarSlotsAsync(calendarSlot);
     }
