@@ -17,5 +17,50 @@ namespace Psybook.Objects.DbModels
         public required string FirstLineAddress { get; set; }
         public required string Postcode { get; set; }
         public required BookingExperience BookingExperience { get; set; }
+        
+        // Booking Status Management
+        public BookingStatus Status { get; set; } = BookingStatus.Pending;
+        
+        // Audit Fields
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+        public DateTime? ModifiedAt { get; set; }
+        public string? ModifiedBy { get; set; }
+        public string? CancellationReason { get; set; }
+        public DateTime? CancelledAt { get; set; }
+        public string? Notes { get; set; }
+        
+        // Computed Properties
+        [NotMapped]
+        public bool IsActive => Status == BookingStatus.Confirmed || Status == BookingStatus.Pending;
+        
+        [NotMapped]
+        public bool IsCancellable => Status == BookingStatus.Pending || Status == BookingStatus.Confirmed;
+        
+        [NotMapped]
+        public bool IsModifiable => Status == BookingStatus.Pending || Status == BookingStatus.Confirmed;
+        
+        [NotMapped]
+        public string StatusDisplayName => Status switch
+        {
+            BookingStatus.Pending => "Pending Confirmation",
+            BookingStatus.Confirmed => "Confirmed",
+            BookingStatus.Cancelled => "Cancelled",
+            BookingStatus.Completed => "Completed",
+            BookingStatus.NoShow => "No Show",
+            BookingStatus.OnHold => "On Hold",
+            _ => "Unknown"
+        };
+        
+        [NotMapped]
+        public Color StatusColor => Status switch
+        {
+            BookingStatus.Pending => Color.Warning,
+            BookingStatus.Confirmed => Color.Success,
+            BookingStatus.Cancelled => Color.Error,
+            BookingStatus.Completed => Color.Info,
+            BookingStatus.NoShow => Color.Dark,
+            BookingStatus.OnHold => Color.Secondary,
+            _ => Color.Default
+        };
     }
 }

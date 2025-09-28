@@ -3,6 +3,7 @@
 @using Microsoft.Extensions.Logging
 @using Psybook.UI.Client.Components
 @using Psybook.Objects.DbModels
+@using Psybook.Objects.Enums
 @using Psybook.Services.UI.DataLoaders
 @inherits BasePageComponent
 @inject IBookingLoaderService BookingLoaderService
@@ -62,25 +63,72 @@
         </MudStack>
     </MudPaper>
 
-    <!-- Calendar Section -->
-    <MudPaper Elevation="2" Class="pa-4">
-        <MudStack Spacing="3">
-            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                <MudText Typo="Typo.h5" Color="Color.Primary">
-                    <MudIcon Icon="@Icons.Material.Filled.Event" Class="mr-2" />
-                    Booking Calendar
-                </MudText>
-                
-                @if (_calendarSlots.Count > 0)
-                {
-                    <MudChip T="string" 
-                             Color="Color.Success" 
-                             Icon="@Icons.Material.Filled.EventAvailable">
-                        @_calendarSlots.Count Booking@(_calendarSlots.Count != 1 ? "s" : "")
-                    </MudChip>
-                }
-            </MudStack>
+    <!-- Status Filter Tabs -->
+    <MudPaper Elevation="1" Class="pa-4 mb-4">
+        <MudTabs Elevation="0" Rounded="true" PanelClass="pa-6" @bind-ActivePanelIndex="ActiveTabIndex">
+            <MudTabPanel Text="All Bookings" Badge="@_calendarSlots.Count" BadgeColor="Color.Info">
+                <CalendarDisplay CalendarSlots="_calendarSlots" />
+            </MudTabPanel>
+            <MudTabPanel Text="Confirmed" Badge="@GetBookingsByStatus(BookingStatus.Confirmed).Count()" BadgeColor="Color.Success">
+                <CalendarDisplay CalendarSlots="GetBookingsByStatus(BookingStatus.Confirmed)" />
+            </MudTabPanel>
+            <MudTabPanel Text="Pending" Badge="@GetBookingsByStatus(BookingStatus.Pending).Count()" BadgeColor="Color.Warning">
+                <CalendarDisplay CalendarSlots="GetBookingsByStatus(BookingStatus.Pending)" />
+            </MudTabPanel>
+            <MudTabPanel Text="Cancelled" Badge="@GetBookingsByStatus(BookingStatus.Cancelled).Count()" BadgeColor="Color.Error">
+                <CalendarDisplay CalendarSlots="GetBookingsByStatus(BookingStatus.Cancelled)" />
+            </MudTabPanel>
+        </MudTabs>
+    </MudPaper>
 
+    <!-- Statistics Section -->
+    @if (_calendarSlots.Count > 0 && !IsLoading)
+    {
+        <MudPaper Elevation="1" Class="pa-4 mt-4">
+            <MudText Typo="Typo.h6" Color="Color.Primary" Class="mb-3">
+                <MudIcon Icon="@Icons.Material.Filled.BarChart" Class="mr-2" />
+                Booking Statistics
+            </MudText>
+            
+            <MudGrid Spacing="2">
+                <MudItem xs="12" sm="6" md="3">
+                    <MudPaper Elevation="0" Class="pa-3 text-center" Style="background: linear-gradient(45deg, #7e6fff 30%, #a855f7 90%);">
+                        <MudText Typo="Typo.h4" Style="color: white;">@_calendarSlots.Count</MudText>
+                        <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.8);">Total Bookings</MudText>
+                    </MudPaper>
+                </MudItem>
+                
+                <MudItem xs="12" sm="6" md="3">
+                    <MudPaper Elevation="0" Class="pa-3 text-center" Style="background: linear-gradient(45deg, #51cf66 30%, #40c057 90%);">
+                        <MudText Typo="Typo.h4" Style="color: white;">@GetBookingsByStatus(BookingStatus.Confirmed).Count()</MudText>
+                        <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.8);">Confirmed</MudText>
+                    </MudPaper>
+                </MudItem>
+                
+                <MudItem xs="12" sm="6" md="3">
+                    <MudPaper Elevation="0" Class="pa-3 text-center" Style="background: linear-gradient(45deg, #ffd43b 30%, #fab005 90%);">
+                        <MudText Typo="Typo.h4" Style="color: white;">@GetBookingsByStatus(BookingStatus.Pending).Count()</MudText>
+                        <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.8);">Pending</MudText>
+                    </MudPaper>
+                </MudItem>
+                
+                <MudItem xs="12" sm="6" md="3">
+                    <MudPaper Elevation="0" Class="pa-3 text-center" Style="background: linear-gradient(45deg, #74c0fc 30%, #339af0 90%);">
+                        <MudText Typo="Typo.h4" Style="color: white;">@GetThisMonthBookingsCount()</MudText>
+                        <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.8);">This Month</MudText>
+                    </MudPaper>
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    }
+</MudContainer>
+
+<!-- Calendar Display Component -->
+@code {
+    private RenderFragment<IEnumerable<CalendarSlot>> CalendarDisplay => (calendarSlots) => __builder =>
+    {
+        <MudStack Spacing="3">
+            <!-- Loading State -->
             @if (IsLoading)
             {
                 <MudStack Spacing="2">
@@ -88,6 +136,7 @@
                     <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="400px" />
                 </MudStack>
             }
+            <!-- Error State -->
             else if (HasErrors)
             {
                 <MudAlert Severity="Severity.Error" 
@@ -104,7 +153,8 @@
                     </MudButton>
                 </MudAlert>
             }
-            else if (_calendarSlots.Count == 0)
+            <!-- Calendar Display -->
+            else if (!calendarSlots.Any())
             {
                 <MudPaper Elevation="0" Class="pa-8 text-center">
                     <MudIcon Icon="@Icons.Material.Filled.EventBusy" 
@@ -112,7 +162,7 @@
                              Color="Color.Secondary" 
                              Class="mb-4" />
                     <MudText Typo="Typo.h6" Color="Color.Secondary" Class="mb-2">
-                        No bookings scheduled
+                        No bookings found
                     </MudText>
                     <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
                         Get started by booking your first VIP experience!
@@ -129,18 +179,23 @@
             {
                 <div class="calendar-wrapper">
                     <MudCalendar T="CalendarSlot" 
-                                 Items="_calendarSlots" 
+                                 Items="calendarSlots" 
                                  MonthCellMinHeight="140">
                         <CellTemplate>
                             <div class="calendar-event" 
                                  style="width: 100%; height: 100%; border: 2px solid @GetColor(context.Color); border-radius: 6px; overflow: hidden;">
                                 <!-- Event Header -->
                                 <div class="event-header" 
-                                     style="background-color: @GetColor(context.Color); padding: 4px 8px;">
-                                    <MudText Typo="Typo.caption" 
-                                             Style="color: white; font-weight: 600; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
-                                        @context.Title
-                                    </MudText>
+                                     style="background-color: @GetColor(context.StatusColor); padding: 4px 8px;">
+                                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                        <MudText Typo="Typo.caption" 
+                                                 Style="color: white; font-weight: 600; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">
+                                            @context.Title
+                                        </MudText>
+                                        <MudChip T="string" Size="Size.Small" Color="@context.StatusColor" Style="height: 18px; font-size: 10px;">
+                                            @GetStatusShortName(context.Status)
+                                        </MudChip>
+                                    </MudStack>
                                 </div>
                                 
                                 <!-- Event Content -->
@@ -171,53 +226,13 @@
                 </div>
             }
         </MudStack>
-    </MudPaper>
-
-    <!-- Statistics Section -->
-    @if (_calendarSlots.Count > 0 && !IsLoading)
-    {
-        <MudPaper Elevation="1" Class="pa-4 mt-4">
-            <MudText Typo="Typo.h6" Color="Color.Primary" Class="mb-3">
-                <MudIcon Icon="@Icons.Material.Filled.BarChart" Class="mr-2" />
-                Booking Statistics
-            </MudText>
-            
-            <MudGrid Spacing="2">
-                <MudItem xs="12" sm="6" md="3">
-                    <MudPaper Elevation="0" Class="pa-3 text-center" Style="background: linear-gradient(45deg, #7e6fff 30%, #a855f7 90%);">
-                        <MudText Typo="Typo.h4" Style="color: white;">@_calendarSlots.Count</MudText>
-                        <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.8);">Total Bookings</MudText>
-                    </MudPaper>
-                </MudItem>
-                
-                <MudItem xs="12" sm="6" md="3">
-                    <MudPaper Elevation="0" Class="pa-3 text-center" Style="background: linear-gradient(45deg, #51cf66 30%, #40c057 90%);">
-                        <MudText Typo="Typo.h4" Style="color: white;">@GetUpcomingBookingsCount()</MudText>
-                        <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.8);">Upcoming</MudText>
-                    </MudPaper>
-                </MudItem>
-                
-                <MudItem xs="12" sm="6" md="3">
-                    <MudPaper Elevation="0" Class="pa-3 text-center" Style="background: linear-gradient(45deg, #74c0fc 30%, #339af0 90%);">
-                        <MudText Typo="Typo.h4" Style="color: white;">@GetThisMonthBookingsCount()</MudText>
-                        <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.8);">This Month</MudText>
-                    </MudPaper>
-                </MudItem>
-                
-                <MudItem xs="12" sm="6" md="3">
-                    <MudPaper Elevation="0" Class="pa-3 text-center" Style="background: linear-gradient(45deg, #ffd43b 30%, #fab005 90%);">
-                        <MudText Typo="Typo.h4" Style="color: white;">@GetMostPopularExperience()</MudText>
-                        <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.8);">Most Popular</MudText>
-                    </MudPaper>
-                </MudItem>
-            </MudGrid>
-        </MudPaper>
-    }
-</MudContainer>
+    };
+}
 
 @code {
     #region Fields and Properties
     private List<CalendarSlot> _calendarSlots = new();
+    private int ActiveTabIndex = 0;
     #endregion
 
     #region Lifecycle Methods
@@ -259,6 +274,11 @@
         }
     }
 
+    private IEnumerable<CalendarSlot> GetBookingsByStatus(BookingStatus status)
+    {
+        return _calendarSlots.Where(slot => slot.Status == status);
+    }
+
     private string GetColor(MudBlazor.Color color) => $"var(--mud-palette-{color.ToDescriptionString()})";
 
     private string GetTimeRange(CalendarSlot slot)
@@ -270,9 +290,20 @@
                 : slot.Start.ToString("HH:mm");
     }
 
+    private string GetStatusShortName(BookingStatus status) => status switch
+    {
+        BookingStatus.Pending => "PND",
+        BookingStatus.Confirmed => "CNF",
+        BookingStatus.Cancelled => "CAN",
+        BookingStatus.Completed => "CMP",
+        BookingStatus.NoShow => "NHS",
+        BookingStatus.OnHold => "HLD",
+        _ => "UNK"
+    };
+
     private int GetUpcomingBookingsCount()
     {
-        return _calendarSlots.Count(e => e.Start > DateTime.Now);
+        return _calendarSlots.Count(e => e.Start > DateTime.Now && e.IsActive);
     }
 
     private int GetThisMonthBookingsCount()

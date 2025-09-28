@@ -44,6 +44,26 @@ namespace Psybook.Services.UI.Clients
         }
 
         /// <inheritdoc />
+        public async Task<CalendarSlot?> GetCalendarSlotByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            return await HttpClientExtensions.ExecuteWithErrorHandlingAsync(
+                async () => await GetCalendarSlotByIdInternalAsync(id, cancellationToken),
+                _logger,
+                $"retrieving calendar slot {id} from API",
+                cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task<List<CalendarSlot>> GetCalendarSlotsByStatusAsync(BookingStatus status, CancellationToken cancellationToken = default)
+        {
+            return await HttpClientExtensions.ExecuteWithErrorHandlingAsync(
+                async () => await GetCalendarSlotsByStatusInternalAsync(status, cancellationToken),
+                _logger,
+                $"retrieving calendar slots with status {status} from API",
+                cancellationToken);
+        }
+
+        /// <inheritdoc />
         public async Task SaveCalendarSlotAsync(CalendarSlot calendarSlot, CancellationToken cancellationToken = default)
         {
             ArgumentNullException.ThrowIfNull(calendarSlot);
@@ -53,6 +73,49 @@ namespace Psybook.Services.UI.Clients
                 async () => await SaveCalendarSlotInternalAsync(calendarSlot, cancellationToken),
                 _logger,
                 $"saving calendar slot with ID {calendarSlot.Id}",
+                cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task UpdateCalendarSlotAsync(CalendarSlot calendarSlot, CancellationToken cancellationToken = default)
+        {
+            ArgumentNullException.ThrowIfNull(calendarSlot);
+            ValidateCalendarSlot(calendarSlot);
+
+            await HttpClientExtensions.ExecuteWithErrorHandlingAsync(
+                async () => await UpdateCalendarSlotInternalAsync(calendarSlot, cancellationToken),
+                _logger,
+                $"updating calendar slot with ID {calendarSlot.Id}",
+                cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task UpdateBookingStatusAsync(Guid bookingId, BookingStatus status, string? reason = null, string? modifiedBy = null, CancellationToken cancellationToken = default)
+        {
+            await HttpClientExtensions.ExecuteWithErrorHandlingAsync(
+                async () => await UpdateBookingStatusInternalAsync(bookingId, status, reason, modifiedBy, cancellationToken),
+                _logger,
+                $"updating booking status for {bookingId} to {status}",
+                cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> CancelBookingAsync(Guid bookingId, string reason, string? modifiedBy = null, CancellationToken cancellationToken = default)
+        {
+            return await HttpClientExtensions.ExecuteWithErrorHandlingAsync(
+                async () => await CancelBookingInternalAsync(bookingId, reason, modifiedBy, cancellationToken),
+                _logger,
+                $"cancelling booking {bookingId}",
+                cancellationToken);
+        }
+
+        /// <inheritdoc />
+        public async Task<bool> ConfirmBookingAsync(Guid bookingId, string? modifiedBy = null, CancellationToken cancellationToken = default)
+        {
+            return await HttpClientExtensions.ExecuteWithErrorHandlingAsync(
+                async () => await ConfirmBookingInternalAsync(bookingId, modifiedBy, cancellationToken),
+                _logger,
+                $"confirming booking {bookingId}",
                 cancellationToken);
         }
 
@@ -102,6 +165,36 @@ namespace Psybook.Services.UI.Clients
         }
 
         /// <summary>
+        /// Internal implementation for retrieving a calendar slot by ID.
+        /// </summary>
+        private async Task<CalendarSlot?> GetCalendarSlotByIdInternalAsync(Guid id, CancellationToken cancellationToken)
+        {
+            using var httpClient = CreateConfiguredHttpClient();
+            var response = await httpClient.GetAsync($"Booking/GetCalendarSlotById/{id}", cancellationToken);
+            
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+
+            response.EnsureSuccessStatusCode();
+            return await response.Content.ReadFromJsonAsync<CalendarSlot>(cancellationToken: cancellationToken);
+        }
+
+        /// <summary>
+        /// Internal implementation for retrieving calendar slots by status.
+        /// </summary>
+        private async Task<List<CalendarSlot>> GetCalendarSlotsByStatusInternalAsync(BookingStatus status, CancellationToken cancellationToken)
+        {
+            using var httpClient = CreateConfiguredHttpClient();
+            var calendarSlots = await httpClient.GetFromJsonAsync<List<CalendarSlot>>(
+                $"Booking/GetCalendarSlotsByStatus/{status}", 
+                cancellationToken);
+
+            return calendarSlots ?? new List<CalendarSlot>();
+        }
+
+        /// <summary>
         /// Internal implementation for saving a calendar slot.
         /// </summary>
         private async Task<object> SaveCalendarSlotInternalAsync(CalendarSlot calendarSlot, CancellationToken cancellationToken)
@@ -121,6 +214,67 @@ namespace Psybook.Services.UI.Clients
             }
 
             return new object(); // Return something for the extension method
+        }
+
+        /// <summary>
+        /// Internal implementation for updating a calendar slot.
+        /// </summary>
+        private async Task<object> UpdateCalendarSlotInternalAsync(CalendarSlot calendarSlot, CancellationToken cancellationToken)
+        {
+            using var httpClient = CreateConfiguredHttpClient();
+            var response = await httpClient.PutAsJsonAsync(
+                "Booking/UpdateCalendarSlot", 
+                calendarSlot, 
+                cancellationToken);
+
+            response.EnsureSuccessStatusCode();
+            return new object();
+        }
+
+        /// <summary>
+        /// Internal implementation for updating booking status.
+        /// </summary>
+        private async Task<object> UpdateBookingStatusInternalAsync(Guid bookingId, BookingStatus status, string? reason, string? modifiedBy, CancellationToken cancellationToken)
+        {
+            using var httpClient = CreateConfiguredHttpClient();
+            var request = new { Status = status, Reason = reason, ModifiedBy = modifiedBy };
+            var response = await httpClient.PatchAsJsonAsync(
+                $"Booking/UpdateBookingStatus/{bookingId}/status", 
+                request, 
+                cancellationToken);
+
+            response.EnsureSuccessStatusCode();
+            return new object();
+        }
+
+        /// <summary>
+        /// Internal implementation for cancelling a booking.
+        /// </summary>
+        private async Task<bool> CancelBookingInternalAsync(Guid bookingId, string reason, string? modifiedBy, CancellationToken cancellationToken)
+        {
+            using var httpClient = CreateConfiguredHttpClient();
+            var request = new { Reason = reason, ModifiedBy = modifiedBy };
+            var response = await httpClient.PatchAsJsonAsync(
+                $"Booking/CancelBooking/{bookingId}/cancel", 
+                request, 
+                cancellationToken);
+
+            return response.IsSuccessStatusCode;
+        }
+
+        /// <summary>
+        /// Internal implementation for confirming a booking.
+        /// </summary>
+        private async Task<bool> ConfirmBookingInternalAsync(Guid bookingId, string? modifiedBy, CancellationToken cancellationToken)
+        {
+            using var httpClient = CreateConfiguredHttpClient();
+            var request = new { ModifiedBy = modifiedBy };
+            var response = await httpClient.PatchAsJsonAsync(
+                $"Booking/ConfirmBooking/{bookingId}/confirm", 
+                request, 
+                cancellationToken);
+
+            return response.IsSuccessStatusCode;
         }
 
         /// <summary>
