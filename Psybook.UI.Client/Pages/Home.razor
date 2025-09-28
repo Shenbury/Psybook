@@ -81,7 +81,6 @@
                 }
             </MudStack>
 
-            <!-- Loading State -->
             @if (IsLoading)
             {
                 <MudStack Spacing="2">
@@ -89,7 +88,6 @@
                     <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="400px" />
                 </MudStack>
             }
-            <!-- Error State -->
             else if (HasErrors)
             {
                 <MudAlert Severity="Severity.Error" 
@@ -106,7 +104,6 @@
                     </MudButton>
                 </MudAlert>
             }
-            <!-- Calendar Display -->
             else if (_calendarSlots.Count == 0)
             {
                 <MudPaper Elevation="0" Class="pa-8 text-center">
