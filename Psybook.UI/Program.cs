@@ -30,18 +30,21 @@ builder.Services.ClientAndServerRegistrations();
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddSingleton<IRenderContext, ServerRenderContext>();
 
+// Configure BookingClient options
+builder.Services.Configure<BookingClientOptions>(
+    builder.Configuration.GetSection("BookingClient"));
+
 builder.Services.AddHttpClient("psybook-api", https => https.BaseAddress = new Uri("https://psybook-api")).AddServiceDiscovery();
 
 // Data Loader Service
 builder.Services.AddScoped<IBookingLoaderService, BookingDataLoaderService>();
-builder.Services.AddScoped<BookingClient>();
+builder.Services.AddScoped<IBookingClient, BookingClient>();
 
 builder.Services.ConfigureHttpClientDefaults(static http =>
 {
     // Turn on service discovery by default
     http.AddServiceDiscovery();
 });
-
 
 // Add services to the container.
 builder.Services.AddRazorComponents()

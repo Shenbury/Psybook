@@ -10,9 +10,18 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.Services.AddMudServices();
 
+// Configure BookingClient options
+builder.Services.Configure<BookingClientOptions>(options =>
+{
+    // Configure client-specific options
+    options.RequestTimeout = TimeSpan.FromSeconds(60); // Longer timeout for WebAssembly
+    options.MaxItemsPerRequest = 500; // Smaller batch size for client
+    options.ValidateResponses = true;
+});
+
 // Data Loader Service
 builder.Services.AddScoped<IBookingLoaderService, BookingDataLoaderService>();
-builder.Services.AddScoped<BookingClient>();
+builder.Services.AddScoped<IBookingClient, BookingClient>();
 
 // Add Render Context for the Client.
 builder.Services.AddSingleton<IRenderContext, ClientRenderContext>();
