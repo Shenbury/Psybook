@@ -1,85 +1,243 @@
-﻿# Psybook
+﻿# WMSP VIP Booking System (Psybook)
 
-# External Calendar Integration
+A comprehensive VIP experience booking system for West Midlands Safari Park, built with .NET 9, Blazor WebAssembly, and modern web technologies.
 
-This documentation describes the comprehensive external calendar integration system implemented for the WMSP VIP Booking System.
+## 🌟 Overview
 
-## Overview
+The WMSP VIP Booking System enables customers to book exclusive VIP wildlife experiences at West Midlands Safari Park. The system provides a modern, responsive web interface for managing bookings, with integrated calendar synchronization, real-time status management, and comprehensive administrative features.
 
-The external calendar integration allows users to sync their VIP experience bookings with popular calendar platforms including Google Calendar, Outlook, Apple Calendar, and any application supporting iCalendar (.ics) files.
+## 🚀 Key Features
 
-## Features
+### 📅 **Calendar Integration**
+- **Multi-Platform Support**: Google Calendar, Outlook, Apple Calendar, and iCalendar (.ics)
+- **One-Click Addition**: Direct URLs for instant calendar integration
+- **Auto-Sync**: Automated synchronization based on user preferences
+- **iCalendar Downloads**: Universal .ics files for any calendar application
+- **Real-Time Updates**: Booking changes reflect immediately in external calendars
 
-### 🗓️ **Supported Calendar Providers**
-- **Google Calendar** - URL-based quick add with future API integration support
-- **Outlook Calendar** - Direct integration with Outlook Web and desktop
-- **Apple Calendar** - iCalendar file support for seamless iOS/macOS integration
-- **iCalendar (.ics)** - Universal calendar file format for any compatible application
+### 🎯 **VIP Experience Management**
+- **Multiple Experience Types**: Rhino Keeper, Lion Feeding, Safari Driving, and more
+- **Dynamic Booking Calendar**: Interactive calendar with drag-and-drop functionality
+- **Status Management**: Pending, Confirmed, Cancelled, Completed, No-Show tracking
+- **Customer Information**: Comprehensive contact and address management
 
-### 🔄 **Integration Methods**
-1. **Quick Add URLs** - One-click calendar addition via provider-specific URLs
-2. **iCalendar Downloads** - Downloadable .ics files for manual import
-3. **Auto-Sync** - Automated synchronization based on user preferences
-4. **Bulk Operations** - Sync multiple bookings simultaneously
+### 🎨 **Modern User Interface**
+- **Blazor WebAssembly**: Fast, responsive client-side application
+- **MudBlazor Components**: Material Design UI components
+- **Responsive Design**: Optimized for desktop, tablet, and mobile devices
+- **Dark/Light Theme**: User-configurable theme preferences
+- **Accessibility**: WCAG-compliant interface with screen reader support
 
-### 🎛️ **User Preferences**
-- Enable/disable automatic synchronization
-- Select preferred calendar providers
-- Include/exclude customer details in calendar events
-- Configure default timezone settings
-- Set up notification preferences
+### 🔧 **Administrative Features**
+- **Booking Status Workflow**: Complete lifecycle management
+- **Customer Communications**: Automated notifications and confirmations
+- **Reporting & Analytics**: Comprehensive booking statistics
+- **Data Export**: CSV, Excel, and PDF export capabilities
 
-## Architecture
+## 🏗️ Architecture
 
-### Core Components
+### Solution Structure
 
-#### 1. **External Calendar Models** (`ExternalCalendarModels.cs`)
-```csharp
-// Main event model for calendar integration
-public class ExternalCalendarEvent
-
-// Integration result tracking
-public class CalendarIntegrationResult
-
-// Configuration options
-public class CalendarIntegrationOptions
+```
+Psybook/
+├── 📁 Psybook.API/                    # RESTful API backend
+├── 📁 Psybook.UI/                     # Blazor Server hosting
+├── 📁 Psybook.UI.Client/              # Blazor WebAssembly client
+├── 📁 Psybook.Services/               # Business logic & external integrations
+├── 📁 Psybook.Repositories/           # Data access layer
+├── 📁 Psybook.Objects/                # Domain models & DTOs
+├── 📁 Psybook.Shared/                 # Shared components & contexts
+├── 📁 Psybook.Migrations/             # Database migration service
+├── 📁 Psybook.AppHost/                # .NET Aspire orchestration
+└── 📁 Psybook.ServiceDefaults/        # Common service configurations
 ```
 
-#### 2. **Calendar Service** (`IExternalCalendarService.cs`, `ExternalCalendarService.cs`)
-```csharp
-// Primary service interface for calendar operations
-public interface IExternalCalendarService
+### Technology Stack
 
-// Implementation with URL generation and iCal creation
-public class ExternalCalendarService
+| Layer | Technologies |
+|-------|-------------|
+| **Frontend** | Blazor WebAssembly, MudBlazor, HTML5, CSS3, JavaScript |
+| **Backend** | ASP.NET Core Web API, Entity Framework Core |
+| **Database** | SQL Server with Entity Framework migrations |
+| **Authentication** | Azure AD B2C, JWT Bearer tokens, Microsoft Identity |
+| **Hosting** | .NET Aspire, Docker containerization |
+| **External APIs** | Microsoft Graph, Google Calendar API |
+| **Build & Deploy** | .NET 9, CI/CD pipelines, Azure DevOps |
+
+## 📋 Detailed Project Breakdown
+
+### 🌐 **Psybook.API**
+RESTful API backend providing:
+- **Booking Management**: CRUD operations for VIP bookings
+- **Calendar Integration**: iCalendar generation and external calendar sync
+- **Status Management**: Booking lifecycle and workflow automation
+- **Authentication**: Secure API endpoints with JWT authentication
+- **Data Validation**: Comprehensive input validation and sanitization
+
+**Key Controllers:**
+- `BookingController`: Core booking operations
+- `CalendarIntegrationController`: External calendar sync and file generation
+
+### 🖥️ **Psybook.UI & Psybook.UI.Client**
+Modern Blazor application with:
+- **Interactive Calendar**: Heron.MudCalendar integration for booking visualization
+- **Responsive Components**: Mobile-first design with adaptive layouts
+- **Real-Time Updates**: SignalR integration for live booking updates
+- **Theme System**: Dark/light mode with user preferences
+- **Progressive Web App**: Offline capability and app-like experience
+
+**Key Components:**
+- `Home.razor`: Main calendar dashboard
+- `Book.razor`: Booking creation and editing
+- `BookingDetailsDialog.razor`: Comprehensive booking information
+- `CalendarIntegrationComponent.razor`: External calendar sync interface
+- `BookingStatusManager.razor`: Status workflow management
+
+### 🔧 **Psybook.Services**
+Business logic and external integrations:
+- **External Calendar Services**: Multi-platform calendar integration
+- **Data Loaders**: Efficient data retrieval with caching
+- **UI Clients**: HTTP client abstractions for API communication
+- **User Preferences**: Calendar sync settings and user customization
+
+**Key Services:**
+- `IExternalCalendarService`: Calendar integration abstraction
+- `GoogleCalendarApiService`: Google Calendar API client
+- `IBookingLoaderService`: Optimized data loading with pagination
+- `UserCalendarPreferencesService`: User setting management
+
+### 💾 **Psybook.Repositories**
+Data access layer with:
+- **Repository Pattern**: Clean separation of data access logic
+- **Entity Framework**: Code-first approach with migrations
+- **Connection Pooling**: Optimized database connections
+- **Query Optimization**: Efficient data retrieval strategies
+
+### 📊 **Psybook.Objects**
+Domain models and data structures:
+- **Database Models**: Entity Framework entities
+- **DTOs**: Data transfer objects for API communication
+- **Enums**: Strongly-typed constants and status values
+- **Validation Attributes**: Data annotation validation
+
+### 🔄 **Psybook.Migrations**
+Database management service:
+- **Background Service**: Automated migration execution
+- **Environment-Aware**: Different strategies per environment
+- **Rollback Support**: Safe migration rollback capabilities
+- **Health Checks**: Database connectivity monitoring
+
+## 🛠️ Setup & Installation
+
+### Prerequisites
+
+- **.NET 9 SDK** (latest version)
+- **SQL Server** (LocalDB, Express, or full version)
+- **Visual Studio 2024** or **Visual Studio Code**
+- **Node.js** (for JavaScript tooling)
+- **Git** for version control
+
+### Quick Start
+
+1. **Clone the Repository**
+```bash
+git clone https://github.com/Shenbury/Psybook.git
+cd Psybook
 ```
 
-#### 3. **UI Components**
-- `CalendarIntegrationComponent.razor` - User-facing integration interface
-- `BookingDetailsDialog.razor` - Enhanced with calendar integration
-- `CalendarTest.razor` - Comprehensive testing interface
-
-#### 4. **API Integration** (`CalendarIntegrationController.cs`)
-```csharp
-// RESTful API endpoints for calendar operations
-[Route("api/[controller]")]
-public class CalendarIntegrationController
+2. **Configure Database Connection**
+```json
+// appsettings.json
+{
+  "ConnectionStrings": {
+    "wmsp-db": "Server=(localdb)\\mssqllocaldb;Database=Psybook;Trusted_Connection=true;"
+  }
+}
 ```
 
-## Usage Examples
+3. **Run Database Migrations**
+```bash
+dotnet ef database update --project Psybook.Shared
+```
 
-### Basic Integration in Blazor Components
+4. **Start the Application**
+```bash
+dotnet run --project Psybook.AppHost
+```
 
+5. **Access the Application**
+- **Web Interface**: https://localhost:7031
+- **API Documentation**: https://localhost:7032/swagger
+- **Health Checks**: https://localhost:7033/health
+
+### Development Setup
+
+#### Using .NET Aspire (Recommended)
+
+```bash
+# Install .NET Aspire workload
+dotnet workload install aspire
+
+# Run the complete solution
+dotnet run --project Psybook.AppHost
+```
+
+#### Manual Setup
+
+```bash
+# Start API
+dotnet run --project Psybook.API
+
+# Start UI (separate terminal)
+dotnet run --project Psybook.UI
+
+# Start Migration Service (separate terminal)
+dotnet run --project Psybook.Migrations
+```
+
+## 🔗 External Calendar Integration
+
+### Supported Platforms
+
+| Platform | Integration Type | Features |
+|----------|-----------------|----------|
+| **Google Calendar** | URL + API | Quick add, full CRUD with OAuth |
+| **Outlook Calendar** | URL + Graph API | Web integration, Teams sync |
+| **Apple Calendar** | iCalendar files | iOS/macOS native support |
+| **Universal** | .ics downloads | Any RFC 5545 compatible app |
+
+### API Endpoints
+
+#### Calendar Integration
+```http
+GET /api/calendarintegration/booking/{id}/icalendar
+GET /api/calendarintegration/booking/{id}/urls
+POST /api/calendarintegration/booking/{id}/sync
+GET /api/calendarintegration/providers
+```
+
+#### Booking Management
+```http
+GET /api/booking/slots
+GET /api/booking/slot/{id}
+POST /api/booking/slot
+PUT /api/booking/slot/{id}
+DELETE /api/booking/slot/{id}
+POST /api/booking/slot/{id}/status
+```
+
+### Usage Examples
+
+#### Basic Calendar Integration
 ```razor
 @using Psybook.Services.ExternalCalendar
 
-<CalendarIntegrationComponent Booking="@myBooking" 
+<CalendarIntegrationComponent Booking="@currentBooking" 
                             ShowAutoSyncOption="true"
-                            OnAutoSyncConfigured="HandleAutoSync" />
+                            OnAutoSyncConfigured="HandleSync" />
 ```
 
-### Programmatic Calendar Operations
-
+#### Programmatic Calendar Operations
 ```csharp
 // Generate calendar URLs
 var calendarEvent = ExternalCalendarEvent.FromCalendarSlot(booking);
@@ -96,181 +254,172 @@ var options = new CalendarIntegrationOptions
 var results = await calendarService.SyncBookingAsync(booking, options);
 ```
 
-## API Endpoints
+## 🧪 Testing
 
-### GET `/api/calendarintegration/booking/{bookingId}/icalendar`
-Downloads an iCalendar (.ics) file for a specific booking.
+### Test Pages
 
-**Response**: Binary .ics file
+- **Calendar Test**: `/calendar-test` - Comprehensive calendar integration testing
+- **Booking Test**: Built-in booking creation and management testing
+- **API Testing**: Swagger UI at `/swagger` for API endpoint testing
 
-### GET `/api/calendarintegration/booking/{bookingId}/urls`
-Returns calendar URLs for quick-add functionality.
+### Running Tests
 
-**Response**:
+```bash
+# Unit tests
+dotnet test
+
+# Integration tests with database
+dotnet test --filter Category=Integration
+
+# End-to-end tests
+dotnet test --filter Category=E2E
+```
+
+## 🚀 Deployment
+
+### Production Deployment
+
+#### Using Docker
+
+```dockerfile
+# Build and deploy with Docker
+docker build -f Psybook.AppHost/Dockerfile -t psybook:latest .
+docker run -p 8080:8080 psybook:latest
+```
+
+#### Azure Deployment
+
+```bash
+# Deploy to Azure Container Apps
+az containerapp create --name psybook --resource-group rg-psybook --image psybook:latest
+```
+
+### Environment Configuration
+
+#### Production Settings
 ```json
 {
-  "bookingId": "guid",
-  "urls": {
-    "GoogleCalendar": "https://calendar.google.com/calendar/render?...",
-    "OutlookCalendar": "https://outlook.live.com/calendar/...",
-    "AppleCalendar": "data:text/calendar;base64,..."
+  "ConnectionStrings": {
+    "wmsp-db": "{{AZURE_SQL_CONNECTION_STRING}}"
+  },
+  "AzureAd": {
+    "Instance": "https://login.microsoftonline.com/",
+    "Domain": "wmsp.onmicrosoft.com",
+    "TenantId": "{{TENANT_ID}}",
+    "ClientId": "{{CLIENT_ID}}"
+  },
+  "GoogleCalendar": {
+    "ClientId": "{{GOOGLE_CLIENT_ID}}",
+    "ClientSecret": "{{GOOGLE_CLIENT_SECRET}}"
   }
 }
 ```
 
-### POST `/api/calendarintegration/booking/{bookingId}/sync`
-Synchronizes a booking with external calendars.
+## 📊 Performance & Monitoring
 
-**Request Body**:
-```json
-{
-  "autoSync": true,
-  "providers": ["GoogleCalendar", "OutlookCalendar"],
-  "includeCustomerDetails": true,
-  "sendInvitations": false
-}
-```
+### Built-in Monitoring
 
-## Configuration
+- **Application Insights**: Comprehensive telemetry and analytics
+- **Health Checks**: Database, API, and external service monitoring
+- **Structured Logging**: Serilog with multiple sinks
+- **Performance Counters**: Custom metrics and KPIs
 
-### Dependency Injection Setup
+### Performance Optimizations
 
-#### Client-Side (Blazor WebAssembly)
-```csharp
-// Program.cs
-builder.Services.AddScoped<IExternalCalendarService, ExternalCalendarService>();
-```
+- **Blazor WebAssembly**: Client-side rendering for optimal performance
+- **Connection Pooling**: Efficient database connection management
+- **HTTP Caching**: Strategic caching for static and semi-static content
+- **Lazy Loading**: Component and data lazy loading strategies
+- **Compression**: Response compression for reduced bandwidth
 
-#### Server-Side (API)
-```csharp
-// Program.cs
-builder.Services.AddScoped<IExternalCalendarService, ExternalCalendarService>();
-builder.Services.AddScoped<GoogleCalendarApiService>();
-builder.Services.AddHttpClient(); // Required for HTTP operations
-```
+## 🔒 Security
 
-### JavaScript Integration
+### Authentication & Authorization
 
-Include the calendar integration JavaScript file in your layout:
+- **Azure AD B2C**: Enterprise-grade identity management
+- **JWT Tokens**: Secure API authentication
+- **Role-Based Access**: Fine-grained permission system
+- **HTTPS Enforcement**: TLS encryption for all communications
 
-```html
-<script src="js/calendar-integration.js"></script>
-```
+### Data Protection
 
-## Advanced Features
+- **Data Encryption**: At-rest and in-transit encryption
+- **Input Validation**: Comprehensive sanitization and validation
+- **CORS Configuration**: Secure cross-origin resource sharing
+- **Rate Limiting**: API throttling and abuse prevention
 
-### Google Calendar API Integration
+## 🤝 Contributing
 
-For full Google Calendar API integration (create, update, delete events):
+### Development Guidelines
 
-1. Set up Google Cloud Console project
-2. Enable Calendar API
-3. Configure OAuth 2.0 credentials
-4. Implement token management
+1. **Code Style**: Follow .NET coding conventions and EditorConfig
+2. **Testing**: Maintain test coverage above 80%
+3. **Documentation**: Update documentation for all public APIs
+4. **Performance**: Profile performance-critical code paths
+5. **Security**: Security review for all authentication changes
 
-```csharp
-// Example API integration
-var googleService = serviceProvider.GetService<GoogleCalendarApiService>();
-var result = await googleService.CreateEventAsync(accessToken, calendarId, googleEvent);
-```
+### Pull Request Process
 
-### User Preferences Management
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
 
-Store and retrieve user calendar preferences:
+## 📞 Support & Contact
 
-```csharp
-// Save user preferences
-var preferences = new UserCalendarPreferences
-{
-    UserId = currentUserId,
-    AutoSyncEnabled = true,
-    PreferredProviders = { CalendarProvider.GoogleCalendar }
-};
-await preferencesService.SavePreferencesAsync(preferences);
-```
+### Documentation
 
-## Testing
+- **API Documentation**: Available at `/swagger` when running locally
+- **Calendar Integration**: See `CALENDAR_INTEGRATION.md` for detailed guide
+- **Architecture Decisions**: Documented in `/docs/architecture/`
 
-### Comprehensive Test Page
+### Support Channels
 
-Navigate to `/calendar-test` to access the testing interface:
+- **Issues**: GitHub Issues for bug reports and feature requests
+- **Discussions**: GitHub Discussions for general questions
+- **Wiki**: Comprehensive documentation and tutorials
 
-1. **Create Test Bookings** - Generate sample booking data
-2. **Test Integration** - Verify calendar URL generation
-3. **iCal Validation** - Download and validate iCalendar files
-4. **Bulk Sync Testing** - Test multiple provider synchronization
+## 📄 License
 
-### Unit Testing
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-```csharp
-[Test]
-public async Task GenerateCalendarUrls_ReturnsValidUrls()
-{
-    // Arrange
-    var service = new ExternalCalendarService(logger, httpClientFactory);
-    var calendarEvent = new ExternalCalendarEvent { /* test data */ };
-    
-    // Act
-    var urls = service.GenerateCalendarUrls(calendarEvent);
-    
-    // Assert
-    Assert.IsTrue(urls.ContainsKey(CalendarProvider.GoogleCalendar));
-    Assert.IsTrue(urls[CalendarProvider.GoogleCalendar].StartsWith("https://"));
-}
-```
+## 🙏 Acknowledgments
 
-## Security Considerations
+### Technologies & Libraries
 
-1. **Data Privacy** - User controls what information is included in calendar events
-2. **Access Control** - Calendar integration respects existing authentication
-3. **URL Safety** - All generated URLs are properly encoded and validated
-4. **Token Management** - OAuth tokens are handled securely (when using APIs)
+- **Microsoft**: .NET, Blazor, Azure services
+- **MudBlazor**: Material Design components for Blazor
+- **Heron.MudCalendar**: Calendar component integration
+- **Entity Framework**: Object-relational mapping
+- **Serilog**: Structured logging framework
 
-## Browser Compatibility
+### Contributors
 
-- **Modern Browsers**: Full support for all features
-- **File Downloads**: Supported in Chrome, Firefox, Safari, Edge
-- **Clipboard API**: Available in HTTPS contexts
-- **Calendar URLs**: Universal support across all platforms
+- **Development Team**: West Midlands Safari Park IT Department  
+- **UI/UX Design**: Safari Park Marketing Team
+- **Testing**: Quality Assurance Team
+- **Infrastructure**: DevOps and Cloud Operations Team
 
-## Troubleshooting
+---
 
-### Common Issues
+## 🔧 Development Status
 
-1. **Calendar not opening**: Check popup blockers and browser settings
-2. **iCal download fails**: Verify file permissions and browser download settings
-3. **Invalid dates**: Ensure timezone and date format compatibility
-4. **Missing events**: Check calendar provider import settings
+| Feature | Status | Version |
+|---------|--------|---------|
+| **Core Booking System** | ✅ Complete | v1.0.0 |
+| **Calendar Integration** | ✅ Complete | v1.1.0 |
+| **Mobile Optimization** | ✅ Complete | v1.0.0 |
+| **API Documentation** | ✅ Complete | v1.0.0 |
+| **Authentication** | ✅ Complete | v1.0.0 |
+| **Reporting Dashboard** | 🚧 In Progress | v1.2.0 |
+| **Mobile App** | 📅 Planned | v2.0.0 |
+| **Advanced Analytics** | 📅 Planned | v2.1.0 |
 
-### Debug Mode
+**Current Version**: v1.1.0  
+**Next Release**: v1.2.0 (Q2 2024)  
+**LTS Support**: .NET 9 through November 2026
 
-Enable detailed logging:
+---
 
-```csharp
-services.Configure<LoggerFilterOptions>(options =>
-{
-    options.AddFilter("Psybook.Services.ExternalCalendar", LogLevel.Debug);
-});
-```
-
-## Future Enhancements
-
-1. **Real-time Sync** - Bidirectional synchronization with calendar providers
-2. **Recurring Events** - Support for recurring VIP experiences
-3. **Conflict Detection** - Identify scheduling conflicts across calendars
-4. **Mobile Apps** - Native mobile calendar integration
-5. **Teams Integration** - Microsoft Teams calendar support
-6. **Webhook Support** - Real-time updates from calendar providers
-
-## Contributing
-
-When contributing to the calendar integration system:
-
-1. Follow existing patterns for new calendar providers
-2. Maintain backward compatibility with existing integrations
-3. Add comprehensive tests for new features
-4. Update this documentation for any new functionality
-
-## License
-
-This calendar integration system is part of the WMSP VIP Booking System and follows the same licensing terms.
+*Built with ❤️ by the West Midlands Safari Park development team for creating unforgettable VIP wildlife experiences.*
