@@ -1,0 +1,504 @@
+@using Psybook.Objects.Reporting
+@using Microsoft.Extensions.Logging
+@using System.Net.Http.Json
+@inject HttpClient HttpClient
+@inject ILogger<DashboardWidgets> Logger
+
+<MudGrid Spacing="3">
+    <!-- Real-time Metrics Card -->
+    <MudItem xs="12" lg="6">
+        <MudCard Class="dashboard-widget">
+            <MudCardHeader>
+                <MudText Typo="Typo.h6" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.Speed" Class="mr-2" />
+                    Real-time Metrics
+                </MudText>
+                <MudSpacer />
+                <MudChip T="string" Size="Size.Small" Color="@(IsConnected ? Color.Success : Color.Error)" Variant="Variant.Filled">
+                    @(IsConnected ? "Live" : "Disconnected")
+                </MudChip>
+            </MudCardHeader>
+            <MudCardContent>
+                @if (RealTimeMetrics != null)
+                {
+                    <MudGrid Spacing="2">
+                        <MudItem xs="6">
+                            <MudStack AlignItems="AlignItems.Center" Spacing="1">
+                                <MudText Typo="Typo.h4" Color="Color.Primary">@RealTimeMetrics.ActiveUsers</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Active Users</MudText>
+                            </MudStack>
+                        </MudItem>
+                        
+                        <MudItem xs="6">
+                            <MudStack AlignItems="AlignItems.Center" Spacing="1">
+                                <MudText Typo="Typo.h4" Color="Color.Success">@RealTimeMetrics.BookingsInProgress</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">In Progress</MudText>
+                            </MudStack>
+                        </MudItem>
+                        
+                        <MudItem xs="6">
+                            <MudStack AlignItems="AlignItems.Center" Spacing="1">
+                                <MudText Typo="Typo.h4" Color="Color.Info">@RealTimeMetrics.CompletedBookingsToday</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Completed Today</MudText>
+                            </MudStack>
+                        </MudItem>
+                        
+                        <MudItem xs="6">
+                            <MudStack AlignItems="AlignItems.Center" Spacing="1">
+                                <MudText Typo="Typo.h4" Color="Color.Warning">@RealTimeMetrics.RevenueToday.ToString("C0")</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Revenue Today</MudText>
+                            </MudStack>
+                        </MudItem>
+                    </MudGrid>
+                    
+                    <MudDivider Class="my-3" />
+                    
+                    <!-- System Performance -->
+                    <MudStack Spacing="2">
+                        <MudText Typo="Typo.subtitle2">System Performance</MudText>
+                        
+                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudText Typo="Typo.body2">System Load</MudText>
+                            <MudProgressLinear Value="@RealTimeMetrics.SystemLoad" Color="@GetSystemLoadColor(RealTimeMetrics.SystemLoad)" Size="Size.Small" Style="width: 100px;" />
+                        </MudStack>
+                        
+                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudText Typo="Typo.body2">API Calls/Min</MudText>
+                            <MudText Typo="Typo.body2">@RealTimeMetrics.ApiCallsPerMinute</MudText>
+                        </MudStack>
+                        
+                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudText Typo="Typo.body2">Response Time</MudText>
+                            <MudText Typo="Typo.body2" Color="@GetResponseTimeColor(RealTimeMetrics.AverageResponseTime)">
+                                @RealTimeMetrics.AverageResponseTime.ToString("F0")ms
+                            </MudText>
+                        </MudStack>
+                    </MudStack>
+                }
+                else if (IsLoading)
+                {
+                    <MudProgressLinear Indeterminate="true" />
+                    <MudText Class="pa-4 text-center">Loading real-time data...</MudText>
+                }
+                else
+                {
+                    <MudAlert Severity="Severity.Warning">
+                        Unable to load real-time metrics
+                    </MudAlert>
+                }
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <!-- Quick Stats -->
+    <MudItem xs="12" lg="6">
+        <MudCard Class="dashboard-widget">
+            <MudCardHeader>
+                <MudText Typo="Typo.h6" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.Dashboard" Class="mr-2" />
+                    Quick Statistics
+                </MudText>
+                <MudSpacer />
+                <MudIconButton Icon="@Icons.Material.Filled.Refresh" 
+                               Size="Size.Small" 
+                               OnClick="RefreshQuickStats"
+                               Disabled="IsRefreshing">
+                    @if (IsRefreshing)
+                    {
+                        <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                    }
+                </MudIconButton>
+            </MudCardHeader>
+            <MudCardContent>
+                @if (QuickStats != null)
+                {
+                    <MudList T="string" Dense="true">
+                        <MudListItem T="string">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.body2">Total Bookings (30 days)</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Primary">@QuickStats.TotalBookings</MudChip>
+                            </MudStack>
+                        </MudListItem>
+                        
+                        <MudListItem T="string">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.body2">Cancellation Rate</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="@GetCancellationRateColor(QuickStats.CancellationRate)">
+                                    @QuickStats.CancellationRate.ToString("F1")%
+                                </MudChip>
+                            </MudStack>
+                        </MudListItem>
+                        
+                        <MudListItem T="string">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.body2">Top Experience</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Success">@QuickStats.TopExperience</MudText>
+                            </MudStack>
+                        </MudListItem>
+                        
+                        <MudListItem T="string">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.body2">Busiest Day</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Info">@QuickStats.BusiestDay</MudText>
+                            </MudStack>
+                        </MudListItem>
+                        
+                        <MudListItem T="string">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.body2">Peak Hour</MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Warning">@QuickStats.PeakHour</MudText>
+                            </MudStack>
+                        </MudListItem>
+                    </MudList>
+                }
+                else if (IsLoading)
+                {
+                    <MudProgressLinear Indeterminate="true" />
+                    <MudText Class="pa-4 text-center">Loading statistics...</MudText>
+                }
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <!-- Activity Feed -->
+    <MudItem xs="12" lg="6">
+        <MudCard Class="dashboard-widget">
+            <MudCardHeader>
+                <MudText Typo="Typo.h6" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.Notifications" Class="mr-2" />
+                    Recent Activity
+                </MudText>
+            </MudCardHeader>
+            <MudCardContent Style="max-height: 300px; overflow-y: auto;">
+                @if (ActivityFeed != null && ActivityFeed.Any())
+                {
+                    <MudTimeline>
+                        @foreach (var activity in ActivityFeed.Take(5))
+                        {
+                            <MudTimelineItem Color="@GetActivityColor(activity.Type)" Size="Size.Small">
+                                <MudText Typo="Typo.body2">@activity.Message</MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    @activity.Timestamp.ToString("HH:mm")
+                                </MudText>
+                            </MudTimelineItem>
+                        }
+                    </MudTimeline>
+                }
+                else if (IsLoading)
+                {
+                    <MudSkeleton SkeletonType="SkeletonType.Text" />
+                    <MudSkeleton SkeletonType="SkeletonType.Text" />
+                    <MudSkeleton SkeletonType="SkeletonType.Text" />
+                }
+                else
+                {
+                    <MudText Class="pa-4 text-center" Color="Color.Secondary">
+                        No recent activity
+                    </MudText>
+                }
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <!-- Mini Chart -->
+    <MudItem xs="12" lg="6">
+        <MudCard Class="dashboard-widget">
+            <MudCardHeader>
+                <MudText Typo="Typo.h6" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="mr-2" />
+                    7-Day Booking Trend
+                </MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                @if (TrendData?.BookingTrend != null && TrendData.BookingTrend.Any())
+                {
+                    <MudChart ChartType="ChartType.Line" 
+                              ChartSeries="@TrendChartSeries" 
+                              XAxisLabels="@TrendData.BookingTrend.Select(d => d.Label).ToArray()" 
+                              Width="100%" Height="200px">
+                    </MudChart>
+                }
+                else if (IsLoading)
+                {
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="200px" />
+                }
+                else
+                {
+                    <MudText Class="pa-4 text-center" Color="Color.Secondary">
+                        No trend data available
+                    </MudText>
+                }
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+<style>
+    .dashboard-widget {
+        height: 100%;
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+
+    .dashboard-widget:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+</style>
+
+@code {
+    [Parameter] public bool AutoRefresh { get; set; } = true;
+    [Parameter] public int RefreshIntervalSeconds { get; set; } = 30;
+
+    private RealTimeMetrics? RealTimeMetrics;
+    private TrendingData? TrendData;
+    private DashboardQuickStats? QuickStats;
+    private List<DashboardActivityItem> ActivityFeed = new();
+    
+    private bool IsLoading = true;
+    private bool IsConnected = false;
+    private bool IsRefreshing = false;
+    
+    private Timer? _refreshTimer;
+    private List<ChartSeries> TrendChartSeries = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadAllWidgetData();
+        
+        if (AutoRefresh)
+        {
+            _refreshTimer = new Timer(async _ => await RefreshRealTimeData(), 
+                null, 
+                TimeSpan.Zero, 
+                TimeSpan.FromSeconds(RefreshIntervalSeconds));
+        }
+    }
+
+    private async Task LoadAllWidgetData()
+    {
+        try
+        {
+            IsLoading = true;
+            StateHasChanged();
+
+            var tasks = new[]
+            {
+                LoadRealTimeMetrics(),
+                LoadTrendData(),
+                LoadQuickStats(),
+                LoadActivityFeed()
+            };
+
+            await Task.WhenAll(tasks);
+            IsConnected = true;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load widget data");
+            IsConnected = false;
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadRealTimeMetrics()
+    {
+        try
+        {
+            var response = await HttpClient.GetAsync("api/reporting/realtime-metrics");
+            if (response.IsSuccessStatusCode)
+            {
+                RealTimeMetrics = await response.Content.ReadFromJsonAsync<RealTimeMetrics>();
+            }
+            else
+            {
+                Logger.LogWarning("Failed to load real-time metrics. Status: {StatusCode}", response.StatusCode);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load real-time metrics");
+        }
+    }
+
+    private async Task LoadTrendData()
+    {
+        try
+        {
+            var response = await HttpClient.GetAsync("api/reporting/trending-data?period=Last7Days");
+            if (response.IsSuccessStatusCode)
+            {
+                TrendData = await response.Content.ReadFromJsonAsync<TrendingData>();
+                
+                if (TrendData?.BookingTrend != null)
+                {
+                    TrendChartSeries = new List<ChartSeries>
+                    {
+                        new ChartSeries
+                        {
+                            Name = "Bookings",
+                            Data = TrendData.BookingTrend.Select(d => (double)d.Value).ToArray()
+                        }
+                    };
+                }
+            }
+            else
+            {
+                Logger.LogWarning("Failed to load trend data. Status: {StatusCode}", response.StatusCode);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load trend data");
+        }
+    }
+
+    private async Task LoadQuickStats()
+    {
+        try
+        {
+            var request = new ReportRequest
+            {
+                StartDate = DateTime.UtcNow.AddDays(-30),
+                EndDate = DateTime.UtcNow,
+                ReportType = ReportType.Summary
+            };
+
+            var response = await HttpClient.PostAsJsonAsync("api/reporting/analytics", request);
+            if (response.IsSuccessStatusCode)
+            {
+                var analytics = await response.Content.ReadFromJsonAsync<BookingAnalytics>();
+                if (analytics != null)
+                {
+                    QuickStats = new DashboardQuickStats
+                    {
+                        TotalBookings = analytics.TotalBookings,
+                        CancellationRate = analytics.CancellationRate,
+                        TopExperience = analytics.ExperienceStats?.FirstOrDefault()?.ExperienceName ?? "N/A",
+                        BusiestDay = analytics.DayOfWeekStats?.OrderByDescending(d => d.BookingCount).FirstOrDefault()?.DayName ?? "N/A",
+                        PeakHour = analytics.HourlyStats?.OrderByDescending(h => h.BookingCount).FirstOrDefault()?.TimeSlot ?? "N/A"
+                    };
+                }
+            }
+            else
+            {
+                Logger.LogWarning("Failed to load quick stats. Status: {StatusCode}", response.StatusCode);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load quick stats");
+        }
+    }
+
+    private async Task LoadActivityFeed()
+    {
+        try
+        {
+            // For now, using mock data as there might not be a specific activity feed endpoint
+            // In a real implementation, this would call something like "api/reporting/recent-activity"
+            await Task.Delay(100); // Simulate API call delay
+            
+            ActivityFeed = new List<DashboardActivityItem>
+            {
+                new() { Type = "booking", Message = "New VIP Rhino Experience booking", Timestamp = DateTime.Now.AddMinutes(-5) },
+                new() { Type = "confirmation", Message = "Lion Feeding experience confirmed", Timestamp = DateTime.Now.AddMinutes(-12) },
+                new() { Type = "cancellation", Message = "Safari Drive booking cancelled", Timestamp = DateTime.Now.AddMinutes(-25) },
+                new() { Type = "completion", Message = "Elephant Walk experience completed", Timestamp = DateTime.Now.AddMinutes(-35) },
+                new() { Type = "booking", Message = "New Bird Show VIP booking", Timestamp = DateTime.Now.AddMinutes(-48) }
+            };
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load activity feed");
+        }
+    }
+
+    private async Task RefreshRealTimeData()
+    {
+        try
+        {
+            await LoadRealTimeMetrics();
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to refresh real-time data");
+            IsConnected = false;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task RefreshQuickStats()
+    {
+        IsRefreshing = true;
+        StateHasChanged();
+        
+        try
+        {
+            await LoadQuickStats();
+        }
+        finally
+        {
+            IsRefreshing = false;
+            StateHasChanged();
+        }
+    }
+
+    private MudBlazor.Color GetSystemLoadColor(double load)
+    {
+        if (load < 50) return MudBlazor.Color.Success;
+        if (load < 80) return MudBlazor.Color.Warning;
+        return MudBlazor.Color.Error;
+    }
+
+    private MudBlazor.Color GetResponseTimeColor(double responseTime)
+    {
+        if (responseTime < 200) return MudBlazor.Color.Success;
+        if (responseTime < 500) return MudBlazor.Color.Warning;
+        return MudBlazor.Color.Error;
+    }
+
+    private MudBlazor.Color GetCancellationRateColor(decimal rate)
+    {
+        if (rate <= 5) return MudBlazor.Color.Success;
+        if (rate <= 15) return MudBlazor.Color.Warning;
+        return MudBlazor.Color.Error;
+    }
+
+    private MudBlazor.Color GetActivityColor(string type)
+    {
+        return type switch
+        {
+            "booking" => MudBlazor.Color.Success,
+            "confirmation" => MudBlazor.Color.Info,
+            "cancellation" => MudBlazor.Color.Warning,
+            "completion" => MudBlazor.Color.Primary,
+            _ => MudBlazor.Color.Secondary
+        };
+    }
+
+    public void Dispose()
+    {
+        _refreshTimer?.Dispose();
+    }
+
+    public class DashboardQuickStats
+    {
+        public int TotalBookings { get; set; }
+        public decimal CancellationRate { get; set; }
+        public string TopExperience { get; set; } = string.Empty;
+        public string BusiestDay { get; set; } = string.Empty;
+        public string PeakHour { get; set; } = string.Empty;
+    }
+
+    public class DashboardActivityItem
+    {
+        public string Type { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
+        public DateTime Timestamp { get; set; }
+    }
+}

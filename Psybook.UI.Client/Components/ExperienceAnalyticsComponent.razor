@@ -1,0 +1,259 @@
+@using Psybook.Objects.Reporting
+
+<MudGrid Spacing="3">
+    <!-- Experience Performance Chart -->
+    <MudItem xs="12" lg="8">
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h6" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.BarChart" Class="mr-2" />
+                    Experience Performance
+                </MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                @if (Analytics.ExperienceStats.Any())
+                {
+                    <MudChart ChartType="ChartType.Bar" 
+                              ChartSeries="@ExperienceChartSeries" 
+                              XAxisLabels="@Analytics.ExperienceStats.Select(e => TruncateText(e.ExperienceName, 15)).ToArray()" 
+                              Width="100%" Height="350px">
+                    </MudChart>
+                }
+                else
+                {
+                    <MudText Color="Color.Secondary" Class="pa-8 text-center">
+                        No experience data available
+                    </MudText>
+                }
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <!-- Experience Ranking -->
+    <MudItem xs="12" lg="4">
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h6" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.EmojiEvents" Class="mr-2" />
+                    Experience Ranking
+                </MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudList T="string">
+                    @{
+                        var topExperiences = Analytics.ExperienceStats.OrderByDescending(e => e.BookingCount).Take(10);
+                        int rank = 1;
+                    }
+                    
+                    @foreach (var experience in topExperiences)
+                    {
+                        <MudListItem T="string">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudAvatar Color="GetRankColor(rank)" Size="Size.Small">
+                                        @rank
+                                    </MudAvatar>
+                                    <div>
+                                        <MudText Typo="Typo.body2" Class="font-weight-medium">
+                                            @experience.ExperienceName
+                                        </MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                            @experience.BookingCount bookings (@experience.Percentage.ToString("F1")%)
+                                        </MudText>
+                                    </div>
+                                </MudStack>
+                                <MudProgressLinear Value="@((double)experience.Percentage)" Color="GetRankColor(rank)" Size="Size.Small" Style="width: 60px;" />
+                            </MudStack>
+                        </MudListItem>
+                        @if (rank < topExperiences.Count())
+                        {
+                            <MudDivider />
+                        }
+                        rank++;
+                    }
+                </MudList>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <!-- Experience Details Table -->
+    <MudItem xs="12">
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h6" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.TableChart" Class="mr-2" />
+                    Detailed Experience Analytics
+                </MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudDataGrid Items="@Analytics.ExperienceStats" 
+                             Sortable="true" 
+                             Filterable="true" 
+                             Groupable="false"
+                             Dense="true"
+                             Hover="true">
+                    <Columns>
+                        <PropertyColumn Property="x => x.ExperienceName" Title="Experience" />
+                        <PropertyColumn Property="x => x.BookingCount" Title="Bookings" />
+                        <TemplateColumn Title="Market Share">
+                            <CellTemplate>
+                                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                    <MudProgressLinear Value="@((double)context.Item.Percentage)" Color="Color.Primary" Size="Size.Small" Style="width: 100px;" />
+                                    <MudText Typo="Typo.caption">@context.Item.Percentage.ToString("F1")%</MudText>
+                                </MudStack>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.Revenue" Title="Revenue" Format="C" />
+                        <PropertyColumn Property="x => x.CancelledCount" Title="Cancelled" />
+                        <TemplateColumn Title="Cancellation Rate">
+                            <CellTemplate>
+                                <MudChip Size="Size.Small" Color="@GetCancellationColor(context.Item.CancellationRate)">
+                                    @context.Item.CancellationRate.ToString("F1")%
+                                </MudChip>
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Rating">
+                            <CellTemplate>
+                                <MudRating Value="@((int)context.Item.AverageRating)" ReadOnly="true" Size="Size.Small" />
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                </MudDataGrid>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <!-- Experience Cancellation Analysis -->
+    <MudItem xs="12" md="6">
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h6" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.CancelPresentation" Class="mr-2" />
+                    Cancellation Analysis
+                </MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                @if (Analytics.ExperienceStats.Any())
+                {
+                    <MudChart ChartType="ChartType.Donut" 
+                              ChartSeries="@CancellationChartSeries" 
+                              XAxisLabels="@Analytics.ExperienceStats.Where(e => e.CancelledCount > 0).Select(e => TruncateText(e.ExperienceName, 10)).ToArray()" 
+                              Width="100%" Height="300px">
+                    </MudChart>
+                }
+                else
+                {
+                    <MudText Color="Color.Secondary" Class="pa-8 text-center">
+                        No cancellation data available
+                    </MudText>
+                }
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <!-- Revenue by Experience -->
+    <MudItem xs="12" md="6">
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h6" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.MonetizationOn" Class="mr-2" />
+                    Revenue by Experience
+                </MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudList T="string">
+                    @foreach (var experience in Analytics.ExperienceStats.OrderByDescending(e => e.Revenue).Take(5))
+                    {
+                        <MudListItem T="string">
+                            <MudStack Spacing="2">
+                                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                    <MudText Typo="Typo.body2" Class="font-weight-medium">
+                                        @experience.ExperienceName
+                                    </MudText>
+                                    <MudText Typo="Typo.h6" Color="Color.Success">
+                                        @experience.Revenue.ToString("C")
+                                    </MudText>
+                                </MudStack>
+                                <MudProgressLinear Value="@GetRevenuePercentage(experience.Revenue)" Color="Color.Success" Size="Size.Small" />
+                            </MudStack>
+                        </MudListItem>
+                        <MudDivider />
+                    }
+                </MudList>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code {
+    [Parameter] public BookingAnalytics Analytics { get; set; } = null!;
+
+    private List<ChartSeries> ExperienceChartSeries = new();
+    private List<ChartSeries> CancellationChartSeries = new();
+
+    protected override void OnParametersSet()
+    {
+        if (Analytics?.ExperienceStats != null)
+        {
+            ExperienceChartSeries = new List<ChartSeries>
+            {
+                new ChartSeries
+                {
+                    Name = "Bookings",
+                    Data = Analytics.ExperienceStats.Select(e => (double)e.BookingCount).ToArray()
+                }
+            };
+
+            var cancellationData = Analytics.ExperienceStats.Where(e => e.CancelledCount > 0).ToList();
+            if (cancellationData.Any())
+            {
+                CancellationChartSeries = new List<ChartSeries>
+                {
+                    new ChartSeries
+                    {
+                        Name = "Cancellations",
+                        Data = cancellationData.Select(e => (double)e.CancelledCount).ToArray()
+                    }
+                };
+            }
+        }
+    }
+
+    private MudBlazor.Color GetRankColor(int rank)
+    {
+        return rank switch
+        {
+            1 => MudBlazor.Color.Success,
+            2 => MudBlazor.Color.Info,
+            3 => MudBlazor.Color.Warning,
+            _ => MudBlazor.Color.Secondary
+        };
+    }
+
+    private MudBlazor.Color GetCancellationColor(decimal rate)
+    {
+        return rate switch
+        {
+            <= 5 => MudBlazor.Color.Success,
+            <= 15 => MudBlazor.Color.Warning,
+            _ => MudBlazor.Color.Error
+        };
+    }
+
+    private double GetRevenuePercentage(decimal revenue)
+    {
+        if (Analytics?.ExperienceStats == null || !Analytics.ExperienceStats.Any())
+            return 0;
+
+        var maxRevenue = Analytics.ExperienceStats.Max(e => e.Revenue);
+        return maxRevenue > 0 ? (double)(revenue / maxRevenue * 100) : 0;
+    }
+
+    private string TruncateText(string text, int maxLength)
+    {
+        if (string.IsNullOrEmpty(text) || text.Length <= maxLength)
+            return text;
+
+        return text.Substring(0, maxLength - 3) + "...";
+    }
+}

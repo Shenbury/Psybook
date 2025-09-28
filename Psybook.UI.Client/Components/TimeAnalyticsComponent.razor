@@ -1,0 +1,343 @@
+@using Psybook.Objects.Reporting
+
+<MudGrid Spacing="3">
+    <!-- Monthly Trends -->
+    <MudItem xs="12" lg="8">
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h6" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.Timeline" Class="mr-2" />
+                    Monthly Booking Trends
+                </MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                @if (Analytics.MonthlyStats.Any())
+                {
+                    <MudChart ChartType="ChartType.Line" 
+                              ChartSeries="@MonthlyChartSeries" 
+                              XAxisLabels="@Analytics.MonthlyStats.Select(m => m.MonthName).ToArray()" 
+                              Width="100%" Height="350px">
+                    </MudChart>
+                }
+                else
+                {
+                    <MudText Align="Align.Center" Color="Color.Secondary" Class="pa-8">
+                        No monthly trend data available
+                    </MudText>
+                }
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <!-- Day of Week Analysis -->
+    <MudItem xs="12" lg="4">
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h6" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.CalendarViewWeek" Class="mr-2" />
+                    Day of Week Pattern
+                </MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                @if (Analytics.DayOfWeekStats.Any())
+                {
+                    <MudChart ChartType="ChartType.Pie" 
+                              ChartSeries="@DayOfWeekChartSeries" 
+                              XAxisLabels="@Analytics.DayOfWeekStats.Select(d => d.DayName.Substring(0, 3)).ToArray()" 
+                              Width="100%" Height="300px">
+                    </MudChart>
+                }
+                else
+                {
+                    <MudText Align="Align.Center" Color="Color.Secondary" Class="pa-4">
+                        No day pattern data available
+                    </MudText>
+                }
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <!-- Hourly Distribution -->
+    <MudItem xs="12">
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h6" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.Schedule" Class="mr-2" />
+                    Hourly Booking Distribution
+                </MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                @if (Analytics.HourlyStats.Any())
+                {
+                    <MudChart ChartType="ChartType.Bar" 
+                              ChartSeries="@HourlyChartSeries" 
+                              XAxisLabels="@Analytics.HourlyStats.Select(h => h.TimeSlot).ToArray()" 
+                              Width="100%" Height="300px">
+                    </MudChart>
+                }
+                else
+                {
+                    <MudText Align="Align.Center" Color="Color.Secondary" Class="pa-8">
+                        No hourly distribution data available
+                    </MudText>
+                }
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <!-- Monthly Statistics Table -->
+    <MudItem xs="12" lg="8">
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h6" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.CalendarMonth" Class="mr-2" />
+                    Monthly Performance Details
+                </MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                @if (Analytics.MonthlyStats.Any())
+                {
+                    <MudDataGrid Items="@Analytics.MonthlyStats.OrderByDescending(m => m.Year).ThenByDescending(m => m.Month)" 
+                                 Dense="true" 
+                                 Hover="true">
+                        <Columns>
+                            <PropertyColumn Property="x => x.MonthName" Title="Month" />
+                            <PropertyColumn Property="x => x.Year" Title="Year" />
+                            <PropertyColumn Property="x => x.BookingCount" Title="Total Bookings" />
+                            <PropertyColumn Property="x => x.Revenue" Title="Revenue" Format="C" />
+                            <PropertyColumn Property="x => x.CancelledCount" Title="Cancelled" />
+                            <TemplateColumn Title="Growth Rate">
+                                <CellTemplate>
+                                    <MudChip Size="Size.Small" Color="@GetGrowthColor(context.Item.GrowthRate)">
+                                        @context.Item.GrowthRate.ToString("+0.0%;-0.0%;0.0%")
+                                    </MudChip>
+                                </CellTemplate>
+                            </TemplateColumn>
+                        </Columns>
+                    </MudDataGrid>
+                }
+                else
+                {
+                    <MudText Align="Align.Center" Color="Color.Secondary" Class="pa-4">
+                        No monthly data available
+                    </MudText>
+                }
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <!-- Time Insights -->
+    <MudItem xs="12" lg="4">
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h6" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.Insights" Class="mr-2" />
+                    Time-based Insights
+                </MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudStack Spacing="3">
+                    @if (Analytics.DayOfWeekStats.Any())
+                    {
+                        <div>
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">Busiest Day</MudText>
+                            <MudText Typo="Typo.h6">
+                                @Analytics.DayOfWeekStats.OrderByDescending(d => d.BookingCount).First().DayName
+                            </MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                @Analytics.DayOfWeekStats.OrderByDescending(d => d.BookingCount).First().BookingCount bookings
+                            </MudText>
+                        </div>
+                    }
+
+                    @if (Analytics.HourlyStats.Any())
+                    {
+                        <div>
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">Peak Hour</MudText>
+                            <MudText Typo="Typo.h6">
+                                @Analytics.HourlyStats.OrderByDescending(h => h.BookingCount).First().TimeSlot
+                            </MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                @Analytics.HourlyStats.OrderByDescending(h => h.BookingCount).First().BookingCount bookings
+                            </MudText>
+                        </div>
+                    }
+
+                    @if (Analytics.MonthlyStats.Any())
+                    {
+                        <div>
+                            <MudText Typo="Typo.subtitle2" Color="Color.Primary">Best Month</MudText>
+                            <MudText Typo="Typo.h6">
+                                @Analytics.MonthlyStats.OrderByDescending(m => m.BookingCount).First().MonthName
+                            </MudText>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                @Analytics.MonthlyStats.OrderByDescending(m => m.BookingCount).First().BookingCount bookings
+                            </MudText>
+                        </div>
+                    }
+
+                    <MudDivider />
+
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Color="Color.Primary">Seasonal Trends</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            @GetSeasonalTrend()
+                        </MudText>
+                    </div>
+                </MudStack>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <!-- Booking Patterns -->
+    <MudItem xs="12">
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h6" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.Pattern" Class="mr-2" />
+                    Booking Patterns Analysis
+                </MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudGrid Spacing="2">
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudPaper Class="pa-4 text-center" Style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <MudText Typo="Typo.h6" Style="color: white;">
+                                @(Analytics.DayOfWeekStats.Any() ? Analytics.DayOfWeekStats.Where(d => IsWeekend(d.DayOfWeek)).Sum(d => d.BookingCount) : 0)
+                            </MudText>
+                            <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.8);">Weekend Bookings</MudText>
+                        </MudPaper>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudPaper Class="pa-4 text-center" Style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <MudText Typo="Typo.h6" Style="color: white;">
+                                @(Analytics.DayOfWeekStats.Any() ? Analytics.DayOfWeekStats.Where(d => !IsWeekend(d.DayOfWeek)).Sum(d => d.BookingCount) : 0)
+                            </MudText>
+                            <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.8);">Weekday Bookings</MudText>
+                        </MudPaper>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudPaper Class="pa-4 text-center" Style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">
+                            <MudText Typo="Typo.h6" Style="color: white;">
+                                @(Analytics.HourlyStats.Any() ? Analytics.HourlyStats.Where(h => h.Hour >= 9 && h.Hour <= 17).Sum(h => h.BookingCount) : 0)
+                            </MudText>
+                            <MudText Typo="Typo.body2" Style="color: rgba(255,255,255,0.8);">Business Hours</MudText>
+                        </MudPaper>
+                    </MudItem>
+
+                    <MudItem xs="12" sm="6" md="3">
+                        <MudPaper Class="pa-4 text-center" Style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                            <MudText Typo="Typo.h6" Style="color: #333;">
+                                @(Analytics.HourlyStats.Any() ? Analytics.HourlyStats.Where(h => h.Hour < 9 || h.Hour > 17).Sum(h => h.BookingCount) : 0)
+                            </MudText>
+                            <MudText Typo="Typo.body2" Style="color: #666;">After Hours</MudText>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+</MudGrid>
+
+@code {
+    [Parameter] public BookingAnalytics Analytics { get; set; } = null!;
+
+    private List<ChartSeries> MonthlyChartSeries = new();
+    private List<ChartSeries> DayOfWeekChartSeries = new();
+    private List<ChartSeries> HourlyChartSeries = new();
+
+    protected override void OnParametersSet()
+    {
+        if (Analytics != null)
+        {
+            SetupChartData();
+        }
+    }
+
+    private void SetupChartData()
+    {
+        // Monthly trends
+        if (Analytics.MonthlyStats.Any())
+        {
+            MonthlyChartSeries = new List<ChartSeries>
+            {
+                new ChartSeries
+                {
+                    Name = "Bookings",
+                    Data = Analytics.MonthlyStats.Select(m => (double)m.BookingCount).ToArray()
+                },
+                new ChartSeries
+                {
+                    Name = "Cancelled",
+                    Data = Analytics.MonthlyStats.Select(m => (double)m.CancelledCount).ToArray()
+                }
+            };
+        }
+
+        // Day of week distribution
+        if (Analytics.DayOfWeekStats.Any())
+        {
+            DayOfWeekChartSeries = new List<ChartSeries>
+            {
+                new ChartSeries
+                {
+                    Name = "Bookings by Day",
+                    Data = Analytics.DayOfWeekStats.Select(d => (double)d.BookingCount).ToArray()
+                }
+            };
+        }
+
+        // Hourly distribution
+        if (Analytics.HourlyStats.Any())
+        {
+            HourlyChartSeries = new List<ChartSeries>
+            {
+                new ChartSeries
+                {
+                    Name = "Bookings by Hour",
+                    Data = Analytics.HourlyStats.Select(h => (double)h.BookingCount).ToArray()
+                }
+            };
+        }
+    }
+
+    private MudBlazor.Color GetGrowthColor(decimal growthRate)
+    {
+        return growthRate switch
+        {
+            > 0 => MudBlazor.Color.Success,
+            < 0 => MudBlazor.Color.Error,
+            _ => MudBlazor.Color.Secondary
+        };
+    }
+
+    private bool IsWeekend(DayOfWeek dayOfWeek)
+    {
+        return dayOfWeek == DayOfWeek.Saturday || dayOfWeek == DayOfWeek.Sunday;
+    }
+
+    private string GetSeasonalTrend()
+    {
+        if (!Analytics.MonthlyStats.Any())
+            return "Insufficient data for seasonal analysis";
+
+        var springMonths = Analytics.MonthlyStats.Where(m => m.Month >= 3 && m.Month <= 5).Sum(m => m.BookingCount);
+        var summerMonths = Analytics.MonthlyStats.Where(m => m.Month >= 6 && m.Month <= 8).Sum(m => m.BookingCount);
+        var autumnMonths = Analytics.MonthlyStats.Where(m => m.Month >= 9 && m.Month <= 11).Sum(m => m.BookingCount);
+        var winterMonths = Analytics.MonthlyStats.Where(m => m.Month == 12 || m.Month <= 2).Sum(m => m.BookingCount);
+
+        var seasons = new[]
+        {
+            new { Name = "Spring", Bookings = springMonths },
+            new { Name = "Summer", Bookings = summerMonths },
+            new { Name = "Autumn", Bookings = autumnMonths },
+            new { Name = "Winter", Bookings = winterMonths }
+        };
+
+        var peakSeason = seasons.OrderByDescending(s => s.Bookings).First();
+        return $"{peakSeason.Name} is the peak season with {peakSeason.Bookings} bookings";
+    }
+}

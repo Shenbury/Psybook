@@ -1,0 +1,397 @@
+@using Psybook.Objects.Reporting
+
+<MudGrid Spacing="3">
+    <!-- Customer Overview -->
+    <MudItem xs="12" md="6">
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h6" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.PeopleAlt" Class="mr-2" />
+                    Customer Overview
+                </MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudStack Spacing="3">
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.body1">Total Customers</MudText>
+                        <MudText Typo="Typo.h5" Color="Color.Primary">@Analytics.CustomerStats.TotalCustomers</MudText>
+                    </MudStack>
+                    
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.body1">New Customers</MudText>
+                        <MudText Typo="Typo.h5" Color="Color.Success">@Analytics.CustomerStats.NewCustomers</MudText>
+                    </MudStack>
+                    
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.body1">Returning Customers</MudText>
+                        <MudText Typo="Typo.h5" Color="Color.Info">@Analytics.CustomerStats.ReturningCustomers</MudText>
+                    </MudStack>
+                    
+                    <MudDivider />
+                    
+                    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                        <MudText Typo="Typo.body1">Return Rate</MudText>
+                        <MudText Typo="Typo.h5" Color="@GetReturnRateColor(Analytics.CustomerStats.ReturnRate)">
+                            @Analytics.CustomerStats.ReturnRate.ToString("F1")%
+                        </MudText>
+                    </MudStack>
+                </MudStack>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <!-- Customer Segmentation -->
+    <MudItem xs="12" md="6">
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h6" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.DonutLarge" Class="mr-2" />
+                    Customer Distribution
+                </MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                @{
+                    var newCustomerPercentage = Analytics.CustomerStats.TotalCustomers > 0 
+                        ? (double)Analytics.CustomerStats.NewCustomers / Analytics.CustomerStats.TotalCustomers * 100 
+                        : 0;
+                    var returningCustomerPercentage = 100 - newCustomerPercentage;
+                }
+                
+                <MudChart ChartType="ChartType.Donut" 
+                          ChartSeries="@CustomerDistributionSeries" 
+                          XAxisLabels="@(new[] { "New Customers", "Returning Customers" })" 
+                          Width="100%" Height="250px">
+                </MudChart>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <!-- Customer Segments -->
+    @if (Analytics.CustomerStats.Segments.Any())
+    {
+        <MudItem xs="12">
+            <MudCard>
+                <MudCardHeader>
+                    <MudText Typo="Typo.h6" Color="Color.Primary">
+                        <MudIcon Icon="@Icons.Material.Filled.Group" Class="mr-2" />
+                        Customer Segments
+                    </MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudDataGrid Items="@Analytics.CustomerStats.Segments" 
+                                 Dense="true" 
+                                 Hover="true">
+                        <Columns>
+                            <PropertyColumn Property="x => x.SegmentName" Title="Segment" />
+                            <PropertyColumn Property="x => x.CustomerCount" Title="Customers" />
+                            <TemplateColumn Title="Market Share">
+                                <CellTemplate>
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                        <MudProgressLinear Value="@((double)context.Item.Percentage)" Color="Color.Primary" Size="Size.Small" Style="width: 100px;" />
+                                        <MudText Typo="Typo.caption">@context.Item.Percentage.ToString("F1")%</MudText>
+                                    </MudStack>
+                                </CellTemplate>
+                            </TemplateColumn>
+                            <PropertyColumn Property="x => x.AverageValue" Title="Average Value" Format="C" />
+                        </Columns>
+                    </MudDataGrid>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    }
+
+    <!-- Geographic Distribution -->
+    @if (Analytics.GeographicStats.Any())
+    {
+        <MudItem xs="12" lg="8">
+            <MudCard>
+                <MudCardHeader>
+                    <MudText Typo="Typo.h6" Color="Color.Primary">
+                        <MudIcon Icon="@Icons.Material.Filled.Map" Class="mr-2" />
+                        Geographic Distribution
+                    </MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudDataGrid Items="@Analytics.GeographicStats.OrderByDescending(g => g.BookingCount)" 
+                                 Dense="true" 
+                                 Hover="true"
+                                 Filterable="true">
+                        <Columns>
+                            <PropertyColumn Property="x => x.PostcodeArea" Title="Postcode Area" />
+                            <PropertyColumn Property="x => x.Region" Title="Region" />
+                            <PropertyColumn Property="x => x.BookingCount" Title="Bookings" />
+                            <TemplateColumn Title="Market Share">
+                                <CellTemplate>
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                        <MudProgressLinear Value="@((double)context.Item.Percentage)" Color="Color.Info" Size="Size.Small" Style="width: 80px;" />
+                                        <MudText Typo="Typo.caption">@context.Item.Percentage.ToString("F1")%</MudText>
+                                    </MudStack>
+                                </CellTemplate>
+                            </TemplateColumn>
+                            <PropertyColumn Property="x => x.Revenue" Title="Revenue" Format="C" />
+                        </Columns>
+                    </MudDataGrid>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+
+        <MudItem xs="12" lg="4">
+            <MudCard>
+                <MudCardHeader>
+                    <MudText Typo="Typo.h6" Color="Color.Primary">
+                        <MudIcon Icon="@Icons.Material.Filled.LocationOn" Class="mr-2" />
+                        Top Regions
+                    </MudText>
+                </MudCardHeader>
+                <MudCardContent>
+                    <MudList T="string">
+                        @{
+                            var topRegions = Analytics.GeographicStats.OrderByDescending(g => g.BookingCount).Take(8);
+                            int rank = 1;
+                        }
+                        
+                        @foreach (var region in topRegions)
+                        {
+                            <MudListItem T="string">
+                                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                                        <MudAvatar Color="@GetRegionRankColor(rank)" Size="Size.Small">
+                                            @rank
+                                        </MudAvatar>
+                                        <div>
+                                            <MudText Typo="Typo.body2" Class="font-weight-medium">
+                                                @region.PostcodeArea
+                                            </MudText>
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                @region.BookingCount bookings
+                                            </MudText>
+                                        </div>
+                                    </MudStack>
+                                    <MudText Typo="Typo.caption" Color="Color.Success">
+                                        @region.Revenue.ToString("C")
+                                    </MudText>
+                                </MudStack>
+                            </MudListItem>
+                            @if (rank < topRegions.Count())
+                            {
+                                <MudDivider />
+                            }
+                            rank++;
+                        }
+                    </MudList>
+                </MudCardContent>
+            </MudCard>
+        </MudItem>
+    }
+
+    <!-- Customer Loyalty Metrics -->
+    <MudItem xs="12" md="6">
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h6" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.Stars" Class="mr-2" />
+                    Customer Loyalty Metrics
+                </MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudStack Spacing="4">
+                    <div>
+                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudText Typo="Typo.body1">Average Bookings per Customer</MudText>
+                            <MudText Typo="Typo.h6" Color="Color.Primary">
+                                @Analytics.CustomerStats.AverageBookingsPerCustomer.ToString("F1")
+                            </MudText>
+                        </MudStack>
+                        <MudProgressLinear Value="@GetAverageBookingsProgress()" Color="Color.Primary" Size="Size.Small" />
+                    </div>
+                    
+                    <div>
+                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <MudText Typo="Typo.body1">Customer Retention Rate</MudText>
+                            <MudText Typo="Typo.h6" Color="@GetRetentionRateColor()">
+                                @Analytics.CustomerStats.ReturnRate.ToString("F1")%
+                            </MudText>
+                        </MudStack>
+                        <MudProgressLinear Value="@((double)Analytics.CustomerStats.ReturnRate)" Color="@GetRetentionRateColor()" Size="Size.Small" />
+                    </div>
+                    
+                    <MudDivider />
+                    
+                    <MudStack Spacing="2">
+                        <MudText Typo="Typo.subtitle2" Color="Color.Primary">Loyalty Insights</MudText>
+                        <MudChip T="string" Color="@GetLoyaltyInsightColor()" Size="Size.Small">
+                            @GetLoyaltyInsight()
+                        </MudChip>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            @GetLoyaltyRecommendation()
+                        </MudText>
+                    </MudStack>
+                </MudStack>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+
+    <!-- Customer Acquisition Trends -->
+    <MudItem xs="12" md="6">
+        <MudCard>
+            <MudCardHeader>
+                <MudText Typo="Typo.h6" Color="Color.Primary">
+                    <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="mr-2" />
+                    Customer Acquisition Insights
+                </MudText>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudStack Spacing="3">
+                    <MudGrid Spacing="2">
+                        <MudItem xs="6">
+                            <MudPaper Class="pa-3 text-center" Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                <MudText Typo="Typo.h5" Style="color: white;">@Analytics.CustomerStats.NewCustomers</MudText>
+                                <MudText Typo="Typo.caption" Style="color: rgba(255,255,255,0.8);">New Customers</MudText>
+                            </MudPaper>
+                        </MudItem>
+                        
+                        <MudItem xs="6">
+                            <MudPaper Class="pa-3 text-center" Style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                <MudText Typo="Typo.h5" Style="color: white;">@GetAcquisitionRate().ToString("F1")%</MudText>
+                                <MudText Typo="Typo.caption" Style="color: rgba(255,255,255,0.8);">Acquisition Rate</MudText>
+                            </MudPaper>
+                        </MudItem>
+                    </MudGrid>
+                    
+                    <MudDivider />
+                    
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Color="Color.Primary" Class="mb-2">Customer Growth Strategy</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            @GetGrowthStrategy()
+                        </MudText>
+                    </div>
+                </MudStack>
+            </MudCardContent>
+        </MudCard>
+    </MudItem>
+</MudGrid>
+
+@code {
+    [Parameter] public BookingAnalytics Analytics { get; set; } = null!;
+
+    private List<ChartSeries> CustomerDistributionSeries = new();
+
+    protected override void OnParametersSet()
+    {
+        if (Analytics?.CustomerStats != null)
+        {
+            SetupCustomerDistributionChart();
+        }
+    }
+
+    private void SetupCustomerDistributionChart()
+    {
+        CustomerDistributionSeries = new List<ChartSeries>
+        {
+            new ChartSeries
+            {
+                Name = "Customer Distribution",
+                Data = new double[] 
+                { 
+                    (double)Analytics.CustomerStats.NewCustomers, 
+                    (double)Analytics.CustomerStats.ReturningCustomers 
+                }
+            }
+        };
+    }
+
+    private MudBlazor.Color GetReturnRateColor(decimal returnRate)
+    {
+        return returnRate switch
+        {
+            >= 50 => MudBlazor.Color.Success,
+            >= 30 => MudBlazor.Color.Warning,
+            _ => MudBlazor.Color.Error
+        };
+    }
+
+    private MudBlazor.Color GetRegionRankColor(int rank)
+    {
+        return rank switch
+        {
+            1 => MudBlazor.Color.Success,
+            2 => MudBlazor.Color.Info,
+            3 => MudBlazor.Color.Warning,
+            _ => MudBlazor.Color.Secondary
+        };
+    }
+
+    private double GetAverageBookingsProgress()
+    {
+        // Scale the average bookings to a percentage (assuming max of 10 bookings per customer is 100%)
+        var maxExpected = 10.0;
+        return Math.Min(Analytics.CustomerStats.AverageBookingsPerCustomer / maxExpected * 100, 100);
+    }
+
+    private MudBlazor.Color GetRetentionRateColor()
+    {
+        return GetReturnRateColor(Analytics.CustomerStats.ReturnRate);
+    }
+
+    private string GetLoyaltyInsight()
+    {
+        var returnRate = Analytics.CustomerStats.ReturnRate;
+        var avgBookings = Analytics.CustomerStats.AverageBookingsPerCustomer;
+
+        if (returnRate >= 50 && avgBookings >= 2.5)
+            return "Excellent Customer Loyalty";
+        else if (returnRate >= 30 && avgBookings >= 2.0)
+            return "Good Customer Loyalty";
+        else if (returnRate >= 20 && avgBookings >= 1.5)
+            return "Average Customer Loyalty";
+        else
+            return "Needs Improvement";
+    }
+
+    private MudBlazor.Color GetLoyaltyInsightColor()
+    {
+        var insight = GetLoyaltyInsight();
+        return insight switch
+        {
+            "Excellent Customer Loyalty" => MudBlazor.Color.Success,
+            "Good Customer Loyalty" => MudBlazor.Color.Info,
+            "Average Customer Loyalty" => MudBlazor.Color.Warning,
+            _ => MudBlazor.Color.Error
+        };
+    }
+
+    private string GetLoyaltyRecommendation()
+    {
+        var returnRate = Analytics.CustomerStats.ReturnRate;
+        
+        if (returnRate >= 50)
+            return "Your customer loyalty is excellent! Consider expanding VIP offerings.";
+        else if (returnRate >= 30)
+            return "Good loyalty rates. Focus on personalized experiences to improve retention.";
+        else if (returnRate >= 20)
+            return "Consider implementing a loyalty program to increase repeat bookings.";
+        else
+            return "Priority: Implement customer retention strategies and follow-up campaigns.";
+    }
+
+    private decimal GetAcquisitionRate()
+    {
+        return Analytics.CustomerStats.TotalCustomers > 0 
+            ? (decimal)Analytics.CustomerStats.NewCustomers / Analytics.CustomerStats.TotalCustomers * 100 
+            : 0;
+    }
+
+    private string GetGrowthStrategy()
+    {
+        var acquisitionRate = GetAcquisitionRate();
+        var returnRate = Analytics.CustomerStats.ReturnRate;
+
+        if (acquisitionRate > 70)
+            return "Focus on converting new customers to repeat visitors through exceptional first experiences.";
+        else if (returnRate < 30)
+            return "Prioritize customer retention programs and follow-up engagement strategies.";
+        else
+            return "Balanced approach: maintain acquisition efforts while strengthening customer relationships.";
+    }
+}

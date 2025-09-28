@@ -3,8 +3,11 @@ using Microsoft.Identity.Web;
 using Psybook.Repositories.Booking;
 using Psybook.ServiceDefaults;
 using Psybook.Services.API.BookingService;
+using Psybook.Services.Background;
 using Psybook.Services.ExternalCalendar;
 using Psybook.Services.ExternalCalendar.GoogleCalendar;
+using Psybook.Services.Reporting;
+using Psybook.Services.Reporting.Visualization;
 using Psybook.Shared.Contexts;
 using Psybook.Shared.Dictionary;
 
@@ -43,6 +46,14 @@ builder.Services.AddScoped<ExperienceDictionary>();
 // External Calendar Integration Services
 builder.Services.AddScoped<IExternalCalendarService, ExternalCalendarService>();
 builder.Services.AddScoped<GoogleCalendarApiService>();
+
+// Reporting & Analytics Services
+builder.Services.AddScoped<IReportingService, ReportingService>();
+builder.Services.AddScoped<IDataVisualizationService, DataVisualizationService>();
+
+// Background Services
+builder.Services.AddHostedService<ScheduledReportingService>();
+
 builder.Services.AddHttpClient(); // Required for HTTP operations in calendar services
 
 var app = builder.Build();

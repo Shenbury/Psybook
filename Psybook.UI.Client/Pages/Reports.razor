@@ -1,0 +1,534 @@
+@page "/reporting"
+@page "/reports"
+@using Psybook.Objects.Reporting
+@using Psybook.Services.Reporting
+@using Psybook.UI.Client.Components
+@using Microsoft.Extensions.Logging
+@using System.Text.Json
+@inject IReportingService ReportingService
+@inject ILogger<Reports> Logger
+@inject IJSRuntime JSRuntime
+
+<PageTitle>Reports & Analytics - WMSP VIP Booking</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-4">
+    <!-- Header Section -->
+    <MudPaper Elevation="0" Class="pa-6 mb-6">
+        <MudStack Spacing="4">
+            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="flex-wrap">
+                <div>
+                    <MudText Typo="Typo.h3" Color="Color.Primary" GutterBottom="true">
+                        <MudIcon Icon="@Icons.Material.Filled.Analytics" Class="mr-3" />
+                        Reports & Analytics
+                    </MudText>
+                    <MudText Typo="Typo.h6" Color="Color.Secondary">
+                        Comprehensive insights into your VIP booking performance
+                    </MudText>
+                </div>
+                
+                <MudStack Row="true" Spacing="2">
+                    <MudButton Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               StartIcon="@Icons.Material.Filled.Refresh"
+                               OnClick="RefreshData"
+                               Disabled="IsLoading">
+                        Refresh Data
+                    </MudButton>
+                    
+                    <MudButton Variant="Variant.Outlined" 
+                               Color="Color.Secondary" 
+                               StartIcon="@Icons.Material.Filled.FileDownload"
+                               OnClick="() => ShowExportDialog = true">
+                        Export Report
+                    </MudButton>
+                </MudStack>
+            </MudStack>
+        </MudStack>
+    </MudPaper>
+
+    @if (IsLoading && DashboardSummary == null)
+    {
+        <MudStack Spacing="4">
+            <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="200px" />
+            <MudGrid Spacing="3">
+                <MudItem xs="12" sm="6" md="3">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="150px" />
+                </MudItem>
+                <MudItem xs="12" sm="6" md="3">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="150px" />
+                </MudItem>
+                <MudItem xs="12" sm="6" md="3">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="150px" />
+                </MudItem>
+                <MudItem xs="12" sm="6" md="3">
+                    <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="150px" />
+                </MudItem>
+            </MudGrid>
+        </MudStack>
+    }
+    else if (DashboardSummary != null)
+    {
+        <!-- Quick Stats Cards -->
+        <MudGrid Spacing="3" Class="mb-6">
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Class="stats-card">
+                    <MudCardContent Class="pa-4">
+                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <div>
+                                <MudText Typo="Typo.h4" Color="Color.Primary" Class="font-weight-bold">
+                                    @DashboardSummary.TotalBookingsThisMonth
+                                </MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                    Total Bookings This Month
+                                </MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.EventNote" Color="Color.Primary" Size="Size.Large" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Class="stats-card">
+                    <MudCardContent Class="pa-4">
+                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <div>
+                                <MudText Typo="Typo.h4" Color="Color.Success" Class="font-weight-bold">
+                                    @DashboardSummary.RevenueMTD.ToString("C")
+                                </MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                    Revenue MTD
+                                </MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Color="Color.Success" Size="Size.Large" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Class="stats-card">
+                    <MudCardContent Class="pa-4">
+                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <div>
+                                <MudText Typo="Typo.h4" Color="Color.Warning" Class="font-weight-bold">
+                                    @DashboardSummary.PendingBookings
+                                </MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                    Pending Bookings
+                                </MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Schedule" Color="Color.Warning" Size="Size.Large" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" sm="6" md="3">
+                <MudCard Class="stats-card">
+                    <MudCardContent Class="pa-4">
+                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                            <div>
+                                <MudText Typo="Typo.h4" Color="Color.Info" Class="font-weight-bold">
+                                    @DashboardSummary.UpcomingBookings
+                                </MudText>
+                                <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                    Upcoming Bookings
+                                </MudText>
+                            </div>
+                            <MudIcon Icon="@Icons.Material.Filled.Upcoming" Color="Color.Info" Size="Size.Large" />
+                        </MudStack>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Charts and Analytics -->
+        <MudGrid Spacing="3" Class="mb-6">
+            <!-- Booking Trends Chart -->
+            <MudItem xs="12" lg="8">
+                <MudCard>
+                    <MudCardHeader>
+                        <MudText Typo="Typo.h6" Color="Color.Primary">
+                            <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="mr-2" />
+                            Booking Trends
+                        </MudText>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @if (TrendingData != null && TrendingData.BookingTrend.Any())
+                        {
+                            <MudChart ChartType="ChartType.Line" 
+                                      ChartSeries="@BookingTrendSeries" 
+                                      XAxisLabels="@TrendingData.BookingTrend.Select(d => d.Label).ToArray()" 
+                                      Width="100%" Height="350px">
+                            </MudChart>
+                        }
+                        else
+                        {
+                            <MudText Align="Align.Center" Color="Color.Secondary" Class="pa-8">
+                                Loading trend data...
+                            </MudText>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <!-- Top Experiences -->
+            <MudItem xs="12" lg="4">
+                <MudCard>
+                    <MudCardHeader>
+                        <MudText Typo="Typo.h6" Color="Color.Primary">
+                            <MudIcon Icon="@Icons.Material.Filled.Star" Class="mr-2" />
+                            Top Experiences
+                        </MudText>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @if (DashboardSummary.TopExperiences.Any())
+                        {
+                            <MudList T="string">
+                                @foreach (var experience in DashboardSummary.TopExperiences)
+                                {
+                                    <MudListItem T="string">
+                                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                            <div>
+                                                <MudText Typo="Typo.body1" Class="font-weight-medium">
+                                                    @experience.Name
+                                                </MudText>
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                    @experience.BookingCount bookings
+                                                </MudText>
+                                            </div>
+                                            <MudChip T="string" Color="@(experience.Growth > 0 ? Color.Success : Color.Error)" Size="Size.Small">
+                                                @($"{experience.Growth:+0;-0;0}%")
+                                            </MudChip>
+                                        </MudStack>
+                                    </MudListItem>
+                                    <MudDivider />
+                                }
+                            </MudList>
+                        }
+                        else
+                        {
+                            <MudText Align="Align.Center" Color="Color.Secondary" Class="pa-4">
+                                No experience data available
+                            </MudText>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+
+        <!-- Analytics Tabs -->
+        <MudTabs Elevation="2" Rounded="true" @bind-ActivePanelIndex="ActiveTabIndex" Class="mb-6">
+            <MudTabPanel Text="Overview" Icon="@Icons.Material.Filled.Dashboard">
+                <div class="pa-4">
+                    @if (Analytics != null)
+                    {
+                        <AnalyticsOverviewComponent Analytics="Analytics" />
+                    }
+                </div>
+            </MudTabPanel>
+            
+            <MudTabPanel Text="Experience Analysis" Icon="@Icons.Material.Filled.Category">
+                <div class="pa-4">
+                    @if (Analytics != null)
+                    {
+                        <ExperienceAnalyticsComponent Analytics="Analytics" />
+                    }
+                </div>
+            </MudTabPanel>
+            
+            <MudTabPanel Text="Time Analysis" Icon="@Icons.Material.Filled.AccessTime">
+                <div class="pa-4">
+                    @if (Analytics != null)
+                    {
+                        <TimeAnalyticsComponent Analytics="Analytics" />
+                    }
+                </div>
+            </MudTabPanel>
+            
+            <MudTabPanel Text="Customer Insights" Icon="@Icons.Material.Filled.People">
+                <div class="pa-4">
+                    @if (Analytics != null)
+                    {
+                        <CustomerAnalyticsComponent Analytics="Analytics" />
+                    }
+                </div>
+            </MudTabPanel>
+        </MudTabs>
+
+        <!-- Recent Activity & Alerts -->
+        <MudGrid Spacing="3">
+            <MudItem xs="12" md="6">
+                <MudCard>
+                    <MudCardHeader>
+                        <MudText Typo="Typo.h6" Color="Color.Primary">
+                            <MudIcon Icon="@Icons.Material.Filled.History" Class="mr-2" />
+                            Recent Bookings
+                        </MudText>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        <MudList T="string">
+                            @foreach (var booking in DashboardSummary.RecentBookings.Take(5))
+                            {
+                                <MudListItem T="string">
+                                    <MudStack Spacing="1">
+                                        <MudText Typo="Typo.body2" Class="font-weight-medium">
+                                            @booking.CustomerName
+                                        </MudText>
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                            @booking.ExperienceName • @booking.BookingDate.ToString("MMM dd, yyyy")
+                                        </MudText>
+                                        <MudChip T="string" Size="Size.Small" Color="GetStatusColor(booking.Status)">
+                                            @booking.Status
+                                        </MudChip>
+                                    </MudStack>
+                                </MudListItem>
+                                <MudDivider />
+                            }
+                        </MudList>
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+
+            <MudItem xs="12" md="6">
+                <MudCard>
+                    <MudCardHeader>
+                        <MudText Typo="Typo.h6" Color="Color.Primary">
+                            <MudIcon Icon="@Icons.Material.Filled.NotificationsActive" Class="mr-2" />
+                            System Alerts
+                        </MudText>
+                    </MudCardHeader>
+                    <MudCardContent>
+                        @if (DashboardSummary.Alerts.Any())
+                        {
+                            <MudList T="string">
+                                @foreach (var alert in DashboardSummary.Alerts)
+                                {
+                                    <MudListItem T="string">
+                                        <MudAlert Severity="GetSeverity(alert.Severity)" Dense="true">
+                                            <MudText Typo="Typo.body2">
+                                                <strong>@alert.Type:</strong> @alert.Message
+                                            </MudText>
+                                            <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                                @alert.Timestamp.ToString("HH:mm")
+                                            </MudText>
+                                        </MudAlert>
+                                    </MudListItem>
+                                }
+                            </MudList>
+                        }
+                        else
+                        {
+                            <MudText Align="Align.Center" Color="Color.Success" Class="pa-4">
+                                <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Class="mr-2" />
+                                All systems are running smoothly
+                            </MudText>
+                        }
+                    </MudCardContent>
+                </MudCard>
+            </MudItem>
+        </MudGrid>
+    }
+</MudContainer>
+
+<!-- Export Dialog -->
+<MudDialog @bind-Visible="ShowExportDialog" Options="ExportDialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.FileDownload" Class="mr-3" />
+            Export Report
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudStack Spacing="3">
+            <MudDateRangePicker @bind-DateRange="ExportDateRange" Label="Date Range" />
+            
+            <MudSelect @bind-Value="ExportFormat" Label="Export Format">
+                <MudSelectItem Value="Objects.Reporting.ReportFormat.PDF">PDF Report</MudSelectItem>
+                <MudSelectItem Value="Objects.Reporting.ReportFormat.Excel">Excel Spreadsheet</MudSelectItem>
+                <MudSelectItem Value="Objects.Reporting.ReportFormat.CSV">CSV Data</MudSelectItem>
+                <MudSelectItem Value="Objects.Reporting.ReportFormat.JSON">JSON Data</MudSelectItem>
+            </MudSelect>
+            
+            <MudSelect @bind-Value="ExportType" Label="Report Type">
+                <MudSelectItem Value="Objects.Reporting.ReportType.Summary">Summary Report</MudSelectItem>
+                <MudSelectItem Value="Objects.Reporting.ReportType.Detailed">Detailed Report</MudSelectItem>
+                <MudSelectItem Value="Objects.Reporting.ReportType.Financial">Financial Report</MudSelectItem>
+                <MudSelectItem Value="Objects.Reporting.ReportType.Customer">Customer Analysis</MudSelectItem>
+                <MudSelectItem Value="Objects.Reporting.ReportType.Experience">Experience Analysis</MudSelectItem>
+            </MudSelect>
+            
+            <MudCheckBox @bind-Value="IncludeCustomerDetails" Label="Include Customer Details" />
+            <MudCheckBox @bind-Value="IncludeFinancialData" Label="Include Financial Data" />
+        </MudStack>
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="() => ShowExportDialog = false">Cancel</MudButton>
+        <MudButton Color="Color.Primary" 
+                   Variant="Variant.Filled" 
+                   OnClick="ExportReport"
+                   Disabled="IsExporting"
+                   StartIcon="@Icons.Material.Filled.Download">
+            @if (IsExporting)
+            {
+                <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+                <span class="ml-2">Exporting...</span>
+            }
+            else
+            {
+                <span>Export Report</span>
+            }
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    private DashboardSummary? DashboardSummary;
+    private BookingAnalytics? Analytics;
+    private Psybook.Services.Reporting.TrendingData? TrendingData;
+    private bool IsLoading = true;
+    private bool ShowExportDialog = false;
+    private bool IsExporting = false;
+    private int ActiveTabIndex = 0;
+
+    // Export dialog properties
+    private DateRange ExportDateRange = new(DateTime.UtcNow.AddDays(-30), DateTime.UtcNow);
+    private Objects.Reporting.ReportFormat ExportFormat = Objects.Reporting.ReportFormat.PDF;
+    private Objects.Reporting.ReportType ExportType = Objects.Reporting.ReportType.Summary;
+    private bool IncludeCustomerDetails = false;
+    private bool IncludeFinancialData = true;
+
+    private List<ChartSeries> BookingTrendSeries = new();
+
+    private DialogOptions ExportDialogOptions => new()
+    {
+        MaxWidth = MaxWidth.Small,
+        FullWidth = true,
+        CloseButton = true,
+        CloseOnEscapeKey = true
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDashboardData();
+    }
+
+    private async Task LoadDashboardData()
+    {
+        try
+        {
+            IsLoading = true;
+            StateHasChanged();
+
+            // Load dashboard summary
+            DashboardSummary = await ReportingService.GetDashboardSummaryAsync();
+
+            // Load analytics
+            var request = new Objects.Reporting.ReportRequest
+            {
+                StartDate = DateTime.UtcNow.AddDays(-30),
+                EndDate = DateTime.UtcNow,
+                ReportType = Objects.Reporting.ReportType.Summary
+            };
+            Analytics = await ReportingService.GenerateAnalyticsAsync(request);
+
+            // Load trending data
+            TrendingData = await ReportingService.GetTrendingDataAsync(Psybook.Services.Reporting.TrendPeriod.Last30Days);
+
+            // Update chart data
+            UpdateChartData();
+
+            Logger.LogInformation("Dashboard data loaded successfully");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load dashboard data");
+        }
+        finally
+        {
+            IsLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void UpdateChartData()
+    {
+        if (TrendingData?.BookingTrend != null)
+        {
+            BookingTrendSeries = new List<ChartSeries>
+            {
+                new ChartSeries
+                {
+                    Name = "Bookings",
+                    Data = TrendingData.BookingTrend.Select(d => (double)d.Value).ToArray()
+                }
+            };
+        }
+    }
+
+    private async Task RefreshData()
+    {
+        await LoadDashboardData();
+    }
+
+    private async Task ExportReport()
+    {
+        try
+        {
+            IsExporting = true;
+            StateHasChanged();
+
+            var request = new Objects.Reporting.ReportRequest
+            {
+                StartDate = ExportDateRange.Start ?? DateTime.UtcNow.AddDays(-30),
+                EndDate = ExportDateRange.End ?? DateTime.UtcNow,
+                Format = ExportFormat,
+                ReportType = ExportType,
+                IncludeCustomerDetails = IncludeCustomerDetails,
+                IncludeFinancialData = IncludeFinancialData
+            };
+
+            var report = await ReportingService.GenerateReportAsync(request);
+
+            // Download the file
+            await JSRuntime.InvokeVoidAsync("downloadFile", report.FileName, report.ContentType, report.Data);
+
+            ShowExportDialog = false;
+            Logger.LogInformation("Report exported successfully: {FileName}", report.FileName);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to export report");
+        }
+        finally
+        {
+            IsExporting = false;
+            StateHasChanged();
+        }
+    }
+
+    private MudBlazor.Color GetStatusColor(string status)
+    {
+        return status.ToLower() switch
+        {
+            "confirmed" => MudBlazor.Color.Success,
+            "pending" => MudBlazor.Color.Warning,
+            "cancelled" => MudBlazor.Color.Error,
+            "completed" => MudBlazor.Color.Info,
+            _ => MudBlazor.Color.Default
+        };
+    }
+
+    private Severity GetSeverity(string severity)
+    {
+        return severity.ToLower() switch
+        {
+            "error" => Severity.Error,
+            "warning" => Severity.Warning,
+            "info" => Severity.Info,
+            "success" => Severity.Success,
+            _ => Severity.Normal
+        };
+    }
+}

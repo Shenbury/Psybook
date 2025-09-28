@@ -2,13 +2,17 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using MudBlazor.Services;
 using Psybook.ServiceDefaults;
+using Psybook.Services.API.BookingService;
+using Psybook.Services.ExternalCalendar;
+using Psybook.Services.Reporting;
+using Psybook.Services.Reporting.Visualization;
 using Psybook.Services.UI.Clients;
 using Psybook.Services.UI.DataLoaders;
 using Psybook.Shared.Communication;
 using Psybook.Shared.Extensions;
+using Psybook.UI.Client.Services;
 using Psybook.UI.Components;
 using Psybook.UI.Renderers;
-using Psybook.UI.Client.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,6 +40,12 @@ builder.Services.Configure<BookingClientOptions>(
     builder.Configuration.GetSection("BookingClient"));
 
 builder.Services.AddHttpClient("psybook-api", https => https.BaseAddress = new Uri("https://psybook-api")).AddServiceDiscovery();
+
+// External Calendar Integration - Register after HttpClient
+builder.Services.AddScoped<IExternalCalendarService, ExternalCalendarService>();
+
+// Reporting & Analytics Services
+builder.Services.AddScoped<IDataVisualizationService, DataVisualizationService>();
 
 // Data Loader Service
 builder.Services.AddScoped<IBookingLoaderService, BookingDataLoaderService>();

@@ -24,6 +24,20 @@
         </MudStack>
     </MudNavLink>
 
+    <!-- Reports & Analytics Link -->
+    <MudNavLink Href="/reports" 
+                Match="NavLinkMatch.Prefix" 
+                Icon="@Icons.Material.Filled.Analytics"
+                IconColor="Color.Info">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+            <MudText Typo="Typo.body1">Reports & Analytics</MudText>
+            <MudSpacer />
+            <MudChip T="string" Size="Size.Small" Color="Color.Info" Class="nav-chip">
+                New
+            </MudChip>
+        </MudStack>
+    </MudNavLink>
+
     <!-- Divider -->
     <MudDivider Class="my-2" />
     
@@ -47,15 +61,15 @@
         </MudStack>
     </MudNavLink>
     
-    <!-- Reports (Future) -->
-    <MudNavLink Disabled="true"
-                Icon="@Icons.Material.Filled.Assessment"
+    <!-- Calendar Test (Development) -->
+    <MudNavLink Href="/calendar-test"
+                Icon="@Icons.Material.Filled.CalendarToday"
                 IconColor="Color.Warning">
         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-            <MudText Typo="Typo.body2" Color="Color.Secondary">Reports</MudText>
+            <MudText Typo="Typo.body2">Calendar Test</MudText>
             <MudSpacer />
             <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined" Class="nav-chip">
-                Soon
+                Dev
             </MudChip>
         </MudStack>
     </MudNavLink>
