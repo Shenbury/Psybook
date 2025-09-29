@@ -4,7 +4,7 @@ A comprehensive VIP experience booking system for West Midlands Safari Park, bui
 
 ## 🌟 Overview
 
-The WMSP VIP Booking System enables customers to book exclusive VIP wildlife experiences at West Midlands Safari Park. The system provides a modern, responsive web interface for managing bookings, with integrated calendar synchronization, real-time status management, and comprehensive administrative features.
+The WMSP VIP Booking System enables customers to book exclusive VIP wildlife experiences at West Midlands Safari Park. The system provides a modern, responsive web interface for managing bookings, with integrated calendar synchronization, real-time status management, comprehensive analytics, and administrative features.
 
 ## 🚀 Key Features
 
@@ -15,6 +15,14 @@ The WMSP VIP Booking System enables customers to book exclusive VIP wildlife exp
 - **iCalendar Downloads**: Universal .ics files for any calendar application
 - **Real-Time Updates**: Booking changes reflect immediately in external calendars
 
+### 📊 **Reports & Analytics**
+- **Comprehensive Dashboard**: Real-time metrics and KPIs
+- **Interactive Charts**: Booking trends, revenue analytics, and experience performance
+- **Multi-Format Export**: PDF, Excel, CSV, and JSON report generation
+- **Scheduled Reports**: Automated report generation and email delivery
+- **Real-Time Metrics**: Live dashboard with system performance monitoring
+- **Customer Insights**: Detailed customer behavior and segmentation analysis
+
 ### 🎯 **VIP Experience Management**
 - **Multiple Experience Types**: Rhino Keeper, Lion Feeding, Safari Driving, and more
 - **Dynamic Booking Calendar**: Interactive calendar with drag-and-drop functionality
@@ -23,7 +31,7 @@ The WMSP VIP Booking System enables customers to book exclusive VIP wildlife exp
 
 ### 🎨 **Modern User Interface**
 - **Blazor WebAssembly**: Fast, responsive client-side application
-- **MudBlazor Components**: Material Design UI components
+- **MudBlazor Components**: Material Design UI components with advanced charting
 - **Responsive Design**: Optimized for desktop, tablet, and mobile devices
 - **Dark/Light Theme**: User-configurable theme preferences
 - **Accessibility**: WCAG-compliant interface with screen reader support
@@ -31,8 +39,9 @@ The WMSP VIP Booking System enables customers to book exclusive VIP wildlife exp
 ### 🔧 **Administrative Features**
 - **Booking Status Workflow**: Complete lifecycle management
 - **Customer Communications**: Automated notifications and confirmations
-- **Reporting & Analytics**: Comprehensive booking statistics
-- **Data Export**: CSV, Excel, and PDF export capabilities
+- **Advanced Analytics**: Time-based, experience, and geographic analysis
+- **Data Export**: Multiple format support with customizable parameters
+- **Background Services**: Automated report scheduling and processing
 
 ## 🏗️ Architecture
 
@@ -44,8 +53,13 @@ Psybook/
 ├── 📁 Psybook.UI/                     # Blazor Server hosting
 ├── 📁 Psybook.UI.Client/              # Blazor WebAssembly client
 ├── 📁 Psybook.Services/               # Business logic & external integrations
+│   ├── 📁 UI/Clients/                 # HTTP client abstractions
+│   ├── 📁 Reporting/                  # Analytics and reporting services
+│   ├── 📁 Background/                 # Background service implementations
+│   └── 📁 ExternalCalendar/           # Calendar integration
 ├── 📁 Psybook.Repositories/           # Data access layer
 ├── 📁 Psybook.Objects/                # Domain models & DTOs
+│   └── 📁 Reporting/                  # Analytics and reporting models
 ├── 📁 Psybook.Shared/                 # Shared components & contexts
 ├── 📁 Psybook.Migrations/             # Database migration service
 ├── 📁 Psybook.AppHost/                # .NET Aspire orchestration
@@ -60,6 +74,8 @@ Psybook/
 | **Backend** | ASP.NET Core Web API, Entity Framework Core |
 | **Database** | SQL Server with Entity Framework migrations |
 | **Authentication** | Azure AD B2C, JWT Bearer tokens, Microsoft Identity |
+| **Analytics** | Custom analytics engine, MudBlazor charts, real-time metrics |
+| **Background Services** | .NET BackgroundService, scheduled reporting, email delivery |
 | **Hosting** | .NET Aspire, Docker containerization |
 | **External APIs** | Microsoft Graph, Google Calendar API |
 | **Build & Deploy** | .NET 9, CI/CD pipelines, Azure DevOps |
@@ -70,6 +86,7 @@ Psybook/
 RESTful API backend providing:
 - **Booking Management**: CRUD operations for VIP bookings
 - **Calendar Integration**: iCalendar generation and external calendar sync
+- **Reports & Analytics**: Comprehensive analytics and report generation
 - **Status Management**: Booking lifecycle and workflow automation
 - **Authentication**: Secure API endpoints with JWT authentication
 - **Data Validation**: Comprehensive input validation and sanitization
@@ -77,10 +94,12 @@ RESTful API backend providing:
 **Key Controllers:**
 - `BookingController`: Core booking operations
 - `CalendarIntegrationController`: External calendar sync and file generation
+- `ReportingController`: Analytics, dashboards, and report generation
 
 ### 🖥️ **Psybook.UI & Psybook.UI.Client**
 Modern Blazor application with:
 - **Interactive Calendar**: Heron.MudCalendar integration for booking visualization
+- **Analytics Dashboard**: Real-time reporting with interactive charts
 - **Responsive Components**: Mobile-first design with adaptive layouts
 - **Real-Time Updates**: SignalR integration for live booking updates
 - **Theme System**: Dark/light mode with user preferences
@@ -89,22 +108,36 @@ Modern Blazor application with:
 **Key Components:**
 - `Home.razor`: Main calendar dashboard
 - `Book.razor`: Booking creation and editing
+- `Reports.razor`: Comprehensive analytics and reporting dashboard
 - `BookingDetailsDialog.razor`: Comprehensive booking information
 - `CalendarIntegrationComponent.razor`: External calendar sync interface
 - `BookingStatusManager.razor`: Status workflow management
+- `AnalyticsOverviewComponent.razor`: High-level analytics visualization
+- `ExperienceAnalyticsComponent.razor`: Experience-specific analytics
+- `TimeAnalyticsComponent.razor`: Time-based analysis components
+- `CustomerAnalyticsComponent.razor`: Customer insights and segmentation
 
 ### 🔧 **Psybook.Services**
 Business logic and external integrations:
-- **External Calendar Services**: Multi-platform calendar integration
-- **Data Loaders**: Efficient data retrieval with caching
-- **UI Clients**: HTTP client abstractions for API communication
-- **User Preferences**: Calendar sync settings and user customization
 
-**Key Services:**
+#### **UI Clients**
+- `IBookingClient`: HTTP client abstraction for booking operations
+- `IReportingClient`: HTTP client abstraction for analytics and reporting
+- `HttpClientExtensions`: Common error handling and logging
+
+#### **Reporting Services**
+- `IReportingService`: Core analytics and reporting business logic
+- `IDataVisualizationService`: Chart and graph data preparation
+- `ScheduledReportingService`: Background service for automated reports
+
+#### **External Integrations**
 - `IExternalCalendarService`: Calendar integration abstraction
 - `GoogleCalendarApiService`: Google Calendar API client
-- `IBookingLoaderService`: Optimized data loading with pagination
 - `UserCalendarPreferencesService`: User setting management
+
+#### **Data Services**
+- `IBookingLoaderService`: Optimized data loading with pagination
+- `BookingDataLoaderService`: Efficient data retrieval with caching
 
 ### 💾 **Psybook.Repositories**
 Data access layer with:
@@ -117,8 +150,16 @@ Data access layer with:
 Domain models and data structures:
 - **Database Models**: Entity Framework entities
 - **DTOs**: Data transfer objects for API communication
+- **Reporting Models**: Analytics, dashboards, and export structures
 - **Enums**: Strongly-typed constants and status values
 - **Validation Attributes**: Data annotation validation
+
+**Key Reporting Models:**
+- `BookingAnalytics`: Comprehensive booking analysis data
+- `DashboardSummary`: Real-time dashboard metrics
+- `TrendingData`: Time-series data for charts
+- `ReportExport`: Multi-format export functionality
+- `ScheduledReportRequest`: Automated report configuration
 
 ### 🔄 **Psybook.Migrations**
 Database management service:
@@ -167,6 +208,7 @@ dotnet run --project Psybook.AppHost
 
 5. **Access the Application**
 - **Web Interface**: https://localhost:7031
+- **Reports Dashboard**: https://localhost:7031/reports
 - **API Documentation**: https://localhost:7032/swagger
 - **Health Checks**: https://localhost:7033/health
 
@@ -195,18 +237,9 @@ dotnet run --project Psybook.UI
 dotnet run --project Psybook.Migrations
 ```
 
-## 🔗 External Calendar Integration
+## 🔗 API Integration
 
-### Supported Platforms
-
-| Platform | Integration Type | Features |
-|----------|-----------------|----------|
-| **Google Calendar** | URL + API | Quick add, full CRUD with OAuth |
-| **Outlook Calendar** | URL + Graph API | Web integration, Teams sync |
-| **Apple Calendar** | iCalendar files | iOS/macOS native support |
-| **Universal** | .ics downloads | Any RFC 5545 compatible app |
-
-### API Endpoints
+### Supported Endpoints
 
 #### Calendar Integration
 ```http
@@ -226,6 +259,17 @@ DELETE /api/booking/slot/{id}
 POST /api/booking/slot/{id}/status
 ```
 
+#### Reports & Analytics
+```http
+GET /api/reporting/dashboard                # Dashboard summary
+POST /api/reporting/analytics              # Comprehensive analytics
+GET /api/reporting/trending-data           # Chart data
+POST /api/reporting/generate               # Export reports
+GET /api/reporting/realtime-metrics        # Live metrics
+GET /api/reporting/templates               # Report templates
+POST /api/reporting/schedule               # Schedule automated reports
+```
+
 ### Usage Examples
 
 #### Basic Calendar Integration
@@ -237,29 +281,51 @@ POST /api/booking/slot/{id}/status
                             OnAutoSyncConfigured="HandleSync" />
 ```
 
-#### Programmatic Calendar Operations
+#### Analytics Dashboard
+```razor
+@using Psybook.Services.UI.Clients
+@inject IReportingClient ReportingClient
+
+<Reports />
+
+@code {
+    private async Task LoadAnalytics()
+    {
+        var request = new ReportRequest
+        {
+            StartDate = DateTime.UtcNow.AddDays(-30),
+            EndDate = DateTime.UtcNow,
+            ReportType = ReportType.Summary
+        };
+        var analytics = await ReportingClient.GetAnalyticsAsync(request);
+    }
+}
+```
+
+#### Report Generation
 ```csharp
-// Generate calendar URLs
-var calendarEvent = ExternalCalendarEvent.FromCalendarSlot(booking);
-var urls = calendarService.GenerateCalendarUrls(calendarEvent);
-
-// Create iCalendar file
-var icalData = await calendarService.GenerateICalendarFileAsync(calendarEvent);
-
-// Sync with multiple providers
-var options = new CalendarIntegrationOptions
+// Generate and download report
+var reportRequest = new ReportRequest
 {
-    EnabledProviders = { CalendarProvider.GoogleCalendar, CalendarProvider.OutlookCalendar }
+    StartDate = DateTime.UtcNow.AddMonths(-1),
+    EndDate = DateTime.UtcNow,
+    Format = ReportFormat.PDF,
+    ReportType = ReportType.Financial,
+    IncludeCustomerDetails = true,
+    IncludeFinancialData = true
 };
-var results = await calendarService.SyncBookingAsync(booking, options);
+
+var report = await reportingClient.GenerateReportAsync(reportRequest);
+await JSRuntime.InvokeVoidAsync("downloadFile", report.FileName, report.ContentType, report.Data);
 ```
 
 ## 🧪 Testing
 
 ### Test Pages
 
-- **Calendar Test**: `/calendar-test` - Comprehensive calendar integration testing
-- **Booking Test**: Built-in booking creation and management testing
+- **Main Dashboard**: `/` - Interactive calendar with booking management
+- **Reports Dashboard**: `/reports` - Comprehensive analytics and reporting
+- **Calendar Test**: `/calendar-test` - Calendar integration testing
 - **API Testing**: Swagger UI at `/swagger` for API endpoint testing
 
 ### Running Tests
@@ -311,6 +377,11 @@ az containerapp create --name psybook --resource-group rg-psybook --image psyboo
   "GoogleCalendar": {
     "ClientId": "{{GOOGLE_CLIENT_ID}}",
     "ClientSecret": "{{GOOGLE_CLIENT_SECRET}}"
+  },
+  "BookingClient": {
+    "RequestTimeout": "00:00:30",
+    "MaxItemsPerRequest": 1000,
+    "ValidateResponses": true
   }
 }
 ```
@@ -323,14 +394,18 @@ az containerapp create --name psybook --resource-group rg-psybook --image psyboo
 - **Health Checks**: Database, API, and external service monitoring
 - **Structured Logging**: Serilog with multiple sinks
 - **Performance Counters**: Custom metrics and KPIs
+- **Real-Time Metrics**: Live dashboard monitoring system performance
+- **Background Service Monitoring**: Scheduled report execution tracking
 
 ### Performance Optimizations
 
 - **Blazor WebAssembly**: Client-side rendering for optimal performance
+- **HTTP Client Pooling**: Efficient API communication with retry policies
 - **Connection Pooling**: Efficient database connection management
 - **HTTP Caching**: Strategic caching for static and semi-static content
 - **Lazy Loading**: Component and data lazy loading strategies
 - **Compression**: Response compression for reduced bandwidth
+- **Chart Optimization**: Efficient data visualization with MudBlazor charts
 
 ## 🔒 Security
 
@@ -347,6 +422,7 @@ az containerapp create --name psybook --resource-group rg-psybook --image psyboo
 - **Input Validation**: Comprehensive sanitization and validation
 - **CORS Configuration**: Secure cross-origin resource sharing
 - **Rate Limiting**: API throttling and abuse prevention
+- **Secure Report Generation**: Access-controlled analytics and exports
 
 ## 🤝 Contributing
 
@@ -389,7 +465,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ### Technologies & Libraries
 
 - **Microsoft**: .NET, Blazor, Azure services
-- **MudBlazor**: Material Design components for Blazor
+- **MudBlazor**: Material Design components for Blazor with advanced charting
 - **Heron.MudCalendar**: Calendar component integration
 - **Entity Framework**: Object-relational mapping
 - **Serilog**: Structured logging framework
@@ -409,15 +485,19 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 |---------|--------|---------|
 | **Core Booking System** | ✅ Complete | v1.0.0 |
 | **Calendar Integration** | ✅ Complete | v1.1.0 |
+| **Reports & Analytics** | ✅ Complete | v1.2.0 |
+| **Scheduled Reporting** | ✅ Complete | v1.2.0 |
+| **API Client Architecture** | ✅ Complete | v1.2.0 |
 | **Mobile Optimization** | ✅ Complete | v1.0.0 |
 | **API Documentation** | ✅ Complete | v1.0.0 |
 | **Authentication** | ✅ Complete | v1.0.0 |
-| **Reporting Dashboard** | 🚧 In Progress | v1.2.0 |
+| **Background Services** | ✅ Complete | v1.2.0 |
 | **Mobile App** | 📅 Planned | v2.0.0 |
-| **Advanced Analytics** | 📅 Planned | v2.1.0 |
+| **Advanced ML Analytics** | 📅 Planned | v2.1.0 |
+| **Multi-tenant Support** | 📅 Planned | v2.2.0 |
 
-**Current Version**: v1.1.0  
-**Next Release**: v1.2.0 (Q2 2024)  
+**Current Version**: v1.2.0  
+**Next Release**: v2.0.0 (Q3 2024)  
 **LTS Support**: .NET 9 through November 2026
 
 ---
