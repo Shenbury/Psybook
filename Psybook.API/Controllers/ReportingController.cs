@@ -232,14 +232,25 @@ namespace Psybook.API.Controllers
         /// Schedules a report to be generated and sent via email
         /// </summary>
         [HttpPost("schedule")]
-        public async Task<IActionResult> ScheduleReport([FromBody] ScheduledReportRequest request)
+        public async Task<IActionResult> ScheduleReport([FromBody] Objects.Reporting.ScheduledReportRequest request)
         {
             try
             {
                 _logger.LogInformation("Scheduling report {Name} with {Recipients} recipients", 
                     request.Name, request.EmailRecipients.Count);
                 
-                var scheduleId = await _reportingService.ScheduleReportAsync(request);
+                // Convert to Services.Reporting.ScheduledReportRequest if needed
+                var serviceRequest = new Services.Reporting.ScheduledReportRequest
+                {
+                    Name = request.Name,
+                    ReportParameters = request.ReportParameters,
+                    CronExpression = request.CronExpression,
+                    EmailRecipients = request.EmailRecipients,
+                    IsActive = request.IsActive,
+                    NextRunDate = request.NextRunDate
+                };
+                
+                var scheduleId = await _reportingService.ScheduleReportAsync(serviceRequest);
                 
                 return Ok(new { ScheduleId = scheduleId, Message = "Report scheduled successfully" });
             }

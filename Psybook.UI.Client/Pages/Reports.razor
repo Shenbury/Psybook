@@ -1,11 +1,12 @@
 @page "/reporting"
 @page "/reports"
 @using Psybook.Objects.Reporting
-@using Psybook.Services.Reporting
+@using Psybook.Services.UI.Clients
 @using Psybook.UI.Client.Components
 @using Microsoft.Extensions.Logging
 @using System.Text.Json
-@inject IReportingService ReportingService
+@using MudBlazor
+@inject IReportingClient ReportingClient
 @inject ILogger<Reports> Logger
 @inject IJSRuntime JSRuntime
 
@@ -345,18 +346,18 @@
             <MudDateRangePicker @bind-DateRange="ExportDateRange" Label="Date Range" />
             
             <MudSelect @bind-Value="ExportFormat" Label="Export Format">
-                <MudSelectItem Value="Objects.Reporting.ReportFormat.PDF">PDF Report</MudSelectItem>
-                <MudSelectItem Value="Objects.Reporting.ReportFormat.Excel">Excel Spreadsheet</MudSelectItem>
-                <MudSelectItem Value="Objects.Reporting.ReportFormat.CSV">CSV Data</MudSelectItem>
-                <MudSelectItem Value="Objects.Reporting.ReportFormat.JSON">JSON Data</MudSelectItem>
+                <MudSelectItem Value="ReportFormat.PDF">PDF Report</MudSelectItem>
+                <MudSelectItem Value="ReportFormat.Excel">Excel Spreadsheet</MudSelectItem>
+                <MudSelectItem Value="ReportFormat.CSV">CSV Data</MudSelectItem>
+                <MudSelectItem Value="ReportFormat.JSON">JSON Data</MudSelectItem>
             </MudSelect>
             
             <MudSelect @bind-Value="ExportType" Label="Report Type">
-                <MudSelectItem Value="Objects.Reporting.ReportType.Summary">Summary Report</MudSelectItem>
-                <MudSelectItem Value="Objects.Reporting.ReportType.Detailed">Detailed Report</MudSelectItem>
-                <MudSelectItem Value="Objects.Reporting.ReportType.Financial">Financial Report</MudSelectItem>
-                <MudSelectItem Value="Objects.Reporting.ReportType.Customer">Customer Analysis</MudSelectItem>
-                <MudSelectItem Value="Objects.Reporting.ReportType.Experience">Experience Analysis</MudSelectItem>
+                <MudSelectItem Value="ReportType.Summary">Summary Report</MudSelectItem>
+                <MudSelectItem Value="ReportType.Detailed">Detailed Report</MudSelectItem>
+                <MudSelectItem Value="ReportType.Financial">Financial Report</MudSelectItem>
+                <MudSelectItem Value="ReportType.Customer">Customer Analysis</MudSelectItem>
+                <MudSelectItem Value="ReportType.Experience">Experience Analysis</MudSelectItem>
             </MudSelect>
             
             <MudCheckBox @bind-Value="IncludeCustomerDetails" Label="Include Customer Details" />
@@ -386,7 +387,7 @@
 @code {
     private DashboardSummary? DashboardSummary;
     private BookingAnalytics? Analytics;
-    private Psybook.Services.Reporting.TrendingData? TrendingData;
+    private TrendingData? TrendingData;
     private bool IsLoading = true;
     private bool ShowExportDialog = false;
     private bool IsExporting = false;
@@ -394,12 +395,12 @@
 
     // Export dialog properties
     private DateRange ExportDateRange = new(DateTime.UtcNow.AddDays(-30), DateTime.UtcNow);
-    private Objects.Reporting.ReportFormat ExportFormat = Objects.Reporting.ReportFormat.PDF;
-    private Objects.Reporting.ReportType ExportType = Objects.Reporting.ReportType.Summary;
+    private ReportFormat ExportFormat = ReportFormat.PDF;
+    private ReportType ExportType = ReportType.Summary;
     private bool IncludeCustomerDetails = false;
     private bool IncludeFinancialData = true;
 
-    private List<ChartSeries> BookingTrendSeries = new();
+    private List<MudBlazor.ChartSeries> BookingTrendSeries = new();
 
     private DialogOptions ExportDialogOptions => new()
     {
@@ -422,19 +423,19 @@
             StateHasChanged();
 
             // Load dashboard summary
-            DashboardSummary = await ReportingService.GetDashboardSummaryAsync();
+            DashboardSummary = await ReportingClient.GetDashboardSummaryAsync();
 
             // Load analytics
-            var request = new Objects.Reporting.ReportRequest
+            var request = new ReportRequest
             {
                 StartDate = DateTime.UtcNow.AddDays(-30),
                 EndDate = DateTime.UtcNow,
-                ReportType = Objects.Reporting.ReportType.Summary
+                ReportType = ReportType.Summary
             };
-            Analytics = await ReportingService.GenerateAnalyticsAsync(request);
+            Analytics = await ReportingClient.GetAnalyticsAsync(request);
 
             // Load trending data
-            TrendingData = await ReportingService.GetTrendingDataAsync(Psybook.Services.Reporting.TrendPeriod.Last30Days);
+            TrendingData = await ReportingClient.GetTrendingDataAsync(TrendPeriod.Last30Days);
 
             // Update chart data
             UpdateChartData();
@@ -456,9 +457,9 @@
     {
         if (TrendingData?.BookingTrend != null)
         {
-            BookingTrendSeries = new List<ChartSeries>
+            BookingTrendSeries = new List<MudBlazor.ChartSeries>
             {
-                new ChartSeries
+                new MudBlazor.ChartSeries
                 {
                     Name = "Bookings",
                     Data = TrendingData.BookingTrend.Select(d => (double)d.Value).ToArray()
@@ -479,7 +480,7 @@
             IsExporting = true;
             StateHasChanged();
 
-            var request = new Objects.Reporting.ReportRequest
+            var request = new ReportRequest
             {
                 StartDate = ExportDateRange.Start ?? DateTime.UtcNow.AddDays(-30),
                 EndDate = ExportDateRange.End ?? DateTime.UtcNow,
@@ -489,7 +490,7 @@
                 IncludeFinancialData = IncludeFinancialData
             };
 
-            var report = await ReportingService.GenerateReportAsync(request);
+            var report = await ReportingClient.GenerateReportAsync(request);
 
             // Download the file
             await JSRuntime.InvokeVoidAsync("downloadFile", report.FileName, report.ContentType, report.Data);

@@ -51,6 +51,9 @@ builder.Services.AddScoped<IDataVisualizationService, DataVisualizationService>(
 builder.Services.AddScoped<IBookingLoaderService, BookingDataLoaderService>();
 builder.Services.AddScoped<IBookingClient, BookingClient>();
 
+// Reporting Client
+builder.Services.AddScoped<IReportingClient, ReportingClient>();
+
 // UI Services following Single Responsibility Principle
 builder.Services.AddSingleton<IThemeService, ThemeService>();
 builder.Services.AddScoped<INavigationService, NavigationService>();
@@ -90,5 +93,7 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Psybook.UI.Client._Imports).Assembly);
+
+app.MapDefaultEndpoints();
 
 app.Run();

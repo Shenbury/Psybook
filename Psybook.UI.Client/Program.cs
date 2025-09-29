@@ -32,6 +32,9 @@ builder.Services.AddScoped<IBookingLoaderService, BookingDataLoaderService>();
 builder.Services.AddScoped<IBookingClient, BookingClient>();
 builder.Services.AddScoped<IBookingService, BookingService>();
 
+// Reporting Client
+builder.Services.AddScoped<IReportingClient, ReportingClient>();
+
 // External Calendar Integration - Register after HttpClient
 builder.Services.AddScoped<IExternalCalendarService, ExternalCalendarService>();
 

@@ -64,6 +64,9 @@ namespace Psybook.Objects.Reporting
     {
         public TrendPeriod Period { get; set; }
         public List<DataPoint> BookingTrend { get; set; } = new();
+        public List<DataPoint> RevenueTrend { get; set; } = new();
+        public List<DataPoint> CancellationTrend { get; set; } = new();
+        public List<ExperienceTrend> ExperienceTrends { get; set; } = new();
     }
     
     /// <summary>
@@ -76,6 +79,12 @@ namespace Psybook.Objects.Reporting
         public DateTime Date { get; set; }
     }
     
+    public class ExperienceTrend
+    {
+        public string ExperienceName { get; set; } = string.Empty;
+        public List<DataPoint> Data { get; set; } = new();
+    }
+    
     public enum TrendPeriod
     {
         Last7Days,
@@ -84,6 +93,78 @@ namespace Psybook.Objects.Reporting
         Last12Months,
         YearToDate,
         Custom
+    }
+    
+    /// <summary>
+    /// Dashboard summary data
+    /// </summary>
+    public class DashboardSummary
+    {
+        public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;
+        public int TotalBookingsToday { get; set; }
+        public int TotalBookingsThisWeek { get; set; }
+        public int TotalBookingsThisMonth { get; set; }
+        public decimal RevenueMTD { get; set; }
+        public decimal RevenueYTD { get; set; }
+        public int PendingBookings { get; set; }
+        public int UpcomingBookings { get; set; }
+        public List<TopExperience> TopExperiences { get; set; } = new();
+        public List<RecentBooking> RecentBookings { get; set; } = new();
+        public List<Alert> Alerts { get; set; } = new();
+    }
+    
+    public class TopExperience
+    {
+        public string Name { get; set; } = string.Empty;
+        public int BookingCount { get; set; }
+        public decimal Revenue { get; set; }
+        public decimal Growth { get; set; }
+    }
+    
+    public class RecentBooking
+    {
+        public Guid Id { get; set; }
+        public string CustomerName { get; set; } = string.Empty;
+        public string ExperienceName { get; set; } = string.Empty;
+        public DateTime BookingDate { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public decimal Value { get; set; }
+    }
+    
+    public class Alert
+    {
+        public string Type { get; set; } = string.Empty;
+        public string Message { get; set; } = string.Empty;
+        public string Severity { get; set; } = string.Empty;
+        public DateTime Timestamp { get; set; }
+    }
+
+    /// <summary>
+    /// Report template definition
+    /// </summary>
+    public class ReportTemplate
+    {
+        public Guid Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public ReportType Type { get; set; }
+        public string TemplateData { get; set; } = string.Empty;
+        public bool IsDefault { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string CreatedBy { get; set; } = string.Empty;
+    }
+    
+    /// <summary>
+    /// Scheduled report request
+    /// </summary>
+    public class ScheduledReportRequest
+    {
+        public string Name { get; set; } = string.Empty;
+        public ReportRequest ReportParameters { get; set; } = new();
+        public string CronExpression { get; set; } = string.Empty;
+        public List<string> EmailRecipients { get; set; } = new();
+        public bool IsActive { get; set; } = true;
+        public DateTime? NextRunDate { get; set; }
     }
     
     public class ExperienceStatistic
