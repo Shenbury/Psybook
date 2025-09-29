@@ -1,7 +1,7 @@
 @using Psybook.Objects.Reporting
+@using Psybook.Services.UI.Clients
 @using Microsoft.Extensions.Logging
-@using System.Net.Http.Json
-@inject HttpClient HttpClient
+@inject IReportingClient ReportingClient
 @inject ILogger<DashboardWidgets> Logger
 
 <MudGrid Spacing="3">
@@ -122,9 +122,25 @@
                         
                         <MudListItem T="string">
                             <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.body2">Active Bookings</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="Color.Info">@QuickStats.ActiveBookings</MudChip>
+                            </MudStack>
+                        </MudListItem>
+                        
+                        <MudListItem T="string">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
                                 <MudText Typo="Typo.body2">Cancellation Rate</MudText>
                                 <MudChip T="string" Size="Size.Small" Color="@GetCancellationRateColor(QuickStats.CancellationRate)">
                                     @QuickStats.CancellationRate.ToString("F1")%
+                                </MudChip>
+                            </MudStack>
+                        </MudListItem>
+                        
+                        <MudListItem T="string">
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                                <MudText Typo="Typo.body2">Completion Rate</MudText>
+                                <MudChip T="string" Size="Size.Small" Color="@GetCompletionRateColor(QuickStats.CompletionRate)">
+                                    @QuickStats.CompletionRate.ToString("F1")%
                                 </MudChip>
                             </MudStack>
                         </MudListItem>
@@ -170,15 +186,33 @@
                 </MudText>
             </MudCardHeader>
             <MudCardContent Style="max-height: 300px; overflow-y: auto;">
-                @if (ActivityFeed != null && ActivityFeed.Any())
+                @if (DashboardSummary?.RecentBookings != null && DashboardSummary.RecentBookings.Any())
                 {
                     <MudTimeline>
-                        @foreach (var activity in ActivityFeed.Take(5))
+                        @foreach (var booking in DashboardSummary.RecentBookings.Take(5))
                         {
-                            <MudTimelineItem Color="@GetActivityColor(activity.Type)" Size="Size.Small">
-                                <MudText Typo="Typo.body2">@activity.Message</MudText>
+                            <MudTimelineItem Color="@GetBookingStatusColor(booking.Status)" Size="Size.Small">
+                                <MudText Typo="Typo.body2">
+                                    <strong>@booking.CustomerName</strong> - @booking.ExperienceName
+                                </MudText>
                                 <MudText Typo="Typo.caption" Color="Color.Secondary">
-                                    @activity.Timestamp.ToString("HH:mm")
+                                    @booking.BookingDate.ToString("MMM dd, HH:mm") • Status: @booking.Status
+                                </MudText>
+                            </MudTimelineItem>
+                        }
+                    </MudTimeline>
+                }
+                else if (DashboardSummary?.Alerts != null && DashboardSummary.Alerts.Any())
+                {
+                    <MudTimeline>
+                        @foreach (var alert in DashboardSummary.Alerts.Take(5))
+                        {
+                            <MudTimelineItem Color="@GetAlertColor(alert.Severity)" Size="Size.Small">
+                                <MudText Typo="Typo.body2">
+                                    <strong>@alert.Type:</strong> @alert.Message
+                                </MudText>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">
+                                    @alert.Timestamp.ToString("HH:mm")
                                 </MudText>
                             </MudTimelineItem>
                         }
@@ -251,15 +285,15 @@
 
     private RealTimeMetrics? RealTimeMetrics;
     private TrendingData? TrendData;
+    private DashboardSummary? DashboardSummary;
     private DashboardQuickStats? QuickStats;
-    private List<DashboardActivityItem> ActivityFeed = new();
     
     private bool IsLoading = true;
     private bool IsConnected = false;
     private bool IsRefreshing = false;
     
     private Timer? _refreshTimer;
-    private List<ChartSeries> TrendChartSeries = new();
+    private List<MudBlazor.ChartSeries> TrendChartSeries = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -285,8 +319,8 @@
             {
                 LoadRealTimeMetrics(),
                 LoadTrendData(),
-                LoadQuickStats(),
-                LoadActivityFeed()
+                LoadDashboardSummary(),
+                LoadQuickStats()
             };
 
             await Task.WhenAll(tasks);
@@ -308,15 +342,8 @@
     {
         try
         {
-            var response = await HttpClient.GetAsync("api/reporting/realtime-metrics");
-            if (response.IsSuccessStatusCode)
-            {
-                RealTimeMetrics = await response.Content.ReadFromJsonAsync<RealTimeMetrics>();
-            }
-            else
-            {
-                Logger.LogWarning("Failed to load real-time metrics. Status: {StatusCode}", response.StatusCode);
-            }
+            RealTimeMetrics = await ReportingClient.GetRealTimeMetricsAsync();
+            Logger.LogDebug("Loaded real-time metrics successfully");
         }
         catch (Exception ex)
         {
@@ -328,31 +355,38 @@
     {
         try
         {
-            var response = await HttpClient.GetAsync("api/reporting/trending-data?period=Last7Days");
-            if (response.IsSuccessStatusCode)
+            TrendData = await ReportingClient.GetTrendingDataAsync(TrendPeriod.Last7Days);
+            
+            if (TrendData?.BookingTrend != null)
             {
-                TrendData = await response.Content.ReadFromJsonAsync<TrendingData>();
-                
-                if (TrendData?.BookingTrend != null)
+                TrendChartSeries = new List<MudBlazor.ChartSeries>
                 {
-                    TrendChartSeries = new List<ChartSeries>
+                    new MudBlazor.ChartSeries
                     {
-                        new ChartSeries
-                        {
-                            Name = "Bookings",
-                            Data = TrendData.BookingTrend.Select(d => (double)d.Value).ToArray()
-                        }
-                    };
-                }
+                        Name = "Bookings",
+                        Data = TrendData.BookingTrend.Select(d => (double)d.Value).ToArray()
+                    }
+                };
             }
-            else
-            {
-                Logger.LogWarning("Failed to load trend data. Status: {StatusCode}", response.StatusCode);
-            }
+            
+            Logger.LogDebug("Loaded trend data successfully with {DataPoints} points", TrendData?.BookingTrend?.Count ?? 0);
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Failed to load trend data");
+        }
+    }
+
+    private async Task LoadDashboardSummary()
+    {
+        try
+        {
+            DashboardSummary = await ReportingClient.GetDashboardSummaryAsync();
+            Logger.LogDebug("Loaded dashboard summary successfully");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load dashboard summary");
         }
     }
 
@@ -367,53 +401,27 @@
                 ReportType = ReportType.Summary
             };
 
-            var response = await HttpClient.PostAsJsonAsync("api/reporting/analytics", request);
-            if (response.IsSuccessStatusCode)
+            var analytics = await ReportingClient.GetAnalyticsAsync(request);
+            if (analytics != null)
             {
-                var analytics = await response.Content.ReadFromJsonAsync<BookingAnalytics>();
-                if (analytics != null)
+                QuickStats = new DashboardQuickStats
                 {
-                    QuickStats = new DashboardQuickStats
-                    {
-                        TotalBookings = analytics.TotalBookings,
-                        CancellationRate = analytics.CancellationRate,
-                        TopExperience = analytics.ExperienceStats?.FirstOrDefault()?.ExperienceName ?? "N/A",
-                        BusiestDay = analytics.DayOfWeekStats?.OrderByDescending(d => d.BookingCount).FirstOrDefault()?.DayName ?? "N/A",
-                        PeakHour = analytics.HourlyStats?.OrderByDescending(h => h.BookingCount).FirstOrDefault()?.TimeSlot ?? "N/A"
-                    };
-                }
-            }
-            else
-            {
-                Logger.LogWarning("Failed to load quick stats. Status: {StatusCode}", response.StatusCode);
+                    TotalBookings = analytics.TotalBookings,
+                    ActiveBookings = analytics.ActiveBookings,
+                    CancellationRate = analytics.CancellationRate,
+                    CompletionRate = analytics.CompletionRate,
+                    TopExperience = analytics.ExperienceStats?.FirstOrDefault()?.ExperienceName ?? "N/A",
+                    BusiestDay = analytics.DayOfWeekStats?.OrderByDescending(d => d.BookingCount).FirstOrDefault()?.DayName ?? "N/A",
+                    PeakHour = analytics.HourlyStats?.OrderByDescending(h => h.BookingCount).FirstOrDefault()?.TimeSlot ?? "N/A"
+                };
+                
+                Logger.LogDebug("Loaded quick stats successfully: {TotalBookings} bookings, {CancellationRate}% cancellation", 
+                    QuickStats.TotalBookings, QuickStats.CancellationRate);
             }
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Failed to load quick stats");
-        }
-    }
-
-    private async Task LoadActivityFeed()
-    {
-        try
-        {
-            // For now, using mock data as there might not be a specific activity feed endpoint
-            // In a real implementation, this would call something like "api/reporting/recent-activity"
-            await Task.Delay(100); // Simulate API call delay
-            
-            ActivityFeed = new List<DashboardActivityItem>
-            {
-                new() { Type = "booking", Message = "New VIP Rhino Experience booking", Timestamp = DateTime.Now.AddMinutes(-5) },
-                new() { Type = "confirmation", Message = "Lion Feeding experience confirmed", Timestamp = DateTime.Now.AddMinutes(-12) },
-                new() { Type = "cancellation", Message = "Safari Drive booking cancelled", Timestamp = DateTime.Now.AddMinutes(-25) },
-                new() { Type = "completion", Message = "Elephant Walk experience completed", Timestamp = DateTime.Now.AddMinutes(-35) },
-                new() { Type = "booking", Message = "New Bird Show VIP booking", Timestamp = DateTime.Now.AddMinutes(-48) }
-            };
-        }
-        catch (Exception ex)
-        {
-            Logger.LogError(ex, "Failed to load activity feed");
         }
     }
 
@@ -469,14 +477,34 @@
         return MudBlazor.Color.Error;
     }
 
-    private MudBlazor.Color GetActivityColor(string type)
+    private MudBlazor.Color GetCompletionRateColor(decimal rate)
     {
-        return type switch
+        if (rate >= 90) return MudBlazor.Color.Success;
+        if (rate >= 75) return MudBlazor.Color.Warning;
+        return MudBlazor.Color.Error;
+    }
+
+    private MudBlazor.Color GetBookingStatusColor(string status)
+    {
+        return status.ToLower() switch
         {
-            "booking" => MudBlazor.Color.Success,
-            "confirmation" => MudBlazor.Color.Info,
-            "cancellation" => MudBlazor.Color.Warning,
-            "completion" => MudBlazor.Color.Primary,
+            "confirmed" => MudBlazor.Color.Success,
+            "pending" => MudBlazor.Color.Warning,
+            "cancelled" => MudBlazor.Color.Error,
+            "completed" => MudBlazor.Color.Info,
+            "no-show" => MudBlazor.Color.Dark,
+            _ => MudBlazor.Color.Secondary
+        };
+    }
+
+    private MudBlazor.Color GetAlertColor(string severity)
+    {
+        return severity.ToLower() switch
+        {
+            "error" => MudBlazor.Color.Error,
+            "warning" => MudBlazor.Color.Warning,
+            "info" => MudBlazor.Color.Info,
+            "success" => MudBlazor.Color.Success,
             _ => MudBlazor.Color.Secondary
         };
     }
@@ -489,16 +517,11 @@
     public class DashboardQuickStats
     {
         public int TotalBookings { get; set; }
+        public int ActiveBookings { get; set; }
         public decimal CancellationRate { get; set; }
+        public decimal CompletionRate { get; set; }
         public string TopExperience { get; set; } = string.Empty;
         public string BusiestDay { get; set; } = string.Empty;
         public string PeakHour { get; set; } = string.Empty;
-    }
-
-    public class DashboardActivityItem
-    {
-        public string Type { get; set; } = string.Empty;
-        public string Message { get; set; } = string.Empty;
-        public DateTime Timestamp { get; set; }
     }
 }

@@ -502,4 +502,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-*Built with ❤️ by the West Midlands Safari Park development team for creating unforgettable VIP wildlife experiences.*
+*Built with ❤️ by Simon Henbury for the West Midlands Safari Park team for creating unforgettable VIP wildlife experiences.*
