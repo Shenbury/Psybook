@@ -3,6 +3,7 @@ using Psybook.Objects.DbModels;
 using Psybook.Objects.Enums;
 using Psybook.Objects.Reporting;
 using Psybook.Services.API.BookingService;
+using Psybook.Services.Monitoring;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -15,11 +16,16 @@ namespace Psybook.Services.Reporting
     public class ReportingService : IReportingService
     {
         private readonly IBookingService _bookingService;
+        private readonly ISystemMetricsService _systemMetricsService;
         private readonly ILogger<ReportingService> _logger;
 
-        public ReportingService(IBookingService bookingService, ILogger<ReportingService> logger)
+        public ReportingService(
+            IBookingService bookingService, 
+            ISystemMetricsService systemMetricsService,
+            ILogger<ReportingService> logger)
         {
             _bookingService = bookingService ?? throw new ArgumentNullException(nameof(bookingService));
+            _systemMetricsService = systemMetricsService ?? throw new ArgumentNullException(nameof(systemMetricsService));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
@@ -52,8 +58,8 @@ namespace Psybook.Services.Reporting
                 // Calculate geographic analytics
                 CalculateGeographicAnalytics(analytics, bookings);
                 
-                // Calculate performance metrics
-                CalculatePerformanceMetrics(analytics, bookings);
+                // Calculate performance metrics using real system data
+                await CalculatePerformanceMetricsAsync(analytics, bookings);
 
                 _logger.LogInformation("Generated analytics with {TotalBookings} bookings", analytics.TotalBookings);
                 return analytics;
@@ -139,23 +145,65 @@ namespace Psybook.Services.Reporting
         {
             try
             {
+                _logger.LogInformation("Getting real-time metrics with actual system data");
+
+                // Get real booking data
                 var bookings = (await _bookingService.GetCalendarSlotsAsync()).ToList();
                 var todayBookings = bookings.Where(b => b.Start.Date == DateTime.UtcNow.Date).ToList();
+                var now = DateTime.UtcNow;
 
-                return new RealTimeMetrics
+                // Get real system metrics
+                var systemMetrics = await _systemMetricsService.GetSystemPerformanceAsync();
+                var apiMetrics = await _systemMetricsService.GetApiUsageMetricsAsync();
+                var activeUserCount = await _systemMetricsService.GetActiveUserCountAsync();
+
+                // Calculate real booking metrics
+                var bookingsInProgress = bookings.Count(b => 
+                    b.Status == BookingStatus.Confirmed && 
+                    b.Start <= now && 
+                    (b.End ?? b.Start.AddHours(2)) >= now);
+
+                var completedBookingsToday = todayBookings.Count(b => b.Status == BookingStatus.Completed);
+
+                var metrics = new RealTimeMetrics
                 {
-                    BookingsInProgress = bookings.Count(b => b.Status == BookingStatus.Confirmed && b.Start <= DateTime.UtcNow && b.End >= DateTime.UtcNow),
-                    CompletedBookingsToday = todayBookings.Count(b => b.Status == BookingStatus.Completed),
-                    ActiveUsers = new Random().Next(5, 25), // Simulated - would come from real user tracking
-                    SystemLoad = new Random().NextDouble() * 100,
-                    ApiCallsPerMinute = new Random().Next(10, 100),
-                    AverageResponseTime = new Random().NextDouble() * 500
+                    Timestamp = DateTime.UtcNow,
+                    
+                    // Real booking data
+                    BookingsInProgress = bookingsInProgress,
+                    CompletedBookingsToday = completedBookingsToday,
+                    
+                    // Real system metrics
+                    ActiveUsers = activeUserCount,
+                    SystemLoad = systemMetrics.SystemLoad,
+                    ApiCallsPerMinute = apiMetrics.ApiCallsPerMinute,
+                    AverageResponseTime = apiMetrics.AverageResponseTime,
+                    
+                    // Calculate estimated revenue for today
+                    RevenueToday = CalculateEstimatedRevenueForToday(todayBookings)
                 };
+
+                _logger.LogInformation("Generated real-time metrics: {ActiveUsers} active users, {ApiCalls} API calls/min, {SystemLoad}% system load", 
+                    metrics.ActiveUsers, metrics.ApiCallsPerMinute, metrics.SystemLoad);
+
+                return metrics;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Failed to get real-time metrics");
-                throw;
+                
+                // Return fallback metrics if there's an error
+                return new RealTimeMetrics
+                {
+                    Timestamp = DateTime.UtcNow,
+                    BookingsInProgress = 0,
+                    CompletedBookingsToday = 0,
+                    ActiveUsers = 0,
+                    SystemLoad = 0,
+                    ApiCallsPerMinute = 0,
+                    AverageResponseTime = 0,
+                    RevenueToday = 0
+                };
             }
         }
 
@@ -358,16 +406,70 @@ namespace Psybook.Services.Reporting
             }).OrderByDescending(g => g.BookingCount).ToList();
         }
 
-        private void CalculatePerformanceMetrics(BookingAnalytics analytics, List<CalendarSlot> bookings)
+        private async Task CalculatePerformanceMetricsAsync(BookingAnalytics analytics, List<CalendarSlot> bookings)
         {
-            analytics.Performance = new PerformanceMetrics
+            try
             {
-                AverageProcessingTime = new Random().NextDouble() * 1000, // Simulated
-                PeakBookingsPerHour = bookings.GroupBy(b => b.Start.Hour).Max(g => g?.Count() ?? 0),
-                SystemUptime = 99.9,
-                ApiCalls = bookings.Count * 3, // Estimated
-                ResponseTime = new Random().NextDouble() * 500
+                var systemMetrics = await _systemMetricsService.GetSystemPerformanceAsync();
+                var apiMetrics = await _systemMetricsService.GetApiUsageMetricsAsync();
+
+                analytics.Performance = new PerformanceMetrics
+                {
+                    AverageProcessingTime = systemMetrics.AverageResponseTime,
+                    PeakBookingsPerHour = bookings.GroupBy(b => b.Start.Hour).Max(g => g?.Count() ?? 0),
+                    SystemUptime = CalculateUptimePercentage(systemMetrics.Uptime),
+                    ApiCalls = apiMetrics.TotalApiCallsToday,
+                    ResponseTime = apiMetrics.AverageResponseTime
+                };
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to calculate performance metrics, using fallback values");
+                
+                // Fallback to basic metrics if system metrics are unavailable
+                analytics.Performance = new PerformanceMetrics
+                {
+                    AverageProcessingTime = 100, // Fallback value
+                    PeakBookingsPerHour = bookings.GroupBy(b => b.Start.Hour).Max(g => g?.Count() ?? 0),
+                    SystemUptime = 99.0, // Assume good uptime
+                    ApiCalls = bookings.Count * 3, // Estimated
+                    ResponseTime = 250 // Estimated average
+                };
+            }
+        }
+
+        private decimal CalculateEstimatedRevenueForToday(List<CalendarSlot> todayBookings)
+        {
+            // Simplified revenue calculation - in a real implementation, 
+            // this would use actual pricing data
+            var revenueEstimates = new Dictionary<BookingExperience, decimal>
+            {
+                { BookingExperience.RhinoKeeper, 150m },
+                { BookingExperience.ElephantKeeper, 200m },
+                { BookingExperience.BigCatKeeper, 175m },
+                { BookingExperience.PrimateKeeper, 125m },
+                { BookingExperience.VIPTour, 300m },
+                { BookingExperience.GiraffeKeeper, 140m }
             };
+
+            return todayBookings.Sum(b => 
+                revenueEstimates.TryGetValue(b.BookingExperience, out var price) ? price : 100m);
+        }
+
+        private double CalculateUptimePercentage(TimeSpan uptime)
+        {
+            // Calculate uptime percentage based on how long the system has been running
+            // For systems running less than 24 hours, use the actual uptime
+            var totalHours = uptime.TotalHours;
+            if (totalHours < 24)
+            {
+                return Math.Min(100, (totalHours / 24) * 100);
+            }
+            
+            // For longer running systems, calculate based on expected vs actual uptime
+            var expectedUptime = DateTime.UtcNow - DateTime.UtcNow.Date; // Time since start of day
+            var uptimePercentage = (uptime.TotalMinutes / expectedUptime.TotalMinutes) * 100;
+            return Math.Min(100, Math.Max(0, uptimePercentage));
         }
 
         private List<TopExperience> GetTopExperiences(List<CalendarSlot> bookings)
@@ -377,7 +479,7 @@ namespace Psybook.Services.Reporting
                 {
                     Name = g.Key.ToString(),
                     BookingCount = g.Count(),
-                    Growth = new Random().Next(-20, 50) // Simulated growth percentage
+                    Growth = new Random().Next(-20, 50) // Simulated growth percentage - would be calculated from historical data
                 })
                 .OrderByDescending(e => e.BookingCount)
                 .Take(5)
@@ -467,12 +569,12 @@ namespace Psybook.Services.Reporting
 
         private List<DataPoint> GenerateRevenueTrend(List<CalendarSlot> bookings, DateTime startDate, DateTime endDate)
         {
-            // Simulated revenue calculation - would be based on actual pricing
+            // Simplified revenue calculation - would be based on actual pricing
             return GenerateBookingTrend(bookings, startDate, endDate)
                 .Select(dp => new DataPoint
                 {
                     Date = dp.Date,
-                    Value = dp.Value * new Random().Next(50, 200), // Simulated revenue per booking
+                    Value = (int)(dp.Value * new Random().Next(50, 200)), // Simulated revenue per booking
                     Label = dp.Label
                 }).ToList();
         }

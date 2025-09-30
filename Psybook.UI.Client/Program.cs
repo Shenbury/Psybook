@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using MudBlazor.Services;
 using Psybook.Services.API.BookingService;
 using Psybook.Services.ExternalCalendar;
+using Psybook.Services.Monitoring;
 using Psybook.Services.Reporting;
 using Psybook.Services.Reporting.Visualization;
 using Psybook.Services.UI.Clients;
@@ -40,6 +41,9 @@ builder.Services.AddScoped<IBookingService, BookingService>();
 
 // Reporting Client
 builder.Services.AddScoped<IReportingClient, ReportingClient>();
+
+// Monitoring Services - Note: Limited functionality in WebAssembly
+builder.Services.AddScoped<ISystemMetricsService, SystemMetricsService>();
 
 // External Calendar Integration - Register after HttpClient
 builder.Services.AddScoped<IExternalCalendarService, ExternalCalendarService>();

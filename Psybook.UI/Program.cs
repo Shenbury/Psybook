@@ -4,6 +4,7 @@ using MudBlazor.Services;
 using Psybook.ServiceDefaults;
 using Psybook.Services.API.BookingService;
 using Psybook.Services.ExternalCalendar;
+using Psybook.Services.Monitoring;
 using Psybook.Services.Reporting;
 using Psybook.Services.Reporting.Visualization;
 using Psybook.Services.UI.Clients;
@@ -46,6 +47,9 @@ builder.Services.AddScoped<IExternalCalendarService, ExternalCalendarService>();
 
 // Reporting & Analytics Services
 builder.Services.AddScoped<IDataVisualizationService, DataVisualizationService>();
+
+// Monitoring Services - Use Scoped for UI to get fresh metrics per request
+builder.Services.AddScoped<ISystemMetricsService, SystemMetricsService>();
 
 // Data Loader Service
 builder.Services.AddScoped<IBookingLoaderService, BookingDataLoaderService>();
