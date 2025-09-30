@@ -1,6 +1,5 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Psybook.Objects.Reporting;
 using Psybook.Services.Reporting;
 
@@ -125,14 +124,14 @@ namespace Psybook.API.Controllers
         /// Gets trending data for charts
         /// </summary>
         [HttpGet("trending-data")]
-        public async Task<IActionResult> GetTrendingData([FromQuery] Objects.Reporting.TrendPeriod period = Objects.Reporting.TrendPeriod.Last7Days)
+        public async Task<IActionResult> GetTrendingData([FromQuery] TrendPeriod period = TrendPeriod.Last7Days)
         {
             try
             {
                 _logger.LogInformation("Getting trending data for period {Period}", period);
                 
                 // Convert Objects.Reporting.TrendPeriod to Services.Reporting.TrendPeriod
-                var servicePeriod = (Services.Reporting.TrendPeriod)(int)period;
+                var servicePeriod = (TrendPeriod)(int)period;
                 var trends = await _reportingService.GetTrendingDataAsync(servicePeriod);
                 return Ok(trends);
             }
@@ -234,7 +233,7 @@ namespace Psybook.API.Controllers
         /// Schedules a report to be generated and sent via email
         /// </summary>
         [HttpPost("schedule")]
-        public async Task<IActionResult> ScheduleReport([FromBody] Objects.Reporting.ScheduledReportRequest request)
+        public async Task<IActionResult> ScheduleReport([FromBody] ScheduledReportRequest request)
         {
             try
             {
@@ -242,7 +241,7 @@ namespace Psybook.API.Controllers
                     request.Name, request.EmailRecipients.Count);
                 
                 // Convert to Services.Reporting.ScheduledReportRequest if needed
-                var serviceRequest = new Services.Reporting.ScheduledReportRequest
+                var serviceRequest = new ScheduledReportRequest
                 {
                     Name = request.Name,
                     ReportParameters = request.ReportParameters,
@@ -307,14 +306,14 @@ namespace Psybook.API.Controllers
         /// Gets trending data for charts
         /// </summary>
         [HttpGet("trends/{period}")]
-        public async Task<IActionResult> GetTrendingDataByPath(Objects.Reporting.TrendPeriod period)
+        public async Task<IActionResult> GetTrendingDataByPath(TrendPeriod period)
         {
             try
             {
                 _logger.LogInformation("Getting trending data for period {Period}", period);
                 
                 // Convert Objects.Reporting.TrendPeriod to Services.Reporting.TrendPeriod
-                var servicePeriod = (Services.Reporting.TrendPeriod)(int)period;
+                var servicePeriod = (TrendPeriod)(int)period;
                 var trends = await _reportingService.GetTrendingDataAsync(servicePeriod);
                 return Ok(trends);
             }

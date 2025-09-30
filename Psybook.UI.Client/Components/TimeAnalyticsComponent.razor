@@ -103,16 +103,9 @@
                         <Columns>
                             <PropertyColumn Property="x => x.MonthName" Title="Month" />
                             <PropertyColumn Property="x => x.Year" Title="Year" />
-                            <PropertyColumn Property="x => x.BookingCount" Title="Total Bookings" />
-                            <PropertyColumn Property="x => x.Revenue" Title="Revenue" Format="C" />
+                            <PropertyColumn Property="x => x.BookingCount" Title="Bookings" />
                             <PropertyColumn Property="x => x.CancelledCount" Title="Cancelled" />
-                            <TemplateColumn Title="Growth Rate">
-                                <CellTemplate>
-                                    <MudChip Size="Size.Small" Color="@GetGrowthColor(context.Item.GrowthRate)">
-                                        @context.Item.GrowthRate.ToString("+0.0%;-0.0%;0.0%")
-                                    </MudChip>
-                                </CellTemplate>
-                            </TemplateColumn>
+                            <PropertyColumn Property="x => x.GrowthRate" Title="Growth" Format="F1" />
                         </Columns>
                     </MudDataGrid>
                 }

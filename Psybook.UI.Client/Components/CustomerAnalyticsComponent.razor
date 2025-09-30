@@ -84,15 +84,7 @@
                         <Columns>
                             <PropertyColumn Property="x => x.SegmentName" Title="Segment" />
                             <PropertyColumn Property="x => x.CustomerCount" Title="Customers" />
-                            <TemplateColumn Title="Market Share">
-                                <CellTemplate>
-                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                                        <MudProgressLinear Value="@((double)context.Item.Percentage)" Color="Color.Primary" Size="Size.Small" Style="width: 100px;" />
-                                        <MudText Typo="Typo.caption">@context.Item.Percentage.ToString("F1")%</MudText>
-                                    </MudStack>
-                                </CellTemplate>
-                            </TemplateColumn>
-                            <PropertyColumn Property="x => x.AverageValue" Title="Average Value" Format="C" />
+                            <PropertyColumn Property="x => x.Percentage" Title="Share" Format="F1" />
                         </Columns>
                     </MudDataGrid>
                 </MudCardContent>
@@ -120,15 +112,7 @@
                             <PropertyColumn Property="x => x.PostcodeArea" Title="Postcode Area" />
                             <PropertyColumn Property="x => x.Region" Title="Region" />
                             <PropertyColumn Property="x => x.BookingCount" Title="Bookings" />
-                            <TemplateColumn Title="Market Share">
-                                <CellTemplate>
-                                    <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-                                        <MudProgressLinear Value="@((double)context.Item.Percentage)" Color="Color.Info" Size="Size.Small" Style="width: 80px;" />
-                                        <MudText Typo="Typo.caption">@context.Item.Percentage.ToString("F1")%</MudText>
-                                    </MudStack>
-                                </CellTemplate>
-                            </TemplateColumn>
-                            <PropertyColumn Property="x => x.Revenue" Title="Revenue" Format="C" />
+                            <PropertyColumn Property="x => x.Percentage" Title="Share" Format="F1" />
                         </Columns>
                     </MudDataGrid>
                 </MudCardContent>
@@ -167,9 +151,6 @@
                                             </MudText>
                                         </div>
                                     </MudStack>
-                                    <MudText Typo="Typo.caption" Color="Color.Success">
-                                        @region.Revenue.ToString("C")
-                                    </MudText>
                                 </MudStack>
                             </MudListItem>
                             @if (rank < topRegions.Count())

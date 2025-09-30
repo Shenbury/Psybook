@@ -19,11 +19,6 @@ namespace Psybook.Objects.Reporting
         public decimal CancellationRate { get; set; }
         public decimal CompletionRate { get; set; }
         
-        // Revenue Analytics
-        public decimal EstimatedRevenue { get; set; }
-        public decimal AverageBookingValue { get; set; }
-        public decimal RevenueGrowth { get; set; }
-        
         // Experience Analytics
         public List<ExperienceStatistic> ExperienceStats { get; set; } = new();
         
@@ -51,7 +46,6 @@ namespace Psybook.Objects.Reporting
         public int ActiveUsers { get; set; }
         public int BookingsInProgress { get; set; }
         public int CompletedBookingsToday { get; set; }
-        public decimal RevenueToday { get; set; }
         public double SystemLoad { get; set; }
         public int ApiCallsPerMinute { get; set; }
         public double AverageResponseTime { get; set; }
@@ -64,7 +58,6 @@ namespace Psybook.Objects.Reporting
     {
         public TrendPeriod Period { get; set; }
         public List<DataPoint> BookingTrend { get; set; } = new();
-        public List<DataPoint> RevenueTrend { get; set; } = new();
         public List<DataPoint> CancellationTrend { get; set; } = new();
         public List<ExperienceTrend> ExperienceTrends { get; set; } = new();
     }
@@ -104,8 +97,6 @@ namespace Psybook.Objects.Reporting
         public int TotalBookingsToday { get; set; }
         public int TotalBookingsThisWeek { get; set; }
         public int TotalBookingsThisMonth { get; set; }
-        public decimal RevenueMTD { get; set; }
-        public decimal RevenueYTD { get; set; }
         public int PendingBookings { get; set; }
         public int UpcomingBookings { get; set; }
         public List<TopExperience> TopExperiences { get; set; } = new();
@@ -117,7 +108,6 @@ namespace Psybook.Objects.Reporting
     {
         public string Name { get; set; } = string.Empty;
         public int BookingCount { get; set; }
-        public decimal Revenue { get; set; }
         public decimal Growth { get; set; }
     }
     
@@ -128,7 +118,6 @@ namespace Psybook.Objects.Reporting
         public string ExperienceName { get; set; } = string.Empty;
         public DateTime BookingDate { get; set; }
         public string Status { get; set; } = string.Empty;
-        public decimal Value { get; set; }
     }
     
     public class Alert
@@ -173,7 +162,6 @@ namespace Psybook.Objects.Reporting
         public string ExperienceName { get; set; } = string.Empty;
         public int BookingCount { get; set; }
         public decimal Percentage { get; set; }
-        public decimal Revenue { get; set; }
         public int CancelledCount { get; set; }
         public decimal CancellationRate { get; set; }
         public double AverageRating { get; set; }
@@ -186,7 +174,6 @@ namespace Psybook.Objects.Reporting
         public int Month { get; set; }
         public string MonthName { get; set; } = string.Empty;
         public int BookingCount { get; set; }
-        public decimal Revenue { get; set; }
         public int CancelledCount { get; set; }
         public decimal GrowthRate { get; set; }
     }
@@ -223,7 +210,6 @@ namespace Psybook.Objects.Reporting
         public string SegmentName { get; set; } = string.Empty;
         public int CustomerCount { get; set; }
         public decimal Percentage { get; set; }
-        public decimal AverageValue { get; set; }
     }
     
     public class GeographicStatistic
@@ -232,7 +218,6 @@ namespace Psybook.Objects.Reporting
         public string PostcodeArea { get; set; } = string.Empty;
         public int BookingCount { get; set; }
         public decimal Percentage { get; set; }
-        public decimal Revenue { get; set; }
     }
     
     public class PerformanceMetrics
@@ -264,7 +249,6 @@ namespace Psybook.Objects.Reporting
         public ReportType ReportType { get; set; } = ReportType.Summary;
         public ReportFormat Format { get; set; } = ReportFormat.Dashboard;
         public bool IncludeCustomerDetails { get; set; } = false;
-        public bool IncludeFinancialData { get; set; } = true;
         public string? CustomFilters { get; set; }
     }
     
@@ -272,7 +256,6 @@ namespace Psybook.Objects.Reporting
     {
         Summary,
         Detailed,
-        Financial,
         Customer,
         Experience,
         Geographic,

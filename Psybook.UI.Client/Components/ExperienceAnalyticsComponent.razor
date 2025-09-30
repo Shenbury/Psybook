@@ -103,7 +103,6 @@
                                 </MudStack>
                             </CellTemplate>
                         </TemplateColumn>
-                        <PropertyColumn Property="x => x.Revenue" Title="Revenue" Format="C" />
                         <PropertyColumn Property="x => x.CancelledCount" Title="Cancelled" />
                         <TemplateColumn Title="Cancellation Rate">
                             <CellTemplate>
@@ -151,18 +150,18 @@
         </MudCard>
     </MudItem>
 
-    <!-- Revenue by Experience -->
+    <!-- Top Performing Experiences -->
     <MudItem xs="12" md="6">
         <MudCard>
             <MudCardHeader>
                 <MudText Typo="Typo.h6" Color="Color.Primary">
-                    <MudIcon Icon="@Icons.Material.Filled.MonetizationOn" Class="mr-2" />
-                    Revenue by Experience
+                    <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="mr-2" />
+                    Top Performing Experiences
                 </MudText>
             </MudCardHeader>
             <MudCardContent>
                 <MudList T="string">
-                    @foreach (var experience in Analytics.ExperienceStats.OrderByDescending(e => e.Revenue).Take(5))
+                    @foreach (var experience in Analytics.ExperienceStats.OrderByDescending(e => e.BookingCount).Take(5))
                     {
                         <MudListItem T="string">
                             <MudStack Spacing="2">
@@ -171,10 +170,10 @@
                                         @experience.ExperienceName
                                     </MudText>
                                     <MudText Typo="Typo.h6" Color="Color.Success">
-                                        @experience.Revenue.ToString("C")
+                                        @experience.BookingCount bookings
                                     </MudText>
                                 </MudStack>
-                                <MudProgressLinear Value="@GetRevenuePercentage(experience.Revenue)" Color="Color.Success" Size="Size.Small" />
+                                <MudProgressLinear Value="@GetPopularityPercentage(experience.BookingCount)" Color="Color.Success" Size="Size.Small" />
                             </MudStack>
                         </MudListItem>
                         <MudDivider />
@@ -240,13 +239,13 @@
         };
     }
 
-    private double GetRevenuePercentage(decimal revenue)
+    private double GetPopularityPercentage(int bookingCount)
     {
         if (Analytics?.ExperienceStats == null || !Analytics.ExperienceStats.Any())
             return 0;
 
-        var maxRevenue = Analytics.ExperienceStats.Max(e => e.Revenue);
-        return maxRevenue > 0 ? (double)(revenue / maxRevenue * 100) : 0;
+        var maxBookings = Analytics.ExperienceStats.Max(e => e.BookingCount);
+        return maxBookings > 0 ? (double)bookingCount / maxBookings * 100 : 0;
     }
 
     private string TruncateText(string text, int maxLength)
@@ -256,4 +255,4 @@
 
         return text.Substring(0, maxLength - 3) + "...";
     }
-}
+}}

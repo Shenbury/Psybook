@@ -94,13 +94,6 @@ namespace Psybook.Services.Reporting.Visualization
                         Name = "Bookings",
                         Data = topExperiences.Select(e => (double)e.BookingCount).ToArray(),
                         Color = "#FF9800"
-                    },
-                    new ChartSeries
-                    {
-                        Name = "Revenue",
-                        Data = topExperiences.Select(e => (double)e.Revenue).ToArray(),
-                        Color = "#4CAF50",
-                        YAxisIndex = 1
                     }
                 },
                 Labels = topExperiences.Select(e => TruncateText(e.ExperienceName, 15)).ToArray(),

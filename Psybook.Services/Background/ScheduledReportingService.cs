@@ -3,7 +3,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Psybook.Objects.Reporting;
 using Psybook.Services.Reporting;
-using System.Text.Json;
+using System.Collections.Concurrent;
 
 namespace Psybook.Services.Background
 {
@@ -14,7 +14,7 @@ namespace Psybook.Services.Background
     {
         private readonly ILogger<ScheduledReportingService> _logger;
         private readonly IServiceProvider _serviceProvider;
-        private readonly Dictionary<Guid, Services.Reporting.ScheduledReportRequest> _scheduledReports;
+        private readonly Dictionary<Guid, ScheduledReportRequest> _scheduledReports;
         private readonly Timer _timer;
 
         public ScheduledReportingService(
@@ -23,7 +23,7 @@ namespace Psybook.Services.Background
         {
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-            _scheduledReports = new Dictionary<Guid, Services.Reporting.ScheduledReportRequest>();
+            _scheduledReports = new Dictionary<Guid, ScheduledReportRequest>();
             
             // Check for scheduled reports every minute
             _timer = new Timer(CheckScheduledReports, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
@@ -66,7 +66,7 @@ namespace Psybook.Services.Background
         /// <summary>
         /// Adds a scheduled report
         /// </summary>
-        public Guid AddScheduledReport(Services.Reporting.ScheduledReportRequest request)
+        public Guid AddScheduledReport(ScheduledReportRequest request)
         {
             var scheduleId = Guid.NewGuid();
             
@@ -99,7 +99,7 @@ namespace Psybook.Services.Background
         /// <summary>
         /// Gets all scheduled reports
         /// </summary>
-        public List<(Guid Id, Services.Reporting.ScheduledReportRequest Request)> GetScheduledReports()
+        public List<(Guid Id, ScheduledReportRequest Request)> GetScheduledReports()
         {
             return _scheduledReports.Select(kvp => (kvp.Key, kvp.Value)).ToList();
         }
@@ -135,7 +135,7 @@ namespace Psybook.Services.Background
             }
         }
 
-        private async Task ExecuteScheduledReport(Guid scheduleId, Services.Reporting.ScheduledReportRequest reportRequest)
+        private async Task ExecuteScheduledReport(Guid scheduleId, ScheduledReportRequest reportRequest)
         {
             try
             {

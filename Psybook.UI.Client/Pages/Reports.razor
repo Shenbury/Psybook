@@ -74,7 +74,7 @@
     {
         <!-- Quick Stats Cards -->
         <MudGrid Spacing="3" Class="mb-6">
-            <MudItem xs="12" sm="6" md="3">
+            <MudItem xs="12" sm="6" md="4">
                 <MudCard Class="stats-card">
                     <MudCardContent Class="pa-4">
                         <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
@@ -92,25 +92,7 @@
                 </MudCard>
             </MudItem>
 
-            <MudItem xs="12" sm="6" md="3">
-                <MudCard Class="stats-card">
-                    <MudCardContent Class="pa-4">
-                        <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
-                            <div>
-                                <MudText Typo="Typo.h4" Color="Color.Success" Class="font-weight-bold">
-                                    @DashboardSummary.RevenueMTD.ToString("C")
-                                </MudText>
-                                <MudText Typo="Typo.body2" Color="Color.Secondary">
-                                    Revenue MTD
-                                </MudText>
-                            </div>
-                            <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Color="Color.Success" Size="Size.Large" />
-                        </MudStack>
-                    </MudCardContent>
-                </MudCard>
-            </MudItem>
-
-            <MudItem xs="12" sm="6" md="3">
+            <MudItem xs="12" sm="6" md="4">
                 <MudCard Class="stats-card">
                     <MudCardContent Class="pa-4">
                         <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
@@ -128,7 +110,7 @@
                 </MudCard>
             </MudItem>
 
-            <MudItem xs="12" sm="6" md="3">
+            <MudItem xs="12" sm="6" md="4">
                 <MudCard Class="stats-card">
                     <MudCardContent Class="pa-4">
                         <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
@@ -151,21 +133,24 @@
         <MudGrid Spacing="3" Class="mb-6">
             <!-- Booking Trends Chart -->
             <MudItem xs="12" lg="8">
-                <MudCard>
-                    <MudCardHeader>
+                <MudCard Class="pa-0">
+                    <MudCardHeader Class="pb-2">
                         <MudText Typo="Typo.h6" Color="Color.Primary">
                             <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="mr-2" />
                             Booking Trends
                         </MudText>
                     </MudCardHeader>
-                    <MudCardContent>
+                    <MudCardContent Class="pa-2">
                         @if (TrendingData != null && TrendingData.BookingTrend.Any())
                         {
-                            <MudChart ChartType="ChartType.Line" 
-                                      ChartSeries="@BookingTrendSeries" 
-                                      XAxisLabels="@TrendingData.BookingTrend.Select(d => d.Label).ToArray()" 
-                                      Width="100%" Height="350px">
-                            </MudChart>
+                            <div style="width: 100%; height: 400px;">
+                                <MudChart ChartType="ChartType.Line" 
+                                          ChartSeries="@BookingTrendSeries" 
+                                          XAxisLabels="@TrendingData.BookingTrend.Select(d => d.Label).ToArray()" 
+                                          Width="100%" 
+                                          Height="100%">
+                                </MudChart>
+                            </div>
                         }
                         else
                         {
@@ -358,13 +343,13 @@
             <MudSelect @bind-Value="ExportType" Label="Report Type">
                 <MudSelectItem Value="ReportType.Summary">Summary Report</MudSelectItem>
                 <MudSelectItem Value="ReportType.Detailed">Detailed Report</MudSelectItem>
-                <MudSelectItem Value="ReportType.Financial">Financial Report</MudSelectItem>
                 <MudSelectItem Value="ReportType.Customer">Customer Analysis</MudSelectItem>
                 <MudSelectItem Value="ReportType.Experience">Experience Analysis</MudSelectItem>
+                <MudSelectItem Value="ReportType.Geographic">Geographic Analysis</MudSelectItem>
+                <MudSelectItem Value="ReportType.Performance">Performance Report</MudSelectItem>
             </MudSelect>
             
             <MudCheckBox @bind-Value="IncludeCustomerDetails" Label="Include Customer Details" />
-            <MudCheckBox @bind-Value="IncludeFinancialData" Label="Include Financial Data" />
         </MudStack>
     </DialogContent>
     <DialogActions>
@@ -401,7 +386,6 @@
     private ReportFormat ExportFormat = ReportFormat.PDF;
     private ReportType ExportType = ReportType.Summary;
     private bool IncludeCustomerDetails = false;
-    private bool IncludeFinancialData = true;
 
     private List<MudBlazor.ChartSeries> BookingTrendSeries = new();
 
@@ -489,8 +473,7 @@
                 EndDate = ExportDateRange.End ?? DateTime.UtcNow,
                 Format = ExportFormat,
                 ReportType = ExportType,
-                IncludeCustomerDetails = IncludeCustomerDetails,
-                IncludeFinancialData = IncludeFinancialData
+                IncludeCustomerDetails = IncludeCustomerDetails
             };
 
             var report = await ReportingClient.GenerateReportAsync(request);
@@ -535,4 +518,4 @@
             _ => Severity.Normal
         };
     }
-}
+}}

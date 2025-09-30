@@ -177,10 +177,7 @@ namespace Psybook.Services.Reporting
                     ActiveUsers = activeUserCount,
                     SystemLoad = systemMetrics.SystemLoad,
                     ApiCallsPerMinute = apiMetrics.ApiCallsPerMinute,
-                    AverageResponseTime = apiMetrics.AverageResponseTime,
-                    
-                    // Calculate estimated revenue for today
-                    RevenueToday = CalculateEstimatedRevenueForToday(todayBookings)
+                    AverageResponseTime = apiMetrics.AverageResponseTime
                 };
 
                 _logger.LogInformation("Generated real-time metrics: {ActiveUsers} active users, {ApiCalls} API calls/min, {SystemLoad}% system load", 
@@ -201,8 +198,7 @@ namespace Psybook.Services.Reporting
                     ActiveUsers = 0,
                     SystemLoad = 0,
                     ApiCallsPerMinute = 0,
-                    AverageResponseTime = 0,
-                    RevenueToday = 0
+                    AverageResponseTime = 0
                 };
             }
         }
@@ -220,7 +216,6 @@ namespace Psybook.Services.Reporting
                 {
                     Period = period,
                     BookingTrend = GenerateBookingTrend(periodBookings, startDate, endDate),
-                    RevenueTrend = GenerateRevenueTrend(periodBookings, startDate, endDate),
                     CancellationTrend = GenerateCancellationTrend(periodBookings, startDate, endDate),
                     ExperienceTrends = GenerateExperienceTrends(periodBookings, startDate, endDate)
                 };
@@ -268,9 +263,9 @@ namespace Psybook.Services.Reporting
                 new ReportTemplate
                 {
                     Id = Guid.NewGuid(),
-                    Name = "Financial Report",
-                    Description = "Detailed financial analysis with revenue trends",
-                    Type = ReportType.Financial,
+                    Name = "Customer Analysis",
+                    Description = "Customer behavior and segmentation analysis",
+                    Type = ReportType.Customer,
                     IsDefault = false,
                     CreatedAt = DateTime.UtcNow,
                     CreatedBy = "System"
@@ -278,9 +273,9 @@ namespace Psybook.Services.Reporting
                 new ReportTemplate
                 {
                     Id = Guid.NewGuid(),
-                    Name = "Customer Analysis",
-                    Description = "Customer behavior and segmentation analysis",
-                    Type = ReportType.Customer,
+                    Name = "Experience Performance",
+                    Description = "Performance analysis of VIP experiences",
+                    Type = ReportType.Experience,
                     IsDefault = false,
                     CreatedAt = DateTime.UtcNow,
                     CreatedBy = "System"
@@ -438,24 +433,6 @@ namespace Psybook.Services.Reporting
             }
         }
 
-        private decimal CalculateEstimatedRevenueForToday(List<CalendarSlot> todayBookings)
-        {
-            // Simplified revenue calculation - in a real implementation, 
-            // this would use actual pricing data
-            var revenueEstimates = new Dictionary<BookingExperience, decimal>
-            {
-                { BookingExperience.RhinoKeeper, 150m },
-                { BookingExperience.ElephantKeeper, 200m },
-                { BookingExperience.BigCatKeeper, 175m },
-                { BookingExperience.PrimateKeeper, 125m },
-                { BookingExperience.VIPTour, 300m },
-                { BookingExperience.GiraffeKeeper, 140m }
-            };
-
-            return todayBookings.Sum(b => 
-                revenueEstimates.TryGetValue(b.BookingExperience, out var price) ? price : 100m);
-        }
-
         private double CalculateUptimePercentage(TimeSpan uptime)
         {
             // Calculate uptime percentage based on how long the system has been running
@@ -567,16 +544,16 @@ namespace Psybook.Services.Reporting
             return dataPoints;
         }
 
-        private List<DataPoint> GenerateRevenueTrend(List<CalendarSlot> bookings, DateTime startDate, DateTime endDate)
+        private async Task<List<DataPoint>> GenerateRevenueTrend(List<CalendarSlot> bookings, DateTime startDate, DateTime endDate)
         {
-            // Simplified revenue calculation - would be based on actual pricing
-            return GenerateBookingTrend(bookings, startDate, endDate)
-                .Select(dp => new DataPoint
-                {
-                    Date = dp.Date,
-                    Value = (int)(dp.Value * new Random().Next(50, 200)), // Simulated revenue per booking
-                    Label = dp.Label
-                }).ToList();
+            // Revenue functionality removed - return empty list
+            return new List<DataPoint>();
+        }
+
+        private decimal CalculateEstimatedRevenueForToday(List<CalendarSlot> todayBookings)
+        {
+            // Revenue functionality removed - return 0
+            return 0m;
         }
 
         private List<DataPoint> GenerateCancellationTrend(List<CalendarSlot> bookings, DateTime startDate, DateTime endDate)

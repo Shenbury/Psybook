@@ -41,31 +41,31 @@
         </MudCard>
     </MudItem>
 
-    <!-- Revenue Analytics -->
+    <!-- Booking Performance Analytics -->
     <MudItem xs="12" md="6">
         <MudCard>
             <MudCardHeader>
                 <MudText Typo="Typo.h6" Color="Color.Primary">
-                    <MudIcon Icon="@Icons.Material.Filled.AttachMoney" Class="mr-2" />
-                    Revenue Analytics
+                    <MudIcon Icon="@Icons.Material.Filled.TrendingUp" Class="mr-2" />
+                    Booking Performance
                 </MudText>
             </MudCardHeader>
             <MudCardContent>
                 <MudStack Spacing="3">
                     <MudStack Row="true" Justify="Justify.SpaceBetween">
-                        <MudText Typo="Typo.body1">Estimated Revenue</MudText>
-                        <MudText Typo="Typo.h6" Color="Color.Success">@Analytics.EstimatedRevenue.ToString("C")</MudText>
+                        <MudText Typo="Typo.body1">Total Bookings</MudText>
+                        <MudText Typo="Typo.h6" Color="Color.Success">@Analytics.TotalBookings</MudText>
                     </MudStack>
                     
                     <MudStack Row="true" Justify="Justify.SpaceBetween">
-                        <MudText Typo="Typo.body1">Average Booking Value</MudText>
-                        <MudText Typo="Typo.h6" Color="Color.Primary">@Analytics.AverageBookingValue.ToString("C")</MudText>
+                        <MudText Typo="Typo.body1">Active Bookings</MudText>
+                        <MudText Typo="Typo.h6" Color="Color.Primary">@Analytics.ActiveBookings</MudText>
                     </MudStack>
                     
                     <MudStack Row="true" Justify="Justify.SpaceBetween">
-                        <MudText Typo="Typo.body1">Revenue Growth</MudText>
-                        <MudText Typo="Typo.h6" Color="@(Analytics.RevenueGrowth >= 0 ? Color.Success : Color.Error)">
-                            @Analytics.RevenueGrowth.ToString("+0.0%;-0.0%;0.0%")
+                        <MudText Typo="Typo.body1">Average Daily Bookings</MudText>
+                        <MudText Typo="Typo.h6" Color="Color.Info">
+                            @(Analytics.ReportPeriod.TotalDays > 0 ? (Analytics.TotalBookings / Analytics.ReportPeriod.TotalDays).ToString("F1") : "0")
                         </MudText>
                     </MudStack>
                 </MudStack>
