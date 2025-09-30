@@ -1,0 +1,297 @@
+@using Psybook.Objects.DbModels
+@using Psybook.Objects.Enums
+@using Psybook.Services.UI.DataLoaders
+@using MudBlazor
+@inject IExperienceLoaderService ExperienceLoaderService
+@inject ISnackbar Snackbar
+@inject ILogger<ExperienceFormDialog> Logger
+
+<MudDialog @bind-Visible="IsVisible" Options="DialogOptions">
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@(IsEdit ? Icons.Material.Filled.Edit : Icons.Material.Filled.Add)" Class="mr-2" />
+            @(IsEdit ? "Edit Experience" : "Create Experience")
+        </MudText>
+    </TitleContent>
+
+    <DialogContent>
+        <MudForm @ref="_form" @bind-IsValid="_formValid" ValidationDelay="0">
+            <MudGrid>
+                <!-- Experience Type Selection -->
+                <MudItem xs="12">
+                    <MudSelect T="BookingExperience" 
+                              @bind-Value="_formData.BookingExperience" 
+                              Label="Experience Type" 
+                              Variant="Variant.Outlined"
+                              Required="true"
+                              RequiredError="Experience type is required"
+                              Disabled="IsEdit">
+                        @foreach (BookingExperience experienceType in Enum.GetValues<BookingExperience>())
+                        {
+                            if (experienceType != BookingExperience.None)
+                            {
+                                <MudSelectItem Value="experienceType">@experienceType.ToString()</MudSelectItem>
+                            }
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <!-- Title -->
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_formData.Title" 
+                                  Label="Experience Title" 
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  RequiredError="Title is required"
+                                  MaxLength="100" />
+                </MudItem>
+
+                <!-- Description -->
+                <MudItem xs="12">
+                    <MudTextField @bind-Value="_formData.Description" 
+                                  Label="Description" 
+                                  Variant="Variant.Outlined"
+                                  Lines="4"
+                                  Required="true"
+                                  RequiredError="Description is required"
+                                  MaxLength="500" />
+                </MudItem>
+
+                <!-- Location -->
+                <MudItem xs="12" sm="6">
+                    <MudTextField @bind-Value="_formData.Location" 
+                                  Label="Location" 
+                                  Variant="Variant.Outlined"
+                                  Required="true"
+                                  RequiredError="Location is required"
+                                  MaxLength="100" />
+                </MudItem>
+
+                <!-- Color -->
+                <MudItem xs="12" sm="6">
+                    <MudSelect T="Color" 
+                              @bind-Value="_formData.Color" 
+                              Label="Color Theme" 
+                              Variant="Variant.Outlined"
+                              Required="true">
+                        @foreach (Color color in GetAvailableColors())
+                        {
+                            <MudSelectItem Value="color">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <MudIcon Icon="@Icons.Material.Filled.Circle" Color="color" Size="Size.Small" />
+                                    <span>@color.ToString()</span>
+                                </div>
+                            </MudSelectItem>
+                        }
+                    </MudSelect>
+                </MudItem>
+
+                <!-- All Day Toggle -->
+                <MudItem xs="12" sm="6">
+                    <MudSwitch @bind-Value="_formData.AllDay"
+                              Label="All Day Experience"
+                              Color="Color.Primary"
+                              ThumbIcon="@(_formData.AllDay ? Icons.Material.Filled.Check : Icons.Material.Filled.Close)"
+                              ThumbIconColor="@(_formData.AllDay ? Color.Success : Color.Error)" />
+                </MudItem>
+
+                <!-- Duration (only if not all day) -->
+                @if (!_formData.AllDay)
+                {
+                    <MudItem xs="12" sm="6">
+                        <MudTimePicker @bind-Time="_durationTime"
+                                      Label="Experience Duration"
+                                      Variant="Variant.Outlined"
+                                      Required="true"
+                                      RequiredError="Duration is required for timed experiences"
+                                      TimeFormat="HH:mm" />
+                    </MudItem>
+                }
+            </MudGrid>
+        </MudForm>
+
+        <!-- Error Display -->
+        @if (_errors.Any())
+        {
+            <MudAlert Severity="Severity.Error" Class="mt-4">
+                @foreach (var error in _errors)
+                {
+                    <div>@error</div>
+                }
+            </MudAlert>
+        }
+    </DialogContent>
+
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" 
+                   Variant="Variant.Filled" 
+                   OnClick="Save" 
+                   Disabled="_saving || !_formValid">
+            @if (_saving)
+            {
+                <MudProgressCircular Class="mr-2" Size="Size.Small" Indeterminate="true" />
+            }
+            @(IsEdit ? "Update" : "Create")
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [Parameter] public bool IsVisible { get; set; }
+    [Parameter] public EventCallback<bool> IsVisibleChanged { get; set; }
+    [Parameter] public ExperienceRecord? Experience { get; set; }
+    [Parameter] public bool IsEdit { get; set; }
+    [Parameter] public EventCallback<ExperienceRecord> OnExperienceSaved { get; set; }
+
+    private DialogOptions DialogOptions => new()
+    {
+        MaxWidth = MaxWidth.Medium,
+        FullWidth = true,
+        CloseButton = true,
+        CloseOnEscapeKey = true
+    };
+
+    private MudForm _form = null!;
+    private bool _formValid;
+    private bool _saving;
+    private List<string> _errors = new();
+
+    private ExperienceFormModel _formData = new();
+    private TimeSpan? _durationTime;
+
+    protected override void OnParametersSet()
+    {
+        if (IsVisible && Experience != null)
+        {
+            _formData = new ExperienceFormModel
+            {
+                BookingExperience = Experience.BookingExperience,
+                Title = Experience.Title,
+                Description = Experience.Description,
+                Color = Experience.Color,
+                Location = Experience.Location,
+                AllDay = Experience.AllDay,
+                Length = Experience.Length
+            };
+            _durationTime = Experience.Length;
+        }
+        else if (IsVisible && Experience == null)
+        {
+            _formData = new ExperienceFormModel
+            {
+                BookingExperience = BookingExperience.RhinoKeeper, // Default to first available
+                Color = Color.Primary,
+                AllDay = false,
+                Length = TimeSpan.FromHours(1) // Default 1 hour
+            };
+            _durationTime = _formData.Length;
+        }
+        
+        base.OnParametersSet();
+    }
+
+    private async Task Save()
+    {
+        try
+        {
+            _errors.Clear();
+            _saving = true;
+
+            // Validate form
+            await _form.Validate();
+            if (!_formValid)
+            {
+                return;
+            }
+
+            // Update duration from time picker if not all day
+            if (!_formData.AllDay && _durationTime.HasValue)
+            {
+                _formData.Length = _durationTime.Value;
+            }
+            else if (_formData.AllDay)
+            {
+                _formData.Length = TimeSpan.FromHours(8); // Default 8 hours for all day
+            }
+
+            // Validate business rules
+            if (!_formData.AllDay && _formData.Length <= TimeSpan.Zero)
+            {
+                _errors.Add("Duration must be greater than zero for timed experiences");
+                return;
+            }
+
+            var experienceRecord = new ExperienceRecord
+            {
+                BookingExperience = _formData.BookingExperience,
+                Title = _formData.Title!,
+                Description = _formData.Description!,
+                Color = _formData.Color,
+                Location = _formData.Location!,
+                AllDay = _formData.AllDay,
+                Length = _formData.Length
+            };
+
+            ExperienceRecord result;
+            if (IsEdit)
+            {
+                result = await ExperienceLoaderService.UpdateExperienceAsync(experienceRecord);
+            }
+            else
+            {
+                result = await ExperienceLoaderService.CreateExperienceAsync(experienceRecord);
+            }
+
+            await OnExperienceSaved.InvokeAsync(result);
+            await CloseDialog();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to save experience");
+            _errors.Add($"Failed to save experience: {ex.Message}");
+        }
+        finally
+        {
+            _saving = false;
+        }
+    }
+
+    private async Task Cancel()
+    {
+        await CloseDialog();
+    }
+
+    private async Task CloseDialog()
+    {
+        IsVisible = false;
+        await IsVisibleChanged.InvokeAsync(false);
+        _errors.Clear();
+    }
+
+    private static Color[] GetAvailableColors()
+    {
+        return new[]
+        {
+            Color.Primary,
+            Color.Secondary,
+            Color.Tertiary,
+            Color.Info,
+            Color.Success,
+            Color.Warning,
+            Color.Error,
+            Color.Dark
+        };
+    }
+
+    private class ExperienceFormModel
+    {
+        public BookingExperience BookingExperience { get; set; }
+        public string? Title { get; set; }
+        public string? Description { get; set; }
+        public Color Color { get; set; }
+        public string? Location { get; set; }
+        public bool AllDay { get; set; }
+        public TimeSpan Length { get; set; }
+    }
+}

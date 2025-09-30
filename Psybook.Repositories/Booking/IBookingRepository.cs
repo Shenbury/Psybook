@@ -8,6 +8,7 @@ namespace Psybook.Repositories.Booking
         Task<IEnumerable<CalendarSlot>> GetCalendarSlotsAsync();
         Task<CalendarSlot?> GetCalendarSlotByIdAsync(Guid id);
         Task<IEnumerable<CalendarSlot>> GetCalendarSlotsByStatusAsync(BookingStatus status);
+        Task<IEnumerable<CalendarSlot>> GetCalendarSlotsByExperienceAsync(BookingExperience bookingExperience);
         Task SaveCalendarSlotsAsync(CalendarSlot calendarSlot);
         Task UpdateCalendarSlotAsync(CalendarSlot calendarSlot);
         Task UpdateBookingStatusAsync(Guid bookingId, BookingStatus newStatus, string? reason = null, string? modifiedBy = null);

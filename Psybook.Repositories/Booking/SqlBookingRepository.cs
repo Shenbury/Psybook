@@ -34,6 +34,14 @@ namespace Psybook.Repositories.Booking
                 .ToArrayAsync();
         }
 
+        public async Task<IEnumerable<CalendarSlot>> GetCalendarSlotsByExperienceAsync(BookingExperience bookingExperience)
+        {
+            return await _bookingContext.CalendarSlots
+                .AsNoTracking()
+                .Where(cs => cs.BookingExperience == bookingExperience)
+                .ToArrayAsync();
+        }
+
         public async Task SaveCalendarSlotsAsync(CalendarSlot calendarSlot)
         {
             calendarSlot.CreatedAt = DateTime.UtcNow;

@@ -324,8 +324,8 @@
 
     private void HandleEditRequested(CalendarSlot booking)
     {
-        // Navigate to edit page or show edit dialog
-        NavigationService.NavigateToBooking(); // You might want to add edit functionality
+        // Navigate to edit page with booking ID
+        NavigationService.NavigateTo($"/Book/{booking.Id}");
         Logger.LogInformation("Edit requested for booking {BookingId}", booking.Id);
     }
     #endregion

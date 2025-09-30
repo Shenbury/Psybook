@@ -27,9 +27,15 @@ builder.Services.Configure<BookingClientOptions>(options =>
 // HTTP Client Services - Required for ExternalCalendarService
 builder.Services.AddHttpClient();
 
-// Data Loader Service
+// Data Loader Services
 builder.Services.AddScoped<IBookingLoaderService, BookingDataLoaderService>();
+builder.Services.AddScoped<IExperienceLoaderService, ExperienceDataLoaderService>();
+
+// Client Services
 builder.Services.AddScoped<IBookingClient, BookingClient>();
+builder.Services.AddScoped<IExperienceClient, ExperienceClient>();
+
+// API Services
 builder.Services.AddScoped<IBookingService, BookingService>();
 
 // Reporting Client

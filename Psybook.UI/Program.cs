@@ -51,6 +51,9 @@ builder.Services.AddScoped<IDataVisualizationService, DataVisualizationService>(
 builder.Services.AddScoped<IBookingLoaderService, BookingDataLoaderService>();
 builder.Services.AddScoped<IBookingClient, BookingClient>();
 
+builder.Services.AddScoped<IExperienceLoaderService, ExperienceDataLoaderService>();
+builder.Services.AddScoped<IExperienceClient, ExperienceClient>();
+
 // Reporting Client
 builder.Services.AddScoped<IReportingClient, ReportingClient>();
 

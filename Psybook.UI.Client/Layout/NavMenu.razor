@@ -24,6 +24,16 @@
         </MudStack>
     </MudNavLink>
 
+    <!-- Divider -->
+    <MudDivider Class="my-2" />
+    
+    <!-- Analytics Section -->
+    <MudText Typo="Typo.overline" 
+             Color="Color.Secondary" 
+             Class="px-3 py-2 nav-section-header">
+        Analytics
+    </MudText>
+    
     <!-- Reports & Analytics Link -->
     <MudNavLink Href="/reports" 
                 Match="NavLinkMatch.Prefix" 
@@ -41,36 +51,21 @@
     <!-- Divider -->
     <MudDivider Class="my-2" />
     
-    <!-- Quick Actions Section -->
+    <!-- Configuration Section -->
     <MudText Typo="Typo.overline" 
              Color="Color.Secondary" 
              Class="px-3 py-2 nav-section-header">
-        Quick Actions
+        Configuration
     </MudText>
     
-    <!-- Calendar View (Future) -->
-    <MudNavLink Disabled="true"
-                Icon="@Icons.Material.Filled.CalendarViewMonth"
-                IconColor="Color.Info">
+    <!-- Experience Configuration -->
+    <MudNavLink Href="/configuration/experiences" 
+                Match="NavLinkMatch.Prefix" 
+                Icon="@Icons.Material.Filled.Settings"
+                IconColor="Color.Primary">
         <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-            <MudText Typo="Typo.body2" Color="Color.Secondary">Calendar View</MudText>
+            <MudText Typo="Typo.body1">Experience Setup</MudText>
             <MudSpacer />
-            <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Outlined" Class="nav-chip">
-                Soon
-            </MudChip>
-        </MudStack>
-    </MudNavLink>
-    
-    <!-- Calendar Test (Development) -->
-    <MudNavLink Href="/calendar-test"
-                Icon="@Icons.Material.Filled.CalendarToday"
-                IconColor="Color.Warning">
-        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
-            <MudText Typo="Typo.body2">Calendar Test</MudText>
-            <MudSpacer />
-            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Outlined" Class="nav-chip">
-                Dev
-            </MudChip>
         </MudStack>
     </MudNavLink>
 

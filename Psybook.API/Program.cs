@@ -1,8 +1,10 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Identity.Web;
 using Psybook.Repositories.Booking;
+using Psybook.Repositories.Experience;
 using Psybook.ServiceDefaults;
 using Psybook.Services.API.BookingService;
+using Psybook.Services.API.ExperienceService;
 using Psybook.Services.Background;
 using Psybook.Services.ExternalCalendar;
 using Psybook.Services.ExternalCalendar.GoogleCalendar;
@@ -39,8 +41,15 @@ builder.Services.AddCors(options =>
 });
 
 builder.AddSqlServerDbContext<BookingContext>(connectionName: "wmsp-db");
+
+// Repository Services
 builder.Services.AddScoped<IBookingRepository, SqlBookingRepository>();
+builder.Services.AddScoped<IExperienceRepository, SqlExperienceRepository>();
+
+// API Services
 builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<IExperienceService, ExperienceService>();
+
 builder.Services.AddScoped<ExperienceDictionary>();
 
 // External Calendar Integration Services

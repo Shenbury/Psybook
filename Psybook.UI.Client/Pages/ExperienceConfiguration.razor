@@ -1,0 +1,281 @@
+@page "/configuration/experiences"
+@using Psybook.Objects.DbModels
+@using Psybook.Objects.Enums
+@using Psybook.Services.UI.DataLoaders
+@using Psybook.UI.Client.Components
+@using MudBlazor
+@inherits BasePageComponent
+@inject IExperienceLoaderService ExperienceLoaderService
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+@inject ILogger<ExperienceConfiguration> Logger
+
+<PageTitle>Experience Configuration - Psybook</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="pa-6">
+    <!-- Page Header -->
+    <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="mb-6">
+        <MudStack Spacing="1">
+            <MudText Typo="Typo.h4" Color="Color.Primary">
+                <MudIcon Icon="@Icons.Material.Filled.Settings" Class="mr-2" />
+                Experience Configuration
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary">
+                Manage your available booking experiences, their details, and settings.
+            </MudText>
+        </MudStack>
+        
+        <MudButton Variant="Variant.Filled" 
+                   Color="Color.Primary" 
+                   StartIcon="@Icons.Material.Filled.Add"
+                   OnClick="OpenCreateDialog"
+                   Class="create-button">
+            Create Experience
+        </MudButton>
+    </MudStack>
+
+    <!-- Loading Indicator -->
+    @if (IsLoading)
+    {
+        <MudProgressLinear Color="Color.Primary" Indeterminate="true" Class="mb-4" />
+    }
+
+    <!-- Error Display -->
+    @if (HasErrors)
+    {
+        <MudAlert Severity="Severity.Error" Class="mb-4">
+            @foreach (var error in PageErrors)
+            {
+                <div>@error</div>
+            }
+        </MudAlert>
+    }
+
+    <!-- Experience Cards Grid -->
+    @if (_experiences.Any())
+    {
+        <MudGrid>
+            @foreach (var experience in _experiences)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Class="experience-card">
+                        <MudCardContent>
+                            <!-- Experience Header -->
+                            <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Start" Class="mb-3">
+                                <MudStack Spacing="1">
+                                    <MudText Typo="Typo.h6" Color="Color.Primary">
+                                        @experience.Title
+                                    </MudText>
+                                    <MudChip T="string" 
+                                             Size="Size.Small" 
+                                             Color="@experience.Color"
+                                             Class="experience-type-chip">
+                                        @experience.BookingExperience.ToString()
+                                    </MudChip>
+                                </MudStack>
+                                <MudIconButton Icon="@Icons.Material.Filled.MoreVert" 
+                                               Size="Size.Small"
+                                               OnClick="() => OpenActionsMenu(experience)" />
+                            </MudStack>
+
+                            <!-- Experience Details -->
+                            <MudStack Spacing="2">
+                                <MudStack Row="true" AlignItems="AlignItems.Center">
+                                    <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Color="Color.Secondary" />
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">@experience.Location</MudText>
+                                </MudStack>
+
+                                <MudStack Row="true" AlignItems="AlignItems.Center">
+                                    <MudIcon Icon="@Icons.Material.Filled.Schedule" Size="Size.Small" Color="Color.Secondary" />
+                                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                                        @if (experience.AllDay)
+                                        {
+                                            <text>All Day Experience</text>
+                                        }
+                                        else
+                                        {
+                                            <text>@experience.Length.ToString(@"hh\:mm") duration</text>
+                                        }
+                                    </MudText>
+                                </MudStack>
+
+                                <MudText Typo="Typo.body2" Class="experience-description">
+                                    @experience.Description
+                                </MudText>
+                            </MudStack>
+                        </MudCardContent>
+
+                        <MudCardActions Class="justify-end">
+                            <MudButton Size="Size.Small" 
+                                       Color="Color.Primary" 
+                                       OnClick="() => OpenEditDialog(experience)">
+                                Edit
+                            </MudButton>
+                            <MudButton Size="Size.Small" 
+                                       Color="Color.Error" 
+                                       OnClick="() => ConfirmDelete(experience)">
+                                Delete
+                            </MudButton>
+                        </MudCardActions>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+    else if (!IsLoading)
+    {
+        <!-- Empty State -->
+        <MudPaper Class="pa-8 text-center" Elevation="1">
+            <MudIcon Icon="@Icons.Material.Filled.EventNote" Size="Size.Large" Color="Color.Secondary" Class="mb-4" />
+            <MudText Typo="Typo.h6" Color="Color.Secondary" Class="mb-2">
+                No Experiences Configured
+            </MudText>
+            <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
+                Create your first experience to start accepting bookings.
+            </MudText>
+            <MudButton Variant="Variant.Filled" 
+                       Color="Color.Primary" 
+                       StartIcon="@Icons.Material.Filled.Add"
+                       OnClick="OpenCreateDialog">
+                Create First Experience
+            </MudButton>
+        </MudPaper>
+    }
+</MudContainer>
+
+<!-- Experience Form Dialog -->
+<ExperienceFormDialog @bind-IsVisible="_showExperienceDialog"
+                      Experience="_selectedExperience"
+                      IsEdit="_isEditMode"
+                      OnExperienceSaved="HandleExperienceSaved" />
+
+@code {
+    private List<ExperienceRecord> _experiences = new();
+    private bool _showExperienceDialog;
+    private ExperienceRecord? _selectedExperience;
+    private bool _isEditMode;
+
+    protected override async Task InitializePageAsync()
+    {
+        await LoadExperiences();
+    }
+
+    private async Task LoadExperiences()
+    {
+        await ExecuteOperationAsync(async () =>
+        {
+            _experiences = await ExperienceLoaderService.GetAllExperiencesAsync();
+            Logger.LogInformation("Loaded {Count} experiences for configuration", _experiences.Count);
+        }, "Load experiences");
+    }
+
+    private void OpenCreateDialog()
+    {
+        _selectedExperience = null;
+        _isEditMode = false;
+        _showExperienceDialog = true;
+    }
+
+    private void OpenEditDialog(ExperienceRecord experience)
+    {
+        _selectedExperience = experience;
+        _isEditMode = true;
+        _showExperienceDialog = true;
+    }
+
+    private async Task OpenActionsMenu(ExperienceRecord experience)
+    {
+        // This could open a context menu with additional actions
+        // For now, we'll just edit
+        OpenEditDialog(experience);
+    }
+
+    private async Task HandleExperienceSaved(ExperienceRecord savedExperience)
+    {
+        if (_isEditMode)
+        {
+            var index = _experiences.FindIndex(e => e.BookingExperience == savedExperience.BookingExperience);
+            if (index >= 0)
+            {
+                _experiences[index] = savedExperience;
+                ShowSuccess($"Successfully updated experience: {savedExperience.Title}");
+            }
+        }
+        else
+        {
+            _experiences.Add(savedExperience);
+            ShowSuccess($"Successfully created experience: {savedExperience.Title}");
+        }
+        
+        StateHasChanged();
+    }
+
+    private async Task ConfirmDelete(ExperienceRecord experience)
+    {
+        var confirmed = await DialogService.ShowMessageBox(
+            "Confirm Delete",
+            $"Are you sure you want to delete the experience '{experience.Title}'? This action cannot be undone.",
+            yesText: "Delete", 
+            cancelText: "Cancel");
+
+        if (confirmed == true)
+        {
+            await DeleteExperience(experience);
+        }
+    }
+
+    private async Task DeleteExperience(ExperienceRecord experience)
+    {
+        await ExecuteOperationAsync(async () =>
+        {
+            var deleted = await ExperienceLoaderService.DeleteExperienceAsync(experience.BookingExperience);
+            
+            if (deleted)
+            {
+                _experiences.Remove(experience);
+                ShowSuccess($"Successfully deleted experience: {experience.Title}");
+                StateHasChanged();
+            }
+            else
+            {
+                ShowWarning("Experience not found or could not be deleted");
+            }
+        }, $"Delete experience: {experience.Title}");
+    }
+
+    protected override void LogError(string message, Exception? exception)
+    {
+        Logger.LogError(exception, message);
+    }
+}
+
+<style>
+    .experience-card {
+        height: 100%;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .experience-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    .experience-type-chip {
+        font-size: 0.75rem;
+        height: 20px;
+    }
+
+    .experience-description {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.4;
+        max-height: calc(1.4em * 3);
+    }
+
+    .create-button {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+</style>

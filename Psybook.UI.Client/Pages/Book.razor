@@ -1,4 +1,5 @@
 ﻿@page "/Book"
+@page "/Book/{BookingId:guid?}"
 @using Microsoft.Extensions.Logging
 @using Psybook.Objects.DbModels
 @using Psybook.Objects.Enums
@@ -12,7 +13,7 @@
 @inject IBookingLoaderService bookingLoaderService
 @inject ILogger<Book> Logger
 
-<PageTitle>Book Experience - WMSP</PageTitle>
+<PageTitle>@(_isEditMode ? "Edit" : "Book") Experience - WMSP</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="pa-4">
     <MudPaper Elevation="0" Class="pa-6">
@@ -23,11 +24,11 @@
             <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center" Class="flex-wrap">
                 <div>
                     <MudText Typo="Typo.h3" Color="Color.Primary" GutterBottom="true">
-                        <MudIcon Icon="@Icons.Material.Filled.EventAvailable" Class="mr-2" />
-                        Book Your Experience
+                        <MudIcon Icon="@(_isEditMode ? Icons.Material.Filled.Edit : Icons.Material.Filled.EventAvailable)" Class="mr-2" />
+                        @(_isEditMode ? "Edit Your Experience" : "Book Your Experience")
                     </MudText>
                     <MudText Typo="Typo.subtitle1" Color="Color.Secondary">
-                        Reserve your spot for an unforgettable wildlife experience at WMSP
+                        @(_isEditMode ? "Update your booking details" : "Reserve your spot for an unforgettable wildlife experience at WMSP")
                     </MudText>
                 </div>
                 
@@ -39,14 +40,25 @@
                 </MudButton>
             </MudStack>
             
-            <MudAlert Severity="MudBlazor.Severity.Info" Class="mb-4" Icon="@Icons.Material.Filled.Info">
-                <MudText Typo="Typo.body2">
-                    Learn more about our VIP experiences: 
-                    <MudLink Href="https://www.wmsp.co.uk/vip-experiences" Target="_blank" Color="Color.Primary" Underline="Underline.Always">
-                        <strong>www.wmsp.co.uk/vip-experiences</strong>
-                    </MudLink>
-                </MudText>
-            </MudAlert>
+            @if (!_isEditMode)
+            {
+                <MudAlert Severity="MudBlazor.Severity.Info" Class="mb-4" Icon="@Icons.Material.Filled.Info">
+                    <MudText Typo="Typo.body2">
+                        Learn more about our VIP experiences: 
+                        <MudLink Href="https://www.wmsp.co.uk/vip-experiences" Target="_blank" Color="Color.Primary" Underline="Underline.Always">
+                            <strong>www.wmsp.co.uk/vip-experiences</strong>
+                        </MudLink>
+                    </MudText>
+                </MudAlert>
+            }
+            else
+            {
+                <MudAlert Severity="MudBlazor.Severity.Warning" Class="mb-4" Icon="@Icons.Material.Filled.Edit">
+                    <MudText Typo="Typo.body2">
+                        <strong>Editing Mode:</strong> You are updating an existing booking. Make sure all details are correct before saving.
+                    </MudText>
+                </MudAlert>
+            }
         </MudStack>
 
         <!-- Loading State -->
@@ -75,7 +87,8 @@
                                        AnchorOrigin="Origin.BottomCenter"
                                        Required="true"
                                        RequiredError="Please select an experience"
-                                       HelperText="Choose from our available wildlife experiences">
+                                       HelperText="Choose from our available wildlife experiences"
+                                       @onchange="OnExperienceChanged">
                                 @foreach (var experience in GetAvailableExperiences())
                                 {
                                     <MudSelectItem Value="experience.Key">
@@ -85,7 +98,7 @@
                                             </MudChip>
                                             <div>
                                                 <MudText Typo="Typo.body2">@experience.Value.Title</MudText>
-                                                <MudText Typo="Typo.caption" Color="Color.Secondary">@experience.Value.Location</MudText>
+                                                <MudText Typo="Typo.caption" Color="Color.Secondary">@experience.Value.Location • @GetExperienceDurationText(experience.Value)</MudText>
                                             </div>
                                         </div>
                                     </MudSelectItem>
@@ -124,20 +137,33 @@
                                            Required="true"
                                            RequiredError="Please select a start time"
                                            HelperText="Experience start time"
-                                           TimeFormat="hh:mm tt" />
+                                           TimeFormat="hh:mm tt"
+                                           @onchange="OnStartTimeChanged" />
                         </MudItem>
 
+                        <!-- Calculated End Time Display (Read-only) -->
                         <MudItem xs="12" md="4">
-                            <MudTimePicker @bind-Time="_experienceEndTime" 
-                                           Label="End Time" 
-                                           Variant="Variant.Outlined"
-                                           AmPm="true"
-                                           Required="true"
-                                           RequiredError="Please select an end time"
-                                           Validation="@(new Func<TimeSpan?, IEnumerable<string>>(ValidateEndTime))"
-                                           HelperText="Experience end time"
-                                           TimeFormat="hh:mm tt" />
+                            <MudTextField Value="@GetCalculatedEndTimeDisplay()" 
+                                          Label="End Time" 
+                                          Variant="Variant.Outlined"
+                                          ReadOnly="true"
+                                          HelperText="Automatically calculated"
+                                          StartAdornment="@Icons.Material.Filled.Schedule"
+                                          AdornmentColor="Color.Secondary" />
                         </MudItem>
+
+                        <!-- Duration Info Display -->
+                        @if (_selectedExperienceInfo != null)
+                        {
+                            <MudItem xs="12">
+                                <MudAlert Severity="MudBlazor.Severity.Info" Icon="@Icons.Material.Filled.Info" Class="mt-2">
+                                    <MudText Typo="Typo.body2">
+                                        <strong>@_selectedExperienceInfo.Title</strong> - 
+                                        @GetExperienceDurationText(_selectedExperienceInfo)
+                                    </MudText>
+                                </MudAlert>
+                            </MudItem>
+                        }
 
                         <!-- Personal Information Section -->
                         <MudItem xs="12">
@@ -237,17 +263,17 @@
                                 
                                 <MudButton Variant="Variant.Filled" 
                                            Color="Color.Primary" 
-                                           StartIcon="@Icons.Material.Filled.Save"
+                                           StartIcon="@(_isEditMode ? Icons.Material.Filled.Save : Icons.Material.Filled.EventAvailable)"
                                            OnClick="SaveBooking"
                                            Disabled="!_isFormValid || IsOperationInProgress">
                                     @if (IsOperationInProgress)
                                     {
                                         <MudProgressCircular Color="Color.Secondary" Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                                        <MudText>Saving...</MudText>
+                                        <MudText>@(_isEditMode ? "Updating..." : "Saving...")</MudText>
                                     }
                                     else
                                     {
-                                        <MudText>Book Experience</MudText>
+                                        <MudText>@(_isEditMode ? "Update Booking" : "Book Experience")</MudText>
                                     }
                                 </MudButton>
                             </MudStack>
@@ -261,13 +287,19 @@
 </MudContainer>
 
 @code {
+    #region Parameters
+    [Parameter] public Guid? BookingId { get; set; }
+    #endregion
+
     #region Fields and Properties
     private bool _isFormValid;
     private string[] _errors = { };
     private MudForm? _form;
     private DateTime? _experienceDate;
     private TimeSpan? _experienceStartTime;
-    private TimeSpan? _experienceEndTime;
+    private bool _isEditMode => BookingId.HasValue;
+    private CalendarSlot? _existingBooking;
+    private ExperienceRecord? _selectedExperienceInfo;
 
     private ExperienceForm _experienceForm = new();
     private Dictionary<BookingExperience, ExperienceRecord> _allExperienceInformation = new();
@@ -283,27 +315,22 @@
     protected override async Task InitializePageAsync()
     {
         await LoadExperienceData();
-        SetDefaultValues();
+        
+        if (_isEditMode)
+        {
+            await LoadExistingBooking();
+        }
+        else
+        {
+            SetDefaultValues();
+        }
+        
+        UpdateBreadcrumbs();
+        UpdateSelectedExperienceInfo();
     }
     #endregion
 
     #region Validation Methods
-    private IEnumerable<string> ValidateEndTime(TimeSpan? endTime)
-    {
-        if (!_experienceStartTime.HasValue || !endTime.HasValue)
-            yield break;
-
-        if (endTime <= _experienceStartTime)
-            yield return "End time must be after start time";
-
-        var duration = endTime.Value - _experienceStartTime.Value;
-        if (duration.TotalMinutes < 30)
-            yield return "Experience must be at least 30 minutes long";
-
-        if (duration.TotalHours > 8)
-            yield return "Experience cannot exceed 8 hours";
-    }
-
     private IEnumerable<string> ValidatePhoneNumber(string phoneNumber)
     {
         if (string.IsNullOrWhiteSpace(phoneNumber))
@@ -336,11 +363,130 @@
     {
         _experienceDate = DateTime.Today.AddDays(1);
         _experienceStartTime = new TimeSpan(10, 0, 0); // 10:00 AM
-        _experienceEndTime = new TimeSpan(12, 0, 0);   // 12:00 PM
+    }
+
+    private void UpdateBreadcrumbs()
+    {
+        _breadcrumbItems[1] = new BreadcrumbItem(
+            _isEditMode ? "Edit Experience" : "Book Experience", 
+            href: null, 
+            disabled: true, 
+            icon: _isEditMode ? Icons.Material.Filled.Edit : Icons.Material.Filled.EventAvailable
+        );
+    }
+
+    private void UpdateSelectedExperienceInfo()
+    {
+        if (_allExperienceInformation.TryGetValue(_experienceForm.BookingExperience, out var experienceInfo))
+        {
+            _selectedExperienceInfo = experienceInfo;
+        }
+        else
+        {
+            _selectedExperienceInfo = null;
+        }
+    }
+
+    private TimeSpan? CalculateEndTime()
+    {
+        if (!_experienceStartTime.HasValue || _selectedExperienceInfo == null)
+        {
+            return null;
+        }
+
+        return _experienceStartTime.Value.Add(_selectedExperienceInfo.Length);
+    }
+
+    private string GetCalculatedEndTimeDisplay()
+    {
+        var endTime = CalculateEndTime();
+        if (!endTime.HasValue)
+        {
+            return "Select start time and experience";
+        }
+
+        // Convert TimeSpan to DateTime for proper AM/PM formatting
+        var endDateTime = DateTime.Today.Add(endTime.Value);
+        return endDateTime.ToString("hh:mm tt");
+    }
+
+    private string GetExperienceDurationText(ExperienceRecord experience)
+    {
+        if (experience.AllDay)
+        {
+            return "All Day Experience";
+        }
+
+        var hours = experience.Length.Hours;
+        var minutes = experience.Length.Minutes;
+
+        if (hours > 0 && minutes > 0)
+        {
+            return $"{hours}h {minutes}m duration";
+        }
+        else if (hours > 0)
+        {
+            return $"{hours}h duration";
+        }
+        else if (minutes > 0)
+        {
+            return $"{minutes}m duration";
+        }
+
+        return "Duration varies";
+    }
+
+    private async Task LoadExistingBooking()
+    {
+        try
+        {
+            if (!BookingId.HasValue) return;
+
+            _existingBooking = await bookingLoaderService.GetCalendarSlotByIdAsync(BookingId.Value);
+            
+            if (_existingBooking == null)
+            {
+                HandleError("Booking not found");
+                NavigationService.NavigateToHome();
+                return;
+            }
+
+            // Prepopulate form with existing booking data
+            _experienceForm.BookingExperience = _existingBooking.BookingExperience;
+            _experienceForm.FirstName = _existingBooking.FirstName;
+            _experienceForm.LastName = _existingBooking.LastName;
+            _experienceForm.ContactNumber = _existingBooking.ContactNumber;
+            _experienceForm.FirstLineAddress = _existingBooking.FirstLineAddress;
+            _experienceForm.Postcode = _existingBooking.Postcode;
+            _experienceForm.Notes = _existingBooking.Text;
+
+            // Set date and time values
+            _experienceDate = _existingBooking.Start.Date;
+            _experienceStartTime = _existingBooking.Start.TimeOfDay;
+
+            Logger.LogInformation("Loaded existing booking {BookingId} for editing", BookingId.Value);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to load existing booking {BookingId}", BookingId);
+            HandleError("Failed to load booking details", ex);
+        }
     }
     #endregion
 
     #region Event Handlers
+    private void OnExperienceChanged(ChangeEventArgs e)
+    {
+        UpdateSelectedExperienceInfo();
+        StateHasChanged();
+    }
+
+    private void OnStartTimeChanged(ChangeEventArgs e)
+    {
+        // Trigger UI update to show new calculated end time
+        StateHasChanged();
+    }
+
     private async Task SaveBooking()
     {
         if (_form == null || !_isFormValid)
@@ -358,39 +504,64 @@
             }
 
             var dateStart = _experienceDate!.Value.Date + _experienceStartTime!.Value;
-            var dateEnd = _experienceDate!.Value.Date + _experienceEndTime!.Value;
+            var dateEnd = dateStart.Add(experienceInformation.Length);
 
-            var calendarSlot = new CalendarSlot
+            if (_isEditMode && _existingBooking != null)
             {
-                // Experience details
-                Title = experienceInformation.Title,
-                Color = experienceInformation.Color,
-                Location = experienceInformation.Location,
-                Start = dateStart,
-                End = dateEnd,
-                AllDay = experienceInformation.AllDay,
-                BookingExperience = experienceInformation.BookingExperience,
+                // Update existing booking
+                _existingBooking.Title = experienceInformation.Title;
+                _existingBooking.Color = experienceInformation.Color;
+                _existingBooking.Location = experienceInformation.Location;
+                _existingBooking.Start = dateStart;
+                _existingBooking.End = dateEnd;
+                _existingBooking.AllDay = experienceInformation.AllDay;
+                _existingBooking.BookingExperience = experienceInformation.BookingExperience;
+                _existingBooking.ContactNumber = _experienceForm.ContactNumber!;
+                _existingBooking.FirstLineAddress = _experienceForm.FirstLineAddress!;
+                _existingBooking.FirstName = _experienceForm.FirstName!;
+                _existingBooking.LastName = _experienceForm.LastName!;
+                _existingBooking.Postcode = _experienceForm.Postcode!;
+                _existingBooking.Text = _experienceForm.Notes ?? string.Empty;
 
-                // Personal information
-                ContactNumber = _experienceForm.ContactNumber!,
-                FirstLineAddress = _experienceForm.FirstLineAddress!,
-                FirstName = _experienceForm.FirstName!,
-                LastName = _experienceForm.LastName!,
-                Postcode = _experienceForm.Postcode!,
+                await bookingLoaderService.UpdateCalendarSlot(_existingBooking);
 
-                // Additional information
-                Text = _experienceForm.Notes ?? string.Empty,
-            };
+                ShowSuccess($"Successfully updated {experienceInformation.Title} booking for {dateStart:dddd, MMMM dd, yyyy} at {dateStart:hh:mm tt}");
+            }
+            else
+            {
+                // Create new booking
+                var calendarSlot = new CalendarSlot
+                {
+                    // Experience details
+                    Title = experienceInformation.Title,
+                    Color = experienceInformation.Color,
+                    Location = experienceInformation.Location,
+                    Start = dateStart,
+                    End = dateEnd,
+                    AllDay = experienceInformation.AllDay,
+                    BookingExperience = experienceInformation.BookingExperience,
 
-            await bookingLoaderService.SaveCalendarSlot(calendarSlot);
+                    // Personal information
+                    ContactNumber = _experienceForm.ContactNumber!,
+                    FirstLineAddress = _experienceForm.FirstLineAddress!,
+                    FirstName = _experienceForm.FirstName!,
+                    LastName = _experienceForm.LastName!,
+                    Postcode = _experienceForm.Postcode!,
 
-            ShowSuccess($"Successfully booked {experienceInformation.Title} for {dateStart:dddd, MMMM dd, yyyy} at {dateStart:hh:mm tt}");
+                    // Additional information
+                    Text = _experienceForm.Notes ?? string.Empty,
+                };
+
+                await bookingLoaderService.SaveCalendarSlot(calendarSlot);
+
+                ShowSuccess($"Successfully booked {experienceInformation.Title} for {dateStart:dddd, MMMM dd, yyyy} at {dateStart:hh:mm tt}");
+            }
             
             // Navigate back to home after successful booking
             await Task.Delay(1500); // Brief delay to show success message
             NavigationService.NavigateToHome();
             
-        }, "Save booking");
+        }, _isEditMode ? "Update booking" : "Save booking");
     }
 
     private void CancelBooking()

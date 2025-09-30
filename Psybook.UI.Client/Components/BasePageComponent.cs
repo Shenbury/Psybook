@@ -44,6 +44,11 @@ namespace Psybook.UI.Client.Components
         protected List<string> PageErrors { get; set; } = new();
 
         /// <summary>
+        /// Gets the page errors (alias for compatibility).
+        /// </summary>
+        protected List<string> Errors => PageErrors;
+
+        /// <summary>
         /// Gets whether the page has any errors.
         /// </summary>
         protected bool HasErrors => PageErrors.Count > 0;
@@ -167,6 +172,16 @@ namespace Psybook.UI.Client.Components
             {
                 SetOperationState(false);
             }
+        }
+
+        /// <summary>
+        /// Executes an operation with error handling (alias for compatibility).
+        /// </summary>
+        /// <param name="operation">The operation to execute.</param>
+        /// <param name="operationName">The name of the operation for error reporting.</param>
+        protected async Task ExecuteWithErrorHandling(Func<Task> operation, string operationName = "Operation")
+        {
+            await ExecuteOperationAsync(operation, operationName);
         }
 
         /// <summary>
