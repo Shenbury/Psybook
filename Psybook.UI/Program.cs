@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Identity.Web;
 using MudBlazor.Services;
 using Psybook.ServiceDefaults;
@@ -20,12 +20,11 @@ var builder = WebApplication.CreateBuilder(args);
 // Add Aspire Defaults
 builder.AddServiceDefaults();
 
-// Add Auth
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"))
-        .EnableTokenAcquisitionToCallDownstreamApi()
-            .AddMicrosoftGraph(builder.Configuration.GetSection("MicrosoftGraph"))
-            .AddInMemoryTokenCaches();
+// Add Authentication & Authorization (Basic setup for development)
+builder.Services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApp(builder.Configuration.GetSection("AzureAd"));
+
+builder.Services.AddAuthorization();
 
 // Add MudBlazor services
 builder.Services.AddMudServices();
@@ -40,7 +39,12 @@ builder.Services.AddSingleton<IRenderContext, ServerRenderContext>();
 builder.Services.Configure<BookingClientOptions>(
     builder.Configuration.GetSection("BookingClient"));
 
-builder.Services.AddHttpClient("psybook-api", https => https.BaseAddress = new Uri("https://psybook-api")).AddServiceDiscovery();
+// Configure HTTP clients (without complex auth for now)
+builder.Services.AddHttpClient("psybook-api", client => 
+{
+    client.BaseAddress = new Uri("https://psybook-api");
+})
+.AddServiceDiscovery();
 
 // External Calendar Integration - Register after HttpClient
 builder.Services.AddScoped<IExternalCalendarService, ExternalCalendarService>();
@@ -92,6 +96,8 @@ else
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseAntiforgery();
 

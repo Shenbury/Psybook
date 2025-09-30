@@ -1,0 +1,203 @@
+@page "/profile"
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Security.Claims
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager Navigation
+@attribute [Authorize]
+
+<PageTitle>Profile - WMSP Booking System</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="my-4">
+    <MudText Typo="Typo.h4" Class="mb-6">
+        <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-3" />
+        User Profile
+    </MudText>
+    
+    <MudGrid>
+        <MudItem xs="12" md="4">
+            <MudPaper Class="pa-6" Elevation="2">
+                <MudStack AlignItems="AlignItems.Center" Spacing="4">
+                    <MudAvatar Color="Color.Primary" Size="Size.Large" Style="width: 120px; height: 120px;">
+                        <MudText Typo="Typo.h3">@GetUserInitials()</MudText>
+                    </MudAvatar>
+                    
+                    <div class="text-center">
+                        <MudText Typo="Typo.h5" Class="mb-2">@GetDisplayName()</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">@GetUserEmail()</MudText>
+                    </div>
+                    
+                    <MudChip T="string" Color="Color.Success" Size="Size.Small">
+                        <MudIcon Icon="@Icons.Material.Filled.Verified" Size="Size.Small" Class="mr-1" />
+                        WMSP Employee
+                    </MudChip>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+        
+        <MudItem xs="12" md="8">
+            <MudPaper Class="pa-6" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-4">Account Information</MudText>
+                
+                <MudGrid>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField Label="Display Name" 
+                                      Value="@GetDisplayName()" 
+                                      ReadOnly="true"
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField Label="Email Address" 
+                                      Value="@GetUserEmail()" 
+                                      ReadOnly="true"
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField Label="User ID" 
+                                      Value="@GetUserId()" 
+                                      ReadOnly="true"
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField Label="Account Type" 
+                                      Value="@GetAccountType()" 
+                                      ReadOnly="true"
+                                      Variant="Variant.Outlined" />
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        </MudItem>
+        
+        <MudItem xs="12">
+            <MudPaper Class="pa-6" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-4">User Claims</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-4">
+                    The following information is provided by your WMSP Azure AD authentication:
+                </MudText>
+                
+                @if (_userClaims?.Any() == true)
+                {
+                    <MudDataGrid T="Claim" Items="@_userClaims" 
+                                 Filterable="true" 
+                                 SortMode="SortMode.Multiple" 
+                                 Hover="true"
+                                 Dense="true">
+                        <Columns>
+                            <PropertyColumn Property="x => x.Type" Title="Claim Type" />
+                            <PropertyColumn Property="x => x.Value" Title="Value" />
+                        </Columns>
+                    </MudDataGrid>
+                }
+                else
+                {
+                    <MudAlert Severity="Severity.Info">
+                        No claims information available.
+                    </MudAlert>
+                }
+            </MudPaper>
+        </MudItem>
+        
+        <MudItem xs="12">
+            <MudPaper Class="pa-6" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-4">Account Actions</MudText>
+                
+                <MudStack Row="true" Spacing="2">
+                    <MudButton Variant="Variant.Outlined" 
+                               Color="Color.Primary"
+                               StartIcon="@Icons.Material.Filled.Refresh"
+                               OnClick="RefreshProfile">
+                        Refresh Profile
+                    </MudButton>
+                    
+                    <MudButton Variant="Variant.Outlined" 
+                               Color="Color.Secondary"
+                               StartIcon="@Icons.Material.Filled.Download"
+                               OnClick="DownloadUserData">
+                        Download My Data
+                    </MudButton>
+                    
+                    <MudSpacer />
+                    
+                    <MudButton Variant="Variant.Outlined" 
+                               Color="Color.Error"
+                               StartIcon="@Icons.Material.Filled.Logout"
+                               OnClick="SignOut">
+                        Sign Out
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>
+
+@code {
+    private ClaimsPrincipal? _user;
+    private IEnumerable<Claim>? _userClaims;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        _user = authState.User;
+        _userClaims = _user?.Claims;
+    }
+
+    private string GetDisplayName()
+    {
+        return _user?.Identity?.Name ?? 
+               _user?.FindFirst("name")?.Value ?? 
+               _user?.FindFirst("preferred_username")?.Value ?? 
+               "WMSP Employee";
+    }
+
+    private string GetUserEmail()
+    {
+        return _user?.FindFirst("email")?.Value ?? 
+               _user?.FindFirst("preferred_username")?.Value ?? 
+               _user?.FindFirst("upn")?.Value ?? 
+               "";
+    }
+
+    private string GetUserId()
+    {
+        return _user?.FindFirst("oid")?.Value ?? 
+               _user?.FindFirst("sub")?.Value ?? 
+               _user?.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value ?? 
+               "";
+    }
+
+    private string GetAccountType()
+    {
+        return "WMSP Employee - Azure AD";
+    }
+
+    private string GetUserInitials()
+    {
+        var name = GetDisplayName();
+        if (string.IsNullOrEmpty(name) || name == "WMSP Employee")
+            return "WE";
+
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 2)
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        else if (parts.Length == 1 && parts[0].Length >= 2)
+            return parts[0].Substring(0, 2).ToUpper();
+        else
+            return parts[0][0].ToString().ToUpper();
+    }
+
+    private async Task RefreshProfile()
+    {
+        await OnInitializedAsync();
+        StateHasChanged();
+    }
+
+    private async Task DownloadUserData()
+    {
+        // This would generate a JSON file with user's data for GDPR compliance
+        // Implementation would depend on business requirements
+    }
+
+    private void SignOut()
+    {
+        Navigation.NavigateTo("MicrosoftIdentity/Account/SignOut", forceLoad: true);
+    }
+}

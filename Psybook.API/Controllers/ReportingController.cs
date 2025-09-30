@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Psybook.Objects.Reporting;
@@ -9,6 +10,7 @@ namespace Psybook.API.Controllers
     /// API controller for reporting and analytics operations
     /// </summary>
     [ApiController]
+    [AllowAnonymous] // Temporarily allow anonymous access for development
     [Route("api/[controller]")]
     public class ReportingController : ControllerBase
     {

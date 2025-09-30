@@ -1,0 +1,185 @@
+@page "/auth-info"
+@attribute [Authorize]
+
+<PageTitle>Authentication Information - WMSP Booking System</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="my-4">
+    <MudText Typo="Typo.h4" Class="mb-6">
+        <MudIcon Icon="@Icons.Material.Filled.Security" Class="mr-3" />
+        Employee Authentication System
+    </MudText>
+    
+    <MudGrid>
+        <MudItem xs="12">
+            <MudPaper Class="pa-6" Elevation="2">
+                <MudText Typo="Typo.h5" Class="mb-4" Color="Color.Primary">
+                    ?? WMSP Employee Portal Authentication
+                </MudText>
+                
+                <MudText Typo="Typo.body1" Class="mb-4">
+                    This booking system is designed specifically for <strong>West Midlands Safari Park employees</strong> 
+                    to manage VIP guest experiences. The authentication system ensures that only authorized WMSP staff 
+                    can access booking management, reporting, and administrative features.
+                </MudText>
+
+                <MudAlert Severity="Severity.Info" Class="mb-4">
+                    <MudText>
+                        <strong>Important:</strong> This is an internal employee system, not a guest-facing booking portal. 
+                        Employees use this system to book VIP experiences on behalf of guests.
+                    </MudText>
+                </MudAlert>
+            </MudPaper>
+        </MudItem>
+        
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-6" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-4">Authentication Features</MudText>
+                
+                <MudList T="string" Dense="true">
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Badge" Text="Employee-Only Access" />
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Security" Text="Azure AD Integration" />
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.VpnKey" Text="Single Sign-On (SSO)" />
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Shield" Text="Role-Based Authorization" />
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Lock" Text="Secure API Endpoints" />
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Verified" Text="Claims-Based Identity" />
+                </MudList>
+            </MudPaper>
+        </MudItem>
+        
+        <MudItem xs="12" md="6">
+            <MudPaper Class="pa-6" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-4">Employee Capabilities</MudText>
+                
+                <MudList T="string" Dense="true">
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.EventAvailable" Text="Book VIP experiences for guests" />
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Edit" Text="Modify and cancel bookings" />
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Analytics" Text="View reports and analytics" />
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.CalendarToday" Text="Manage experience calendar" />
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Settings" Text="Configure experience types" />
+                    <MudListItem T="string" Icon="@Icons.Material.Filled.Email" Text="Send guest notifications" />
+                </MudList>
+            </MudPaper>
+        </MudItem>
+        
+        <MudItem xs="12">
+            <MudPaper Class="pa-6" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-4">Guest Experience Workflow</MudText>
+                
+                <MudTimeline TimelineOrientation="TimelineOrientation.Horizontal" TimelinePosition="TimelinePosition.Alternate">
+                    <MudTimelineItem Color="Color.Primary" Elevation="25">
+                        <ItemOpposite>
+                            <MudText Color="Color.Primary" Typo="Typo.h6">Step 1</MudText>
+                        </ItemOpposite>
+                        <ItemContent>
+                            <MudText Typo="Typo.h6" Color="Color.Primary">Guest Inquiry</MudText>
+                            <MudText Typo="Typo.body2">Guest contacts WMSP for VIP experience</MudText>
+                        </ItemContent>
+                    </MudTimelineItem>
+                    
+                    <MudTimelineItem Color="Color.Secondary" Elevation="25">
+                        <ItemOpposite>
+                            <MudText Color="Color.Secondary" Typo="Typo.h6">Step 2</MudText>
+                        </ItemOpposite>
+                        <ItemContent>
+                            <MudText Typo="Typo.h6" Color="Color.Secondary">Employee Books</MudText>
+                            <MudText Typo="Typo.body2">WMSP employee creates booking in system</MudText>
+                        </ItemContent>
+                    </MudTimelineItem>
+                    
+                    <MudTimelineItem Color="Color.Tertiary" Elevation="25">
+                        <ItemOpposite>
+                            <MudText Color="Color.Tertiary" Typo="Typo.h6">Step 3</MudText>
+                        </ItemOpposite>
+                        <ItemContent>
+                            <MudText Typo="Typo.h6" Color="Color.Tertiary">Guest Notified</MudText>
+                            <MudText Typo="Typo.body2">Automatic confirmation sent to guest</MudText>
+                        </ItemContent>
+                    </MudTimelineItem>
+                    
+                    <MudTimelineItem Color="Color.Success" Elevation="25">
+                        <ItemOpposite>
+                            <MudText Color="Color.Success" Typo="Typo.h6">Step 4</MudText>
+                        </ItemOpposite>
+                        <ItemContent>
+                            <MudText Typo="Typo.h6" Color="Color.Success">Experience Day</MudText>
+                            <MudText Typo="Typo.body2">Guest enjoys VIP safari experience</MudText>
+                        </ItemContent>
+                    </MudTimelineItem>
+                </MudTimeline>
+            </MudPaper>
+        </MudItem>
+        
+        <MudItem xs="12">
+            <MudPaper Class="pa-6" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-4">Security Implementation</MudText>
+                
+                <MudGrid>
+                    <MudItem xs="12" md="4">
+                        <MudPaper Class="pa-4" Elevation="1">
+                            <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                                <MudIcon Icon="@Icons.Material.Filled.Cloud" Size="Size.Large" Color="Color.Primary" />
+                                <MudText Typo="Typo.subtitle1" Align="Align.Center">Azure AD B2C</MudText>
+                                <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary">
+                                    Enterprise-grade identity management for WMSP employees
+                                </MudText>
+                            </MudStack>
+                        </MudPaper>
+                    </MudItem>
+                    
+                    <MudItem xs="12" md="4">
+                        <MudPaper Class="pa-4" Elevation="1">
+                            <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                                <MudIcon Icon="@Icons.Material.Filled.Token" Size="Size.Large" Color="Color.Secondary" />
+                                <MudText Typo="Typo.subtitle1" Align="Align.Center">JWT Tokens</MudText>
+                                <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary">
+                                    Secure API authentication with bearer tokens
+                                </MudText>
+                            </MudStack>
+                        </MudPaper>
+                    </MudItem>
+                    
+                    <MudItem xs="12" md="4">
+                        <MudPaper Class="pa-4" Elevation="1">
+                            <MudStack AlignItems="AlignItems.Center" Spacing="2">
+                                <MudIcon Icon="@Icons.Material.Filled.Https" Size="Size.Large" Color="Color.Tertiary" />
+                                <MudText Typo="Typo.subtitle1" Align="Align.Center">HTTPS Only</MudText>
+                                <MudText Typo="Typo.body2" Align="Align.Center" Color="Color.Secondary">
+                                    All communications encrypted with TLS
+                                </MudText>
+                            </MudStack>
+                        </MudPaper>
+                    </MudItem>
+                </MudGrid>
+            </MudPaper>
+        </MudItem>
+        
+        <MudItem xs="12">
+            <MudPaper Class="pa-6" Elevation="2">
+                <MudStack Row="true" Justify="Justify.SpaceBetween" AlignItems="AlignItems.Center">
+                    <div>
+                        <MudText Typo="Typo.h6" Class="mb-2">Need Help?</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Contact IT Support for authentication issues or system access problems.
+                        </MudText>
+                    </div>
+                    
+                    <MudStack Row="true" Spacing="2">
+                        <MudButton Variant="Variant.Outlined" 
+                                   Color="Color.Primary"
+                                   StartIcon="@Icons.Material.Filled.Help"
+                                   Href="/help">
+                            Help & Support
+                        </MudButton>
+                        
+                        <MudButton Variant="Variant.Outlined" 
+                                   Color="Color.Secondary"
+                                   StartIcon="@Icons.Material.Filled.Person"
+                                   Href="/profile">
+                            View Profile
+                        </MudButton>
+                    </MudStack>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>

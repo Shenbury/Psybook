@@ -170,7 +170,7 @@ namespace Psybook.Services.UI.Clients
         private async Task<CalendarSlot?> GetCalendarSlotByIdInternalAsync(Guid id, CancellationToken cancellationToken)
         {
             using var httpClient = CreateConfiguredHttpClient();
-            var response = await httpClient.GetAsync($"Booking/GetCalendarSlotById/{id}", cancellationToken);
+            var response = await httpClient.GetAsync($"api/booking/slot/{id}", cancellationToken);
             
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
@@ -188,7 +188,7 @@ namespace Psybook.Services.UI.Clients
         {
             using var httpClient = CreateConfiguredHttpClient();
             var calendarSlots = await httpClient.GetFromJsonAsync<List<CalendarSlot>>(
-                $"Booking/GetCalendarSlotsByStatus/{status}", 
+                $"api/booking/slots/status/{status}", 
                 cancellationToken);
 
             return calendarSlots ?? new List<CalendarSlot>();
@@ -223,7 +223,7 @@ namespace Psybook.Services.UI.Clients
         {
             using var httpClient = CreateConfiguredHttpClient();
             var response = await httpClient.PutAsJsonAsync(
-                "Booking/UpdateCalendarSlot", 
+                $"api/booking/slot/{calendarSlot.Id}", 
                 calendarSlot, 
                 cancellationToken);
 
@@ -238,8 +238,8 @@ namespace Psybook.Services.UI.Clients
         {
             using var httpClient = CreateConfiguredHttpClient();
             var request = new { Status = status, Reason = reason, ModifiedBy = modifiedBy };
-            var response = await httpClient.PatchAsJsonAsync(
-                $"Booking/UpdateBookingStatus/{bookingId}/status", 
+            var response = await httpClient.PostAsJsonAsync(
+                $"api/booking/slot/{bookingId}/status", 
                 request, 
                 cancellationToken);
 
@@ -254,8 +254,8 @@ namespace Psybook.Services.UI.Clients
         {
             using var httpClient = CreateConfiguredHttpClient();
             var request = new { Reason = reason, ModifiedBy = modifiedBy };
-            var response = await httpClient.PatchAsJsonAsync(
-                $"Booking/CancelBooking/{bookingId}/cancel", 
+            var response = await httpClient.PostAsJsonAsync(
+                $"api/booking/slot/{bookingId}/cancel", 
                 request, 
                 cancellationToken);
 
@@ -269,8 +269,8 @@ namespace Psybook.Services.UI.Clients
         {
             using var httpClient = CreateConfiguredHttpClient();
             var request = new { ModifiedBy = modifiedBy };
-            var response = await httpClient.PatchAsJsonAsync(
-                $"Booking/ConfirmBooking/{bookingId}/confirm", 
+            var response = await httpClient.PostAsJsonAsync(
+                $"api/booking/slot/{bookingId}/confirm", 
                 request, 
                 cancellationToken);
 

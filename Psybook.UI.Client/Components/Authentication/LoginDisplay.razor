@@ -1,0 +1,118 @@
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Web
+@inject NavigationManager Navigation
+@inject IJSRuntime JSRuntime
+
+<AuthorizeView>
+    <Authorized>
+        <MudMenu Icon="@Icons.Material.Filled.AccountCircle" 
+                 Color="Color.Inherit" 
+                 Dense="true"
+                 AnchorOrigin="Origin.BottomRight">
+            <ActivatorContent>
+                <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
+                    <MudAvatar Color="Color.Primary" Size="Size.Small">
+                        @GetUserInitials(context.User)
+                    </MudAvatar>
+                    <MudText Typo="Typo.body2" Class="d-none d-sm-flex">
+                        @GetDisplayName(context.User)
+                    </MudText>
+                    <MudIcon Icon="@Icons.Material.Filled.ArrowDropDown" Size="Size.Small" />
+                </MudStack>
+            </ActivatorContent>
+            <ChildContent>
+                <MudMenuItem Icon="@Icons.Material.Filled.Person">
+                    <MudStack>
+                        <MudText Typo="Typo.body2" Class="font-weight-bold">
+                            @GetDisplayName(context.User)
+                        </MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            @GetUserEmail(context.User)
+                        </MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Tertiary">
+                            WMSP Employee
+                        </MudText>
+                    </MudStack>
+                </MudMenuItem>
+                <MudDivider />
+                <MudMenuItem Icon="@Icons.Material.Filled.Settings"
+                             OnClick="NavigateToProfile">
+                    Profile Settings
+                </MudMenuItem>
+                <MudMenuItem Icon="@Icons.Material.Filled.Help"
+                             OnClick="NavigateToHelp">
+                    Help & Support
+                </MudMenuItem>
+                <MudDivider />
+                <MudMenuItem Icon="@Icons.Material.Filled.Logout"
+                             OnClick="SignOut">
+                    Sign Out
+                </MudMenuItem>
+            </ChildContent>
+        </MudMenu>
+    </Authorized>
+    <NotAuthorized>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   StartIcon="@Icons.Material.Filled.Login"
+                   OnClick="SignIn"
+                   Size="Size.Small">
+            Employee Sign In
+        </MudButton>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private string GetDisplayName(System.Security.Claims.ClaimsPrincipal user)
+    {
+        return user?.Identity?.Name ?? 
+               user?.FindFirst("name")?.Value ?? 
+               user?.FindFirst("preferred_username")?.Value ?? 
+               "WMSP Employee";
+    }
+
+    private string GetUserEmail(System.Security.Claims.ClaimsPrincipal user)
+    {
+        return user?.FindFirst("email")?.Value ?? 
+               user?.FindFirst("preferred_username")?.Value ?? 
+               user?.FindFirst("upn")?.Value ?? 
+               "";
+    }
+
+    private string GetUserInitials(System.Security.Claims.ClaimsPrincipal user)
+    {
+        var name = GetDisplayName(user);
+        if (string.IsNullOrEmpty(name) || name == "WMSP Employee")
+            return "WE";
+
+        var parts = name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length >= 2)
+            return $"{parts[0][0]}{parts[1][0]}".ToUpper();
+        else if (parts.Length == 1 && parts[0].Length >= 2)
+            return parts[0].Substring(0, 2).ToUpper();
+        else
+            return parts[0][0].ToString().ToUpper();
+    }
+
+    private async Task SignIn()
+    {
+        // Navigate to the Microsoft Identity login endpoint
+        Navigation.NavigateTo("MicrosoftIdentity/Account/SignIn", forceLoad: true);
+    }
+
+    private async Task SignOut()
+    {
+        // Navigate to the Microsoft Identity logout endpoint
+        Navigation.NavigateTo("MicrosoftIdentity/Account/SignOut", forceLoad: true);
+    }
+
+    private void NavigateToProfile()
+    {
+        Navigation.NavigateTo("/profile");
+    }
+
+    private void NavigateToHelp()
+    {
+        Navigation.NavigateTo("/help");
+    }
+}

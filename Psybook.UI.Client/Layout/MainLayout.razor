@@ -1,6 +1,8 @@
 ﻿@using Psybook.UI.Client.Services
+@using Psybook.UI.Client.Components.Authentication
 @inherits LayoutComponentBase
 @inject IThemeService ThemeService
+@inject NavigationManager Navigation
 @implements IDisposable
 
 <MudThemeProvider Theme="@ThemeService.CurrentTheme" IsDarkMode="@ThemeService.IsDarkMode" />
@@ -28,12 +30,15 @@
         
         <MudSpacer />
         
-        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="1">
+        <MudStack Row="true" AlignItems="AlignItems.Center" Spacing="2">
             <MudTooltip Text="@GetThemeTooltip()" Placement="Placement.Bottom">
                 <MudIconButton Icon="@GetThemeIcon()" 
                                Color="Color.Inherit" 
                                OnClick="ToggleTheme" />
             </MudTooltip>
+            
+            <!-- Authentication Display -->
+            <LoginDisplay />
             
             <MudMenu Icon="@Icons.Material.Filled.MoreVert" 
                      Color="Color.Inherit" 
@@ -109,7 +114,43 @@
     <MudMainContent>
         <div class="main-content pa-4">
             <MudContainer MaxWidth="MaxWidth.False" Class="pa-0">
-                @Body
+                <AuthorizeView>
+                    <Authorized>
+                        @Body
+                    </Authorized>
+                    <NotAuthorized>
+                        <div class="d-flex justify-center align-center" style="height: 60vh;">
+                            <MudPaper Class="pa-8" Elevation="4" Width="450px">
+                                <MudStack AlignItems="AlignItems.Center" Spacing="4">
+                                    <MudIcon Icon="@Icons.Material.Filled.Badge" 
+                                             Color="Color.Primary" 
+                                             Size="Size.Large" />
+                                    <MudText Typo="Typo.h5" Align="Align.Center" Color="Color.Primary">
+                                        WMSP Employee Portal
+                                    </MudText>
+                                    <MudText Typo="Typo.body1" Align="Align.Center" Color="Color.Secondary">
+                                        Please sign in with your WMSP employee credentials to access the VIP booking 
+                                        system and manage guest experiences.
+                                    </MudText>
+                                    <MudButton Variant="Variant.Filled" 
+                                               Color="Color.Primary" 
+                                               Size="Size.Large"
+                                               StartIcon="@Icons.Material.Filled.Login"
+                                               OnClick="SignIn">
+                                        Employee Sign In
+                                    </MudButton>
+                                    <MudDivider />
+                                    <MudStack AlignItems="AlignItems.Center">
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary" Align="Align.Center">
+                                            Secure employee authentication powered by<br />
+                                            West Midlands Safari Park Azure AD
+                                        </MudText>
+                                    </MudStack>
+                                </MudStack>
+                            </MudPaper>
+                        </div>
+                    </NotAuthorized>
+                </AuthorizeView>
             </MudContainer>
         </div>
     </MudMainContent>
@@ -171,12 +212,12 @@
 
     private void NavigateHome()
     {
-        // Navigation logic would be injected via service
+        Navigation.NavigateTo("/");
     }
 
     private void NavigateToBooking()
     {
-        // Navigation logic would be injected via service
+        Navigation.NavigateTo("/book");
     }
 
     private void ShowAbout()
@@ -184,16 +225,19 @@
         // Could show a dialog with app information
     }
 
+    private async Task SignIn()
+    {
+        Navigation.NavigateTo("MicrosoftIdentity/Account/SignIn", forceLoad: true);
+    }
+
     private void ReloadPage()
     {
-        // This would need IJSRuntime injection in a real implementation
-        // For now, just log the intent
+        Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
     }
 
     private void DismissError()
     {
-        // This would need IJSRuntime injection in a real implementation  
-        // For now, just log the intent
+        // Hide the error UI element
     }
     #endregion
 

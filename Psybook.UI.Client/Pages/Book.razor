@@ -12,6 +12,7 @@
 @inherits BasePageComponent
 @inject IBookingLoaderService bookingLoaderService
 @inject ILogger<Book> Logger
+@attribute [Authorize]
 
 <PageTitle>@(_isEditMode ? "Edit" : "Book") Experience - WMSP</PageTitle>
 

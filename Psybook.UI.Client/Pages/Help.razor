@@ -1,0 +1,160 @@
+@page "/help"
+@attribute [Authorize]
+
+<PageTitle>Help & Support - WMSP Booking System</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="my-4">
+    <MudText Typo="Typo.h4" Class="mb-6">
+        <MudIcon Icon="@Icons.Material.Filled.Help" Class="mr-3" />
+        Help & Support
+    </MudText>
+    
+    <MudGrid>
+        <MudItem xs="12" md="8">
+            <MudPaper Class="pa-6 mb-4" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-4">Frequently Asked Questions</MudText>
+                
+                <MudExpansionPanels Elevation="0" Rounded="true">
+                    <MudExpansionPanel Text="How do I book a VIP experience?">
+                        <TitleContent>
+                            <div class="d-flex align-items-center">
+                                <MudIcon Icon="@Icons.Material.Filled.EventAvailable" Class="mr-3" />
+                                <MudText>How do I book a VIP experience?</MudText>
+                            </div>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudText Typo="Typo.body2">
+                                To book a VIP experience, navigate to the "Book Experience" page from the main menu. 
+                                Select your preferred date, time, and experience type. Fill out the required information 
+                                and submit your booking. You'll receive a confirmation email once your booking is processed.
+                            </MudText>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                    
+                    <MudExpansionPanel Text="Can I modify or cancel my booking?">
+                        <TitleContent>
+                            <div class="d-flex align-items-center">
+                                <MudIcon Icon="@Icons.Material.Filled.Edit" Class="mr-3" />
+                                <MudText>Can I modify or cancel my booking?</MudText>
+                            </div>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudText Typo="Typo.body2">
+                                Yes, you can modify or cancel your booking up to 24 hours before your scheduled experience. 
+                                Go to the Dashboard, find your booking, and click on it to view options for modification or cancellation.
+                            </MudText>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                    
+                    <MudExpansionPanel Text="How do I add bookings to my calendar?">
+                        <TitleContent>
+                            <div class="d-flex align-items-center">
+                                <MudIcon Icon="@Icons.Material.Filled.CalendarToday" Class="mr-3" />
+                                <MudText>How do I add bookings to my calendar?</MudText>
+                            </div>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudText Typo="Typo.body2">
+                                After booking, you can add the experience to your personal calendar using the calendar integration feature. 
+                                We support Google Calendar, Outlook, Apple Calendar, and iCalendar (.ics) downloads.
+                            </MudText>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                    
+                    <MudExpansionPanel Text="What VIP experiences are available?">
+                        <TitleContent>
+                            <div class="d-flex align-items-center">
+                                <MudIcon Icon="@Icons.Material.Filled.Pets" Class="mr-3" />
+                                <MudText>What VIP experiences are available?</MudText>
+                            </div>
+                        </TitleContent>
+                        <ChildContent>
+                            <MudText Typo="Typo.body2">
+                                We offer various VIP experiences including Rhino Keeper experiences, Lion feeding sessions, 
+                                Safari driving experiences, and exclusive behind-the-scenes tours. Each experience has different 
+                                duration, group size limits, and pricing.
+                            </MudText>
+                        </ChildContent>
+                    </MudExpansionPanel>
+                </MudExpansionPanels>
+            </MudPaper>
+        </MudItem>
+        
+        <MudItem xs="12" md="4">
+            <MudPaper Class="pa-6 mb-4" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-4">Contact Information</MudText>
+                
+                <MudStack Spacing="3">
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Class="mb-1">Phone Support</MudText>
+                        <MudLink Href="tel:+441902307171" Color="Color.Primary">
+                            <MudIcon Icon="@Icons.Material.Filled.Phone" Size="Size.Small" Class="mr-2" />
+                            01902 307171
+                        </MudLink>
+                    </div>
+                    
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Class="mb-1">Email Support</MudText>
+                        <MudLink Href="mailto:bookings@wmsp.co.uk" Color="Color.Primary">
+                            <MudIcon Icon="@Icons.Material.Filled.Email" Size="Size.Small" Class="mr-2" />
+                            bookings@wmsp.co.uk
+                        </MudLink>
+                    </div>
+                    
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Class="mb-1">Visit Us</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            <MudIcon Icon="@Icons.Material.Filled.LocationOn" Size="Size.Small" Class="mr-2" />
+                            West Midlands Safari Park<br />
+                            Spring Grove, Bewdley<br />
+                            Worcestershire DY12 1LF
+                        </MudText>
+                    </div>
+                    
+                    <MudDivider />
+                    
+                    <div>
+                        <MudText Typo="Typo.subtitle2" Class="mb-2">Opening Hours</MudText>
+                        <MudText Typo="Typo.body2" Color="Color.Secondary">
+                            Monday - Sunday: 10:00 AM - 5:00 PM<br />
+                            <small>Hours may vary seasonally</small>
+                        </MudText>
+                    </div>
+                </MudStack>
+            </MudPaper>
+            
+            <MudPaper Class="pa-6" Elevation="2">
+                <MudText Typo="Typo.h6" Class="mb-4">Quick Links</MudText>
+                
+                <MudStack Spacing="2">
+                    <MudButton Variant="Variant.Text" 
+                               Color="Color.Primary" 
+                               FullWidth="true"
+                               StartIcon="@Icons.Material.Filled.Language"
+                               Href="https://www.wmsp.co.uk" 
+                               Target="_blank">
+                        WMSP Website
+                    </MudButton>
+                    
+                    <MudButton Variant="Variant.Text" 
+                               Color="Color.Secondary" 
+                               FullWidth="true"
+                               StartIcon="@Icons.Material.Filled.StarRate"
+                               Href="https://www.wmsp.co.uk/vip-experiences" 
+                               Target="_blank">
+                        VIP Experiences Info
+                    </MudButton>
+                    
+                    <MudButton Variant="Variant.Text" 
+                               Color="Color.Tertiary" 
+                               FullWidth="true"
+                               StartIcon="@Icons.Material.Filled.Map"
+                               Href="https://www.wmsp.co.uk/plan-your-visit" 
+                               Target="_blank">
+                        Plan Your Visit
+                    </MudButton>
+                </MudStack>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</MudContainer>

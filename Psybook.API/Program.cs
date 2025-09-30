@@ -1,4 +1,6 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Web;
 using Microsoft.OpenApi.Models;
 using Psybook.API.Controllers;
 using Psybook.Objects.DbModels;
@@ -25,6 +27,26 @@ builder.AddServiceDefaults();
 // Add SQL Server database context - using the correct database name from AppHost
 builder.AddSqlServerDbContext<BookingContext>("wmsp-db");
 
+// Add Authentication - Configure JWT for API access
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApi(options =>
+    {
+        builder.Configuration.Bind("AzureAd", options);
+        options.TokenValidationParameters.ValidAudiences = new[]
+        {
+            options.Audience,
+            builder.Configuration["AzureAd:ClientId"],
+            "api://psybook-api"
+        };
+    }, options =>
+    {
+        builder.Configuration.Bind("AzureAd", options);
+    });
+
+// Add Authorization
+builder.Services.AddAuthorization();
+// Note: Fallback policy removed for development - controllers use [AllowAnonymous]
+
 // Add Controllers and API Explorer
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
@@ -34,16 +56,47 @@ builder.Services.AddSwaggerGen(c =>
     { 
         Title = "WMSP Booking API", 
         Version = "v1",
-        Description = "West Midlands Safari Park VIP Experience Booking System API"
+        Description = "West Midlands Safari Park VIP Experience Booking System API - Employee Access Only"
+    });
+    
+    // Add JWT authentication to Swagger
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.ApiKey,
+        Scheme = "Bearer",
+        BearerFormat = "JWT"
+    });
+    
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            new string[] {}
+        }
     });
 });
 
-// Add CORS
+// Add CORS - Update origins for different environments
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorClient", policy =>
     {
-        policy.WithOrigins("https://localhost:7154", "http://localhost:5154")
+        policy.WithOrigins(
+                "https://localhost:7154", 
+                "http://localhost:5154",
+                "https://localhost:7031",  // UI server origin
+                "http://localhost:5031"    // UI server origin
+              )
               .AllowAnyMethod()
               .AllowAnyHeader()
               .AllowCredentials();
@@ -86,7 +139,12 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "WMSP Booking API v1");
+        c.OAuthClientId(builder.Configuration["AzureAd:ClientId"]);
+        c.OAuthUsePkce();
+    });
     app.UseDeveloperExceptionPage();
 }
 else
@@ -102,6 +160,7 @@ app.UseMetricsTracking();
 
 app.UseCors("AllowBlazorClient");
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

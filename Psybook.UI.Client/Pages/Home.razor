@@ -1,15 +1,17 @@
 ﻿@page "/"
 @using Heron.MudCalendar
-@using Microsoft.Extensions.Logging
-@using Psybook.UI.Client.Components
 @using Psybook.Objects.DbModels
 @using Psybook.Objects.Enums
 @using Psybook.Services.UI.DataLoaders
+@using Psybook.UI.Client.Components
+@using Microsoft.Extensions.Logging
 @inherits BasePageComponent
 @inject IBookingLoaderService BookingLoaderService
+@inject IDialogService DialogService
 @inject ILogger<Home> Logger
+@attribute [Authorize]
 
-<PageTitle>WMSP VIP Booker - Home</PageTitle>
+<PageTitle>Dashboard - WMSP Booking System</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-4">
     <!-- Header Section -->

@@ -3,14 +3,14 @@
 @using Psybook.Objects.Enums
 @using Psybook.Services.UI.DataLoaders
 @using Psybook.UI.Client.Components
-@using MudBlazor
+@using Microsoft.Extensions.Logging
 @inherits BasePageComponent
 @inject IExperienceLoaderService ExperienceLoaderService
 @inject IDialogService DialogService
-@inject ISnackbar Snackbar
 @inject ILogger<ExperienceConfiguration> Logger
+@attribute [Authorize]
 
-<PageTitle>Experience Configuration - Psybook</PageTitle>
+<PageTitle>Experience Configuration - WMSP Booking System</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.Large" Class="pa-6">
     <!-- Page Header -->

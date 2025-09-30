@@ -1,6 +1,34 @@
-﻿<Router AppAssembly="typeof(Program).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
-        <FocusOnNavigate RouteData="routeData" Selector="h1" />
-    </Found>
-</Router>
+﻿<CascadingAuthenticationState>
+    <Router AppAssembly="typeof(Program).Assembly">
+        <Found Context="routeData">
+            <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+            <FocusOnNavigate RouteData="routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <PageTitle>Not found</PageTitle>
+            <LayoutView Layout="typeof(Layout.MainLayout)">
+                <div class="d-flex justify-center align-center" style="height: 60vh;">
+                    <MudPaper Class="pa-8" Elevation="4" Width="400px">
+                        <MudStack AlignItems="AlignItems.Center" Spacing="4">
+                            <MudIcon Icon="@Icons.Material.Filled.SearchOff" 
+                                     Color="Color.Warning" 
+                                     Size="Size.Large" />
+                            <MudText Typo="Typo.h5" Align="Align.Center">
+                                Page Not Found
+                            </MudText>
+                            <MudText Typo="Typo.body1" Align="Align.Center" Color="Color.Secondary">
+                                The page you're looking for doesn't exist or has been moved.
+                            </MudText>
+                            <MudButton Variant="Variant.Filled" 
+                                       Color="Color.Primary" 
+                                       StartIcon="@Icons.Material.Filled.Home"
+                                       Href="/">
+                                Go Home
+                            </MudButton>
+                        </MudStack>
+                    </MudPaper>
+                </div>
+            </LayoutView>
+        </NotFound>
+    </Router>
+</CascadingAuthenticationState>

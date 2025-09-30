@@ -1,47 +1,104 @@
 ﻿# WMSP VIP Booking System (Psybook)
 
-A comprehensive VIP experience booking system for West Midlands Safari Park, built with .NET 9, Blazor WebAssembly, and modern web technologies.
+A comprehensive employee portal for managing VIP wildlife experiences at West Midlands Safari Park. Built with .NET 9, Blazor WebAssembly, and enterprise-grade authentication for WMSP staff.
 
 ## 🌟 Overview
 
-The WMSP VIP Booking System enables customers to book exclusive VIP wildlife experiences at West Midlands Safari Park. The system provides a modern, responsive web interface for managing bookings, with integrated calendar synchronization, real-time status management, comprehensive analytics, and administrative features.
+The WMSP VIP Booking System is an **internal employee portal** designed specifically for **West Midlands Safari Park staff** to manage VIP guest experiences. This secure system enables authorized WMSP employees to book exclusive VIP wildlife experiences on behalf of guests, with integrated calendar synchronization, comprehensive analytics, and administrative features.
+
+> **⚠️ Important**: This is an internal employee system, not a guest-facing booking portal. Only authorized WMSP staff can access this system to manage guest bookings.
+
+## 👥 User Roles & Access
+
+### 🏢 **WMSP Employees** (Primary Users)
+- **Booking Managers**: Create and manage VIP experience bookings for guests
+- **Customer Service**: Handle guest inquiries and booking modifications
+- **Administrators**: Configure experiences, view analytics, and manage system settings
+- **Management**: Access comprehensive reports and business intelligence
+
+### 👤 **Guests** (Indirect Beneficiaries)
+- Guests **do not** have direct system access
+- WMSP employees book experiences **on behalf** of guests
+- Guests receive automated confirmations and calendar invitations
+- Calendar integration allows guests to add experiences to personal calendars
 
 ## 🚀 Key Features
 
-### 📅 **Calendar Integration**
+### 🔐 **Employee Authentication & Security**
+- **Azure AD B2C Integration**: Enterprise-grade identity management for WMSP staff
+- **Single Sign-On (SSO)**: Seamless authentication with WMSP credentials
+- **Role-Based Authorization**: Secure access control for different employee roles
+- **JWT Bearer Authentication**: Secure API endpoint protection
+- **Claims-Based Identity**: Comprehensive user profile and permissions management
+- **Multi-Factor Authentication**: Enhanced security for sensitive operations
+
+### 📅 **Guest Booking Management**
+- **Employee-Managed Bookings**: Staff create bookings on behalf of guests
+- **Multiple Experience Types**: Rhino Keeper, Lion Feeding, Safari Driving, and more
+- **Dynamic Calendar Interface**: Interactive booking calendar with drag-and-drop
+- **Status Management**: Pending, Confirmed, Cancelled, Completed, No-Show tracking
+- **Guest Information Management**: Comprehensive contact and address details
+- **Automated Guest Notifications**: Email confirmations and reminders
+
+### 📅 **Calendar Integration** (For Guests)
 - **Multi-Platform Support**: Google Calendar, Outlook, Apple Calendar, and iCalendar (.ics)
-- **One-Click Addition**: Direct URLs for instant calendar integration
-- **Auto-Sync**: Automated synchronization based on user preferences
+- **One-Click Addition**: Direct URLs for guests to add experiences to their calendars
+- **Auto-Sync**: Automated synchronization based on guest preferences
 - **iCalendar Downloads**: Universal .ics files for any calendar application
 - **Real-Time Updates**: Booking changes reflect immediately in external calendars
 
-### 📊 **Reports & Analytics**
-- **Comprehensive Dashboard**: Real-time metrics and KPIs
+### 📊 **Employee Analytics & Reporting**
+- **Comprehensive Dashboard**: Real-time metrics and KPIs for management
 - **Interactive Charts**: Booking trends, revenue analytics, and experience performance
 - **Multi-Format Export**: PDF, Excel, CSV, and JSON report generation
 - **Scheduled Reports**: Automated report generation and email delivery
-- **Real-Time Metrics**: Live dashboard with system performance monitoring
-- **Customer Insights**: Detailed customer behavior and segmentation analysis
+- **Real-Time Metrics**: Live dashboard monitoring system performance
+- **Guest Insights**: Detailed guest behavior and segmentation analysis
 
-### 🎯 **VIP Experience Management**
-- **Multiple Experience Types**: Rhino Keeper, Lion Feeding, Safari Driving, and more
-- **Dynamic Booking Calendar**: Interactive calendar with drag-and-drop functionality
-- **Status Management**: Pending, Confirmed, Cancelled, Completed, No-Show tracking
-- **Customer Information**: Comprehensive contact and address management
-
-### 🎨 **Modern User Interface**
+### 🎨 **Modern Employee Interface**
 - **Blazor WebAssembly**: Fast, responsive client-side application
 - **MudBlazor Components**: Material Design UI components with advanced charting
 - **Responsive Design**: Optimized for desktop, tablet, and mobile devices
 - **Dark/Light Theme**: User-configurable theme preferences
 - **Accessibility**: WCAG-compliant interface with screen reader support
+- **Employee Profile Management**: Individual user settings and preferences
 
 ### 🔧 **Administrative Features**
+- **Experience Configuration**: Setup and manage available VIP experiences
 - **Booking Status Workflow**: Complete lifecycle management
-- **Customer Communications**: Automated notifications and confirmations
+- **Guest Communications**: Automated notifications and confirmations
 - **Advanced Analytics**: Time-based, experience, and geographic analysis
 - **Data Export**: Multiple format support with customizable parameters
 - **Background Services**: Automated report scheduling and processing
+
+## 👨‍💼 Employee Workflow
+
+### 1. **Guest Inquiry Process**
+```mermaid
+graph LR
+    A[Guest Contacts WMSP] --> B[Employee Receives Inquiry]
+    B --> C[Employee Books Experience]
+    C --> D[System Sends Guest Confirmation]
+    D --> E[Guest Receives Calendar Links]
+    E --> F[Experience Day]
+```
+
+### 2. **Employee Daily Tasks**
+- **Manage Incoming Inquiries**: Handle guest requests for VIP experiences
+- **Create Bookings**: Use system to book experiences on behalf of guests
+- **Modify Reservations**: Update, reschedule, or cancel bookings as needed
+- **Monitor Status**: Track booking lifecycle from inquiry to completion
+- **Generate Reports**: Access analytics and business intelligence
+- **Configure System**: Manage experience types, pricing, and availability
+
+### 3. **Guest Experience Journey**
+1. **Inquiry**: Guest contacts WMSP for VIP experience information
+2. **Booking**: WMSP employee creates booking using internal system
+3. **Confirmation**: Guest receives automated email with booking details
+4. **Calendar Integration**: Guest adds experience to personal calendar
+5. **Reminders**: Automated system sends pre-experience notifications
+6. **Experience Day**: Guest enjoys VIP wildlife experience
+7. **Follow-up**: Post-experience communication and feedback collection
 
 ## 🏗️ Architecture
 
@@ -49,15 +106,16 @@ The WMSP VIP Booking System enables customers to book exclusive VIP wildlife exp
 
 ```
 Psybook/
-├── 📁 Psybook.API/                    # RESTful API backend
-├── 📁 Psybook.UI/                     # Blazor Server hosting
-├── 📁 Psybook.UI.Client/              # Blazor WebAssembly client
+├── 📁 Psybook.API/                    # RESTful API backend with JWT authentication
+├── 📁 Psybook.UI/                     # Blazor Server hosting with Azure AD integration
+├── 📁 Psybook.UI.Client/              # Blazor WebAssembly client with authorization
 ├── 📁 Psybook.Services/               # Business logic & external integrations
-│   ├── 📁 UI/Clients/                 # HTTP client abstractions
+│   ├── 📁 UI/Clients/                 # HTTP client abstractions with auth tokens
 │   ├── 📁 Reporting/                  # Analytics and reporting services
 │   ├── 📁 Background/                 # Background service implementations
-│   └── 📁 ExternalCalendar/           # Calendar integration
-├── 📁 Psybook.Repositories/           # Data access layer
+│   ├── 📁 ExternalCalendar/           # Guest calendar integration
+│   └── 📁 Middleware/                 # Authentication and metrics middleware
+├── 📁 Psybook.Repositories/           # Data access layer with audit logging
 ├── 📁 Psybook.Objects/                # Domain models & DTOs
 │   └── 📁 Reporting/                  # Analytics and reporting models
 ├── 📁 Psybook.Shared/                 # Shared components & contexts
@@ -73,100 +131,89 @@ Psybook/
 | **Frontend** | Blazor WebAssembly, MudBlazor, HTML5, CSS3, JavaScript |
 | **Backend** | ASP.NET Core Web API, Entity Framework Core |
 | **Database** | SQL Server with Entity Framework migrations |
-| **Authentication** | Azure AD B2C, JWT Bearer tokens, Microsoft Identity |
+| **Authentication** | **Azure AD B2C, JWT Bearer tokens, Microsoft Identity Web** |
+| **Authorization** | **Claims-based authorization, Role-based access control** |
 | **Analytics** | Custom analytics engine, MudBlazor charts, real-time metrics |
 | **Background Services** | .NET BackgroundService, scheduled reporting, email delivery |
 | **Hosting** | .NET Aspire, Docker containerization |
 | **External APIs** | Microsoft Graph, Google Calendar API |
 | **Build & Deploy** | .NET 9, CI/CD pipelines, Azure DevOps |
 
+## 🔐 Authentication & Security Implementation
+
+### Employee Authentication System
+- **Azure AD B2C**: Enterprise identity provider for WMSP employees
+- **OpenID Connect**: Modern authentication protocol implementation
+- **Single Sign-On**: Seamless integration with existing WMSP systems
+- **Multi-Factor Authentication**: Enhanced security for sensitive operations
+- **JWT Tokens**: Secure API communication with bearer token validation
+
+### Security Features
+- **Employee-Only Access**: System restricted to authorized WMSP staff
+- **Claims-Based Authorization**: Fine-grained permission control
+- **API Endpoint Protection**: All controllers secured with `[Authorize]` attributes
+- **HTTPS Enforcement**: All communications encrypted with TLS
+- **Input Validation**: Comprehensive sanitization and validation
+- **Audit Logging**: Complete tracking of employee actions and system changes
+
+### Authentication Pages & Components
+- **LoginDisplay Component**: Employee authentication UI with profile dropdown
+- **Profile Page** (`/profile`): Employee account management and claims display
+- **Authentication Info** (`/auth-info`): System documentation and security overview
+- **Help & Support** (`/help`): Employee-specific help resources and contact information
+
 ## 📋 Detailed Project Breakdown
 
-### 🌐 **Psybook.API**
-RESTful API backend providing:
-- **Booking Management**: CRUD operations for VIP bookings
+### 🌐 **Psybook.API** (Secured)
+RESTful API backend providing authenticated endpoints for:
+- **Booking Management**: CRUD operations for VIP bookings (Employee-only)
 - **Calendar Integration**: iCalendar generation and external calendar sync
-- **Reports & Analytics**: Comprehensive analytics and report generation
+- **Reports & Analytics**: Comprehensive analytics and report generation (Management)
 - **Status Management**: Booking lifecycle and workflow automation
-- **Authentication**: Secure API endpoints with JWT authentication
+- **Authentication Middleware**: JWT validation and user context
 - **Data Validation**: Comprehensive input validation and sanitization
 
-**Key Controllers:**
-- `BookingController`: Core booking operations
-- `CalendarIntegrationController`: External calendar sync and file generation
-- `ReportingController`: Analytics, dashboards, and report generation
+**Secured Controllers:**
+- `BookingController`: Core booking operations with employee authentication
+- `CalendarIntegrationController`: External calendar sync for guest bookings
+- `ReportingController`: Analytics and dashboards with role-based access
+- `ExperienceController`: VIP experience configuration (Admin-only)
 
-### 🖥️ **Psybook.UI & Psybook.UI.Client**
-Modern Blazor application with:
+### 🖥️ **Psybook.UI & Psybook.UI.Client** (Employee Interface)
+Modern Blazor application with employee authentication:
 - **Interactive Calendar**: Heron.MudCalendar integration for booking visualization
 - **Analytics Dashboard**: Real-time reporting with interactive charts
 - **Responsive Components**: Mobile-first design with adaptive layouts
-- **Real-Time Updates**: SignalR integration for live booking updates
+- **Authentication State**: AuthorizeView components for role-based UI
 - **Theme System**: Dark/light mode with user preferences
-- **Progressive Web App**: Offline capability and app-like experience
+- **Employee Profile**: User account management and system information
 
-**Key Components:**
-- `Home.razor`: Main calendar dashboard
-- `Book.razor`: Booking creation and editing
-- `Reports.razor`: Comprehensive analytics and reporting dashboard
-- `BookingDetailsDialog.razor`: Comprehensive booking information
-- `CalendarIntegrationComponent.razor`: External calendar sync interface
-- `BookingStatusManager.razor`: Status workflow management
-- `AnalyticsOverviewComponent.razor`: High-level analytics visualization
-- `ExperienceAnalyticsComponent.razor`: Experience-specific analytics
-- `TimeAnalyticsComponent.razor`: Time-based analysis components
-- `CustomerAnalyticsComponent.razor`: Customer insights and segmentation
+**Key Authenticated Components:**
+- `Home.razor`: Main employee dashboard with booking calendar
+- `Book.razor`: Employee interface for creating guest bookings
+- `Reports.razor`: Management analytics and reporting dashboard
+- `ExperienceConfiguration.razor`: Admin interface for system configuration
+- `Profile.razor`: Employee profile and account management
+- `AuthInfo.razor`: System documentation and authentication information
+- `LoginDisplay.razor`: Employee authentication and profile dropdown
 
-### 🔧 **Psybook.Services**
-Business logic and external integrations:
+### 🔧 **Psybook.Services** (with Authentication)
+Business logic and external integrations with security:
 
-#### **UI Clients**
-- `IBookingClient`: HTTP client abstraction for booking operations
-- `IReportingClient`: HTTP client abstraction for analytics and reporting
-- `HttpClientExtensions`: Common error handling and logging
+#### **Authenticated API Clients**
+- `IBookingClient`: HTTP client with JWT token authentication
+- `IReportingClient`: Secured reporting and analytics client
+- `HttpClientExtensions`: Token handling and error management
 
-#### **Reporting Services**
-- `IReportingService`: Core analytics and reporting business logic
-- `IDataVisualizationService`: Chart and graph data preparation
-- `ScheduledReportingService`: Background service for automated reports
+#### **Employee Services**
+- `IReportingService`: Employee analytics and business intelligence
+- `IDataVisualizationService`: Chart and graph data for management
+- `ScheduledReportingService`: Automated report generation for management
 
-#### **External Integrations**
-- `IExternalCalendarService`: Calendar integration abstraction
-- `GoogleCalendarApiService`: Google Calendar API client
-- `UserCalendarPreferencesService`: User setting management
-
-#### **Data Services**
-- `IBookingLoaderService`: Optimized data loading with pagination
-- `BookingDataLoaderService`: Efficient data retrieval with caching
-
-### 💾 **Psybook.Repositories**
-Data access layer with:
-- **Repository Pattern**: Clean separation of data access logic
-- **Entity Framework**: Code-first approach with migrations
-- **Connection Pooling**: Optimized database connections
-- **Query Optimization**: Efficient data retrieval strategies
-
-### 📊 **Psybook.Objects**
-Domain models and data structures:
-- **Database Models**: Entity Framework entities
-- **DTOs**: Data transfer objects for API communication
-- **Reporting Models**: Analytics, dashboards, and export structures
-- **Enums**: Strongly-typed constants and status values
-- **Validation Attributes**: Data annotation validation
-
-**Key Reporting Models:**
-- `BookingAnalytics`: Comprehensive booking analysis data
-- `DashboardSummary`: Real-time dashboard metrics
-- `TrendingData`: Time-series data for charts
-- `ReportExport`: Multi-format export functionality
-- `ScheduledReportRequest`: Automated report configuration
-
-### 🔄 **Psybook.Migrations**
-Database management service:
-- **Background Service**: Automated migration execution
-- **Environment-Aware**: Different strategies per environment
-- **Rollback Support**: Safe migration rollback capabilities
-- **Health Checks**: Database connectivity monitoring
+#### **Guest Integration Services**
+- `IExternalCalendarService`: Guest calendar integration abstraction
+- `GoogleCalendarApiService`: Google Calendar API client for guest bookings
+- `UserCalendarPreferencesService`: Guest calendar preference management
 
 ## 🛠️ Setup & Installation
 
@@ -175,8 +222,36 @@ Database management service:
 - **.NET 9 SDK** (latest version)
 - **SQL Server** (LocalDB, Express, or full version)
 - **Visual Studio 2024** or **Visual Studio Code**
+- **Azure AD B2C Tenant** (for employee authentication)
 - **Node.js** (for JavaScript tooling)
 - **Git** for version control
+
+### Employee Authentication Setup
+
+1. **Configure Azure AD B2C**
+```json
+// appsettings.json
+{
+  "AzureAd": {
+    "Instance": "https://login.microsoftonline.com/",
+    "Domain": "wmsp.onmicrosoft.com",
+    "TenantId": "{{YOUR_WMSP_TENANT_ID}}",
+    "ClientId": "{{YOUR_APPLICATION_CLIENT_ID}}",
+    "CallbackPath": "/signin-oidc",
+    "Scopes": "access_as_user"
+  }
+}
+```
+
+2. **Setup Database with Employee Audit**
+```json
+// appsettings.json
+{
+  "ConnectionStrings": {
+    "wmsp-db": "Server=(localdb)\\mssqllocaldb;Database=PsybookEmployee;Trusted_Connection=true;"
+  }
+}
+```
 
 ### Quick Start
 
@@ -186,15 +261,10 @@ git clone https://github.com/Shenbury/Psybook.git
 cd Psybook
 ```
 
-2. **Configure Database Connection**
-```json
-// appsettings.json
-{
-  "ConnectionStrings": {
-    "wmsp-db": "Server=(localdb)\\mssqllocaldb;Database=Psybook;Trusted_Connection=true;"
-  }
-}
-```
+2. **Configure Employee Authentication**
+   - Set up Azure AD B2C tenant for WMSP
+   - Configure application registration
+   - Update `appsettings.json` with tenant details
 
 3. **Run Database Migrations**
 ```bash
@@ -206,10 +276,10 @@ dotnet ef database update --project Psybook.Shared
 dotnet run --project Psybook.AppHost
 ```
 
-5. **Access the Application**
-- **Web Interface**: https://localhost:7031
-- **Reports Dashboard**: https://localhost:7031/reports
-- **API Documentation**: https://localhost:7032/swagger
+5. **Access Employee Portal**
+- **Employee Portal**: https://localhost:7031 (Requires WMSP login)
+- **Reports Dashboard**: https://localhost:7031/reports (Management access)
+- **API Documentation**: https://localhost:7032/swagger (Developer access)
 - **Health Checks**: https://localhost:7033/health
 
 ### Development Setup
@@ -220,147 +290,134 @@ dotnet run --project Psybook.AppHost
 # Install .NET Aspire workload
 dotnet workload install aspire
 
-# Run the complete solution
+# Run the complete solution with authentication
 dotnet run --project Psybook.AppHost
 ```
 
-#### Manual Setup
+## 🔗 API Integration (Employee Authenticated)
 
-```bash
-# Start API
-dotnet run --project Psybook.API
+### Authentication Required Endpoints
 
-# Start UI (separate terminal)
-dotnet run --project Psybook.UI
+All API endpoints require valid JWT tokens from authenticated WMSP employees:
 
-# Start Migration Service (separate terminal)
-dotnet run --project Psybook.Migrations
-```
-
-## 🔗 API Integration
-
-### Supported Endpoints
-
-#### Calendar Integration
+#### Employee Booking Management
 ```http
-GET /api/calendarintegration/booking/{id}/icalendar
-GET /api/calendarintegration/booking/{id}/urls
-POST /api/calendarintegration/booking/{id}/sync
-GET /api/calendarintegration/providers
+Authorization: Bearer {employee-jwt-token}
+
+GET /api/booking/slots                   # View all guest bookings
+GET /api/booking/slot/{id}              # View specific booking
+POST /api/booking/slot                  # Create guest booking
+PUT /api/booking/slot/{id}              # Modify guest booking
+POST /api/booking/slot/{id}/status      # Update booking status
+POST /api/booking/slot/{id}/confirm     # Confirm guest booking
+POST /api/booking/slot/{id}/cancel      # Cancel guest booking
 ```
 
-#### Booking Management
+#### Management Reports & Analytics
 ```http
-GET /api/booking/slots
-GET /api/booking/slot/{id}
-POST /api/booking/slot
-PUT /api/booking/slot/{id}
-DELETE /api/booking/slot/{id}
-POST /api/booking/slot/{id}/status
+Authorization: Bearer {employee-jwt-token}
+
+GET /api/reporting/dashboard            # Management dashboard
+POST /api/reporting/analytics           # Comprehensive analytics
+GET /api/reporting/trending-data        # Chart data
+POST /api/reporting/generate            # Export reports
+GET /api/reporting/realtime-metrics     # Live metrics
+POST /api/reporting/schedule            # Schedule automated reports
 ```
 
-#### Reports & Analytics
+#### Guest Calendar Integration
 ```http
-GET /api/reporting/dashboard                # Dashboard summary
-POST /api/reporting/analytics              # Comprehensive analytics
-GET /api/reporting/trending-data           # Chart data
-POST /api/reporting/generate               # Export reports
-GET /api/reporting/realtime-metrics        # Live metrics
-GET /api/reporting/templates               # Report templates
-POST /api/reporting/schedule               # Schedule automated reports
+Authorization: Bearer {employee-jwt-token}
+
+GET /api/calendarintegration/booking/{id}/icalendar    # Generate guest calendar file
+GET /api/calendarintegration/booking/{id}/urls        # Get guest calendar URLs
+POST /api/calendarintegration/booking/{id}/sync       # Sync to guest calendar
 ```
 
-### Usage Examples
+### Usage Examples with Authentication
 
-#### Basic Calendar Integration
+#### Employee Booking Creation
 ```razor
-@using Psybook.Services.ExternalCalendar
+@using Psybook.Services.UI.Clients
+@inject IBookingClient BookingClient
+@attribute [Authorize] // Employee authentication required
 
-<CalendarIntegrationComponent Booking="@currentBooking" 
-                            ShowAutoSyncOption="true"
-                            OnAutoSyncConfigured="HandleSync" />
+<BookingForm />
+
+@code {
+    private async Task CreateGuestBooking(BookingRequest request)
+    {
+        // Employee JWT token automatically included
+        var booking = await BookingClient.CreateBookingAsync(request);
+        // Guest automatically receives confirmation email
+    }
+}
 ```
 
-#### Analytics Dashboard
+#### Management Analytics Access
 ```razor
 @using Psybook.Services.UI.Clients
 @inject IReportingClient ReportingClient
+@attribute [Authorize] // Management access required
 
 <Reports />
 
 @code {
-    private async Task LoadAnalytics()
+    private async Task LoadManagementAnalytics()
     {
         var request = new ReportRequest
         {
             StartDate = DateTime.UtcNow.AddDays(-30),
             EndDate = DateTime.UtcNow,
-            ReportType = ReportType.Summary
+            ReportType = ReportType.Management
         };
+        
+        // Employee context automatically applied
         var analytics = await ReportingClient.GetAnalyticsAsync(request);
     }
 }
 ```
 
-#### Report Generation
-```csharp
-// Generate and download report
-var reportRequest = new ReportRequest
-{
-    StartDate = DateTime.UtcNow.AddMonths(-1),
-    EndDate = DateTime.UtcNow,
-    Format = ReportFormat.PDF,
-    ReportType = ReportType.Financial,
-    IncludeCustomerDetails = true,
-    IncludeFinancialData = true
-};
+## 🧪 Testing Employee System
 
-var report = await reportingClient.GenerateReportAsync(reportRequest);
-await JSRuntime.InvokeVoidAsync("downloadFile", report.FileName, report.ContentType, report.Data);
-```
+### Employee Test Scenarios
 
-## 🧪 Testing
+- **Employee Login**: Test Azure AD B2C authentication flow
+- **Guest Booking Creation**: Verify employees can book for guests
+- **Booking Lifecycle**: Test status management and notifications
+- **Management Reports**: Validate analytics and reporting access
+- **Calendar Integration**: Test guest calendar link generation
+- **Security**: Verify unauthorized access prevention
 
-### Test Pages
+### Test Employee Accounts
 
-- **Main Dashboard**: `/` - Interactive calendar with booking management
-- **Reports Dashboard**: `/reports` - Comprehensive analytics and reporting
-- **Calendar Test**: `/calendar-test` - Calendar integration testing
-- **API Testing**: Swagger UI at `/swagger` for API endpoint testing
+For development and testing, create test employee accounts in Azure AD B2C:
+- **Manager Account**: Full access to all features and reports
+- **Operator Account**: Booking management and basic reporting
+- **Viewer Account**: Read-only access to bookings and limited reports
 
 ### Running Tests
 
 ```bash
-# Unit tests
+# Unit tests with authentication mocking
 dotnet test
 
-# Integration tests with database
+# Integration tests with test employee accounts
 dotnet test --filter Category=Integration
 
-# End-to-end tests
+# End-to-end tests with full authentication flow
 dotnet test --filter Category=E2E
 ```
 
-## 🚀 Deployment
+## 🚀 Deployment for Employee System
 
-### Production Deployment
+### Production Environment Configuration
 
-#### Using Docker
-
-```dockerfile
-# Build and deploy with Docker
-docker build -f Psybook.AppHost/Dockerfile -t psybook:latest .
-docker run -p 8080:8080 psybook:latest
-```
-
-#### Azure Deployment
-
-```bash
-# Deploy to Azure Container Apps
-az containerapp create --name psybook --resource-group rg-psybook --image psybook:latest
-```
-
-### Environment Configuration
+#### Azure AD B2C Production Setup
+- Configure production Azure AD B2C tenant
+- Set up employee user flows and policies
+- Configure MFA requirements for sensitive operations
+- Set up role-based access control
 
 #### Production Settings
 ```json
@@ -371,135 +428,87 @@ az containerapp create --name psybook --resource-group rg-psybook --image psyboo
   "AzureAd": {
     "Instance": "https://login.microsoftonline.com/",
     "Domain": "wmsp.onmicrosoft.com",
-    "TenantId": "{{TENANT_ID}}",
-    "ClientId": "{{CLIENT_ID}}"
+    "TenantId": "{{PRODUCTION_TENANT_ID}}",
+    "ClientId": "{{PRODUCTION_CLIENT_ID}}"
   },
-  "GoogleCalendar": {
-    "ClientId": "{{GOOGLE_CLIENT_ID}}",
-    "ClientSecret": "{{GOOGLE_CLIENT_SECRET}}"
-  },
-  "BookingClient": {
-    "RequestTimeout": "00:00:30",
-    "MaxItemsPerRequest": 1000,
-    "ValidateResponses": true
+  "EmployeeRoles": {
+    "Administrator": "WMSP.Admin",
+    "Manager": "WMSP.Manager", 
+    "Operator": "WMSP.Operator",
+    "Viewer": "WMSP.Viewer"
   }
 }
 ```
 
-## 📊 Performance & Monitoring
+## 📊 Employee Performance & Monitoring
 
-### Built-in Monitoring
+### Employee Activity Monitoring
 
-- **Application Insights**: Comprehensive telemetry and analytics
-- **Health Checks**: Database, API, and external service monitoring
-- **Structured Logging**: Serilog with multiple sinks
-- **Performance Counters**: Custom metrics and KPIs
-- **Real-Time Metrics**: Live dashboard monitoring system performance
-- **Background Service Monitoring**: Scheduled report execution tracking
+- **Login Tracking**: Monitor employee authentication patterns
+- **Booking Activity**: Track employee booking creation and modifications
+- **System Usage**: Monitor feature usage and performance per employee
+- **Error Tracking**: Employee-specific error logging and resolution
+- **Audit Trails**: Complete audit logs for compliance and security
 
-### Performance Optimizations
+### Employee-Specific Metrics
 
-- **Blazor WebAssembly**: Client-side rendering for optimal performance
-- **HTTP Client Pooling**: Efficient API communication with retry policies
-- **Connection Pooling**: Efficient database connection management
-- **HTTP Caching**: Strategic caching for static and semi-static content
-- **Lazy Loading**: Component and data lazy loading strategies
-- **Compression**: Response compression for reduced bandwidth
-- **Chart Optimization**: Efficient data visualization with MudBlazor charts
+- **Booking Velocity**: Bookings created per employee per day/week
+- **Guest Satisfaction**: Correlation between employee and guest feedback
+- **System Efficiency**: Time spent on booking tasks and system navigation
+- **Training Needs**: Identification of areas where employees need additional training
 
-## 🔒 Security
+## 🔒 Enhanced Security for Employee System
 
-### Authentication & Authorization
+### Employee Access Control
 
-- **Azure AD B2C**: Enterprise-grade identity management
-- **JWT Tokens**: Secure API authentication
-- **Role-Based Access**: Fine-grained permission system
-- **HTTPS Enforcement**: TLS encryption for all communications
+- **Principle of Least Privilege**: Employees only access features needed for their role
+- **Session Management**: Secure session handling with automatic timeout
+- **Device Trust**: Device registration and trust management
+- **Location-Based Access**: Optional geo-fencing for on-site access only
 
-### Data Protection
+### Compliance & Auditing
 
-- **Data Encryption**: At-rest and in-transit encryption
-- **Input Validation**: Comprehensive sanitization and validation
-- **CORS Configuration**: Secure cross-origin resource sharing
-- **Rate Limiting**: API throttling and abuse prevention
-- **Secure Report Generation**: Access-controlled analytics and exports
+- **GDPR Compliance**: Full guest data protection and employee access logging
+- **SOX Compliance**: Financial data access controls and audit trails
+- **Employee Training**: Security awareness and system usage training
+- **Regular Security Reviews**: Periodic access reviews and permission updates
 
-## 🤝 Contributing
+## 📞 Employee Support & Resources
 
-### Development Guidelines
+### Employee Help Resources
 
-1. **Code Style**: Follow .NET coding conventions and EditorConfig
-2. **Testing**: Maintain test coverage above 80%
-3. **Documentation**: Update documentation for all public APIs
-4. **Performance**: Profile performance-critical code paths
-5. **Security**: Security review for all authentication changes
+- **Help & Support Page** (`/help`): Employee-specific help documentation
+- **Profile Management** (`/profile`): Employee account settings and information
+- **Authentication Info** (`/auth-info`): System overview and security documentation
+- **Training Materials**: Interactive tutorials and best practices guides
 
-### Pull Request Process
+### Internal Support Channels
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## 📞 Support & Contact
-
-### Documentation
-
-- **API Documentation**: Available at `/swagger` when running locally
-- **Calendar Integration**: See `CALENDAR_INTEGRATION.md` for detailed guide
-- **Architecture Decisions**: Documented in `/docs/architecture/`
-
-### Support Channels
-
-- **Issues**: GitHub Issues for bug reports and feature requests
-- **Discussions**: GitHub Discussions for general questions
-- **Wiki**: Comprehensive documentation and tutorials
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## 🙏 Acknowledgments
-
-### Technologies & Libraries
-
-- **Microsoft**: .NET, Blazor, Azure services
-- **MudBlazor**: Material Design components for Blazor with advanced charting
-- **Heron.MudCalendar**: Calendar component integration
-- **Entity Framework**: Object-relational mapping
-- **Serilog**: Structured logging framework
-
-### Contributors
-
-- **Development Team**: West Midlands Safari Park IT Department  
-- **UI/UX Design**: Safari Park Marketing Team
-- **Testing**: Quality Assurance Team
-- **Infrastructure**: DevOps and Cloud Operations Team
+- **IT Helpdesk**: Technical support for system access and functionality
+- **Training Team**: System usage training and best practices
+- **Management Portal**: Supervisor access to employee activity and performance
+- **Documentation Wiki**: Comprehensive system documentation and procedures
 
 ---
 
-## 🔧 Development Status
+## 🔧 Current Implementation Status
 
-| Feature | Status | Version |
-|---------|--------|---------|
-| **Core Booking System** | ✅ Complete | v1.0.0 |
-| **Calendar Integration** | ✅ Complete | v1.1.0 |
-| **Reports & Analytics** | ✅ Complete | v1.2.0 |
-| **Scheduled Reporting** | ✅ Complete | v1.2.0 |
-| **API Client Architecture** | ✅ Complete | v1.2.0 |
-| **Mobile Optimization** | ✅ Complete | v1.0.0 |
-| **API Documentation** | ✅ Complete | v1.0.0 |
-| **Authentication** | ✅ Complete | v1.0.0 |
-| **Background Services** | ✅ Complete | v1.2.0 |
-| **Mobile App** | 📅 Planned | v2.0.0 |
-| **Advanced ML Analytics** | 📅 Planned | v2.1.0 |
-| **Multi-tenant Support** | 📅 Planned | v2.2.0 |
+| Feature | Status | Version | Access Level |
+|---------|--------|---------|--------------|
+| **Employee Authentication** | ✅ Complete | v1.3.0 | All Staff |
+| **Guest Booking Management** | ✅ Complete | v1.0.0 | Operators+ |
+| **Calendar Integration** | ✅ Complete | v1.1.0 | All Staff |
+| **Management Reports** | ✅ Complete | v1.2.0 | Managers+ |
+| **Experience Configuration** | ✅ Complete | v1.2.0 | Admins Only |
+| **Employee Profile System** | ✅ Complete | v1.3.0 | All Staff |
+| **Role-Based Authorization** | 🔄 In Progress | v1.4.0 | Future |
+| **Mobile Employee App** | 📅 Planned | v2.0.0 | Future |
+| **Advanced Employee Analytics** | 📅 Planned | v2.1.0 | Future |
 
-**Current Version**: v1.2.0  
-**Next Release**: v2.0.0 (Q3 2024)  
+**Current Version**: v1.3.0 (Employee Authentication Complete)  
+**Next Release**: v1.4.0 - Role-Based Authorization (Q4 2024)  
 **LTS Support**: .NET 9 through November 2026
 
 ---
 
-*Built with ❤️ by Simon Henbury for the West Midlands Safari Park team for creating unforgettable VIP wildlife experiences.*
+*Built with ❤️ by Simon Henbury for the West Midlands Safari Park team - Empowering employees to create unforgettable VIP wildlife experiences for guests.*

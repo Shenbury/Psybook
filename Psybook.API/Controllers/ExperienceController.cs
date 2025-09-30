@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Psybook.Objects.DbModels;
 using Psybook.Objects.Enums;
@@ -9,6 +10,7 @@ namespace Psybook.API.Controllers;
 /// Controller for managing Experience Records.
 /// </summary>
 [ApiController]
+[AllowAnonymous] // Temporarily allow anonymous access for development
 [Route("api/[controller]")]
 public class ExperienceController : ControllerBase
 {

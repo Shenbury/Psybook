@@ -14,6 +14,9 @@ using Psybook.UI.Client.Services;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
+// Add authorization for UI components (without server authentication)
+builder.Services.AddAuthorizationCore();
+
 builder.Services.AddMudServices();
 
 // Configure BookingClient options

@@ -6,11 +6,14 @@
 @using Microsoft.Extensions.Logging
 @using System.Text.Json
 @using MudBlazor
+@inherits BasePageComponent
 @inject IReportingClient ReportingClient
-@inject ILogger<Reports> Logger
+@inject IDialogService DialogService
 @inject IJSRuntime JSRuntime
+@inject ILogger<Reports> Logger
+@attribute [Authorize]
 
-<PageTitle>Reports & Analytics - WMSP VIP Booking</PageTitle>
+<PageTitle>Reports & Analytics - WMSP Booking System</PageTitle>
 
 <MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="pa-4">
     <!-- Header Section -->

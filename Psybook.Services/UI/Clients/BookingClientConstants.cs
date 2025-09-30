@@ -18,17 +18,17 @@ namespace Psybook.Services.UI.Clients
             /// <summary>
             /// Endpoint to retrieve calendar slots.
             /// </summary>
-            public const string GetCalendarSlots = "/Booking/GetCalendarSlots";
+            public const string GetCalendarSlots = "api/booking/slots";
 
             /// <summary>
             /// Endpoint to save a calendar slot.
             /// </summary>
-            public const string SaveCalendarSlot = "/Booking/SaveCalendarSlot";
+            public const string SaveCalendarSlot = "api/booking/slot";
 
             /// <summary>
             /// Endpoint to retrieve experience information.
             /// </summary>
-            public const string GetExperienceInfo = "/Booking/GetExperienceInfo";
+            public const string GetExperienceInfo = "api/booking/experiences";
         }
     }
 }
